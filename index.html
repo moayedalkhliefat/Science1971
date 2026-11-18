@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Science1971 · Virtual Science Lab</title>
+<title>Science Lab 1971 · Virtual Science Lab</title>
 <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🧪</text></svg>">
 <link rel="stylesheet" href="assets/style.css">
 <style>
@@ -14,17 +14,17 @@
   .role .ic{font-size:2rem;line-height:1.1}
   .role:hover{border-color:#bfb2ff}
   .role.active{color:#fff;border-color:transparent;transform:translateY(-2px);box-shadow:0 6px 0 rgba(0,0,0,.12)}
-  .role[data-role="student"].active{background:linear-gradient(135deg,#16c172,#5fe0a3)}
-  .role[data-role="teacher"].active{background:linear-gradient(135deg,#2f80ff,#7bb0ff)}
-  .role[data-role="admin"].active{background:linear-gradient(135deg,#ff4d9d,#ff9f1c)}
+  .role[data-role="student"].active{background:#0f766e}
+  .role[data-role="teacher"].active{background:#1e3a8a}
+  .role[data-role="admin"].active{background:#334155}
   #login-btn{width:100%;margin-top:8px;font-size:1.2rem;padding:12px}
 </style>
 </head>
 <body>
 <div class="wrap">
   <div class="hero">
-    <h1><span class="float">🔬</span> Science1971 <span class="float" style="animation-delay:.6s">🧪</span></h1>
-    <p>Your virtual science lab — explore, experiment and level up!</p>
+    <h1><span class="float">🔬</span> Science Lab 1971 <span class="float" style="animation-delay:.6s">🧪</span></h1>
+    <p>Virtual science labs for Biology, Chemistry and Physics — explore, experiment and level up.</p>
   </div>
 
   <div class="card login-box">
@@ -58,9 +58,9 @@
 
 const ROLES = {
   student: { l1: "First name", p1: "e.g. Ahmed", l2: "School ID", p2: "e.g. 10045", t2: "text", mode: "numeric",
-             hint: "Write your first name exactly as your teacher has it, and your School ID.", btn: "Enter the Lab 🚀", cls: "green" },
+             hint: "Write your first name exactly as your teacher has it, and your School ID.", btn: "Enter the Lab 🚀", cls: "blue" },
   teacher: { l1: "Username", p1: "Your teacher username", l2: "Password", p2: "••••••", t2: "password", mode: "text",
-             hint: "Your username and password come from the admin.", btn: "Log in 🔐", cls: "blue" },
+             hint: "Your username and password come from the admin.", btn: "Log in 🔐", cls: "" },
   admin:   { l1: "Username", p1: "Admin username", l2: "Password", p2: "••••••", t2: "password", mode: "text",
              hint: "Admin access only.", btn: "Log in 👑", cls: "pink" }
 };

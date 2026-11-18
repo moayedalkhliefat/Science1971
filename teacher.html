@@ -3,14 +3,14 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Teacher Dashboard · Science1971</title>
+<title>Teacher Dashboard · Science Lab 1971</title>
 <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🧪</text></svg>">
 <link rel="stylesheet" href="assets/style.css">
 </head>
 <body>
 <div class="wrap">
   <div class="topbar">
-    <a class="brand" href="teacher.html"><span class="logo">🧪</span><b>Science1971</b></a>
+    <a class="brand" href="teacher.html"><span class="logo">🧪</span><b>Science Lab 1971</b></a>
     <div class="row gap">
       <span class="who" id="who"></span><span class="pill" id="role-pill"></span>
       <a class="btn sm pink hidden" id="admin-link" href="admin.html">👑 Admin panel</a>
@@ -193,7 +193,7 @@ document.getElementById("tpl-btn").onclick = async () => {
     const ws = XLSX.utils.aoa_to_sheet([["Name", "School ID", "Grade", "Section"], ["Ahmed Khalid Saeed", "10045", "7", "A"], ["Mariam Ali Hassan", "10046", "7", "A"]]);
     ws["!cols"] = [{ wch: 28 }, { wch: 12 }, { wch: 8 }, { wch: 9 }];
     const wb = XLSX.utils.book_new(); XLSX.utils.book_append_sheet(wb, ws, "Students");
-    XLSX.writeFile(wb, "Science1971_students_template.xlsx");
+    XLSX.writeFile(wb, "Science_Lab_1971_students_template.xlsx");
   } catch (e) { toast(e.message, "bad"); }
 };
 
@@ -285,7 +285,7 @@ function showDetails(r) {
 document.getElementById("r-export").onclick = () => {
   const rows = [["Student", "School ID", "Grade", "Section", "Lab", "Score", "Max", "Percent", "Finished"]].concat(
     filteredResults().map(r => [r.full_name, r.school_id, r.grade, r.section, labTitle(r.lab_id), +r.score, +r.max_score, pct(r) + "%", fmtDate(r.completed_at)]));
-  S1971.downloadCSV("Science1971_results.csv", rows);
+  S1971.downloadCSV("Science_Lab_1971_results.csv", rows);
 };
 
 // ---------- class labs ----------
@@ -316,7 +316,7 @@ async function loadClasses() {
 // ---------- labs ----------
 function renderLabs() {
   document.getElementById("labs").innerHTML = window.S1971_LABS.map(l => `
-    <div class="lab" style="background:${l.color}">
+    <div class="lab" style="--lab:${l.color}"><div class="band"></div>
       <div class="icon">${l.icon}</div><h3>${esc(l.title)}</h3>
       <p>${esc(l.description)}<br><span class="small">For grades: ${l.grades.join(", ")}</span></p>
       <div class="levels">${l.levels.map(v => `<a class="lvl" href="${l.path}?level=${v.n}&preview=1" target="_blank">${esc(v.name)} <span class="best">👁️ Preview</span></a>`).join("")}</div>

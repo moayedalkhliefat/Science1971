@@ -1,4 +1,4 @@
-# 🧪 Science1971 — Virtual Science Lab
+# 🧪 Science Lab 1971 — Virtual Science Lab
 
 Built by **Mr. Moayed Alkhliefat**, Science Teacher, ATS-AQB.
 

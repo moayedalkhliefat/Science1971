@@ -112,3 +112,47 @@ footer{text-align:center;color:#fff;opacity:.9;margin:30px 0 10px;font-weight:70
 input.sw{appearance:none;-webkit-appearance:none;width:56px;height:32px;border-radius:999px;background:#d7d3ee;position:relative;cursor:pointer;flex:0 0 auto;margin:0;padding:0;border:none;transition:.2s}
 input.sw::after{content:"";position:absolute;top:4px;left:4px;width:24px;height:24px;border-radius:50%;background:#fff;box-shadow:0 2px 4px rgba(0,0,0,.2);transition:.2s}
 input.sw:checked{background:#16c172}input.sw:checked::after{left:28px}
+
+/* ================= DASHBOARD THEME: calm navy & white (educational) ================= */
+:root{--ink:#1f2a44;--muted:#64748b;--purple:#1e3a8a;--line:#e2e8f0;--soft:#f1f5f9;--navy:#1e3a8a;--teal:#0f766e;--shadow:0 1px 3px rgba(15,23,42,.08),0 6px 20px rgba(15,23,42,.06);--radius:16px}
+body{background-color:#f4f7fb;
+  background-image:linear-gradient(#e6ecf5 1px,transparent 1px),linear-gradient(90deg,#e6ecf5 1px,transparent 1px);
+  background-size:28px 28px;background-attachment:fixed}
+.wrap{max-width:none;width:100%;padding:16px clamp(12px,2vw,32px)}
+h1,h2,h3,.brand{font-family:'Nunito',system-ui,sans-serif;font-weight:800}
+.card{border:1px solid var(--line)}
+.topbar{background:#fff;border:1px solid var(--line);border-bottom:4px solid var(--navy);border-radius:14px}
+.brand{font-size:1.45rem;color:var(--navy)}
+.brand b{background:none;-webkit-background-clip:initial;background-clip:initial;color:var(--navy)}
+.brand .logo{background:var(--navy);box-shadow:none;border-radius:12px;width:40px;height:40px;font-size:1.2rem}
+body:not([class*="theme-"]) .btn{background:var(--navy);box-shadow:0 3px 0 #13275e;border-radius:10px}
+body:not([class*="theme-"]) .btn.green{background:#15803d;box-shadow:0 3px 0 #0f5a2b}
+body:not([class*="theme-"]) .btn.blue{background:var(--teal);box-shadow:0 3px 0 #0b544e}
+body:not([class*="theme-"]) .btn.pink{background:#334155;box-shadow:0 3px 0 #1e293b}
+body:not([class*="theme-"]) .btn.orange{background:#fff;color:#b91c1c;border:1px solid #fecaca;box-shadow:0 3px 0 #fecaca}
+body:not([class*="theme-"]) .btn.red{background:#b91c1c;box-shadow:0 3px 0 #7f1d1d}
+body:not([class*="theme-"]) .btn.ghost{background:#fff;color:var(--navy);border:1px solid var(--line);box-shadow:0 3px 0 var(--line)}
+input:focus,select:focus{border-color:var(--navy)}
+.pill{background:var(--navy)}.pill.admin{background:#334155}.pill.teacher{background:var(--teal)}.pill.student{background:#15803d}
+.tab{background:#fff;border:1px solid var(--line);color:var(--muted);border-radius:10px}
+.tab.active{color:var(--navy);border-color:var(--navy);box-shadow:inset 0 -3px 0 var(--navy)}
+.stat{background:#fff;color:var(--ink);border:1px solid var(--line);border-left:6px solid var(--navy);box-shadow:var(--shadow)}
+.stat b{color:var(--navy)}
+.stat.a{background:#fff;border-left-color:var(--navy)}.stat.b{background:#fff;border-left-color:#334155}.stat.c{background:#fff;border-left-color:var(--teal)}.stat.d{background:#fff;border-left-color:#b45309}
+.stat.b b{color:#334155}.stat.c b{color:var(--teal)}.stat.d b{color:#b45309}
+th{background:#f1f5f9;color:#334155}
+.score.hi{background:#15803d}.score.mid{background:#b45309}.score.lo{background:#b91c1c}
+.hero{color:var(--ink)}.hero h1{text-shadow:none;color:var(--navy)}.hero p{color:var(--muted)}
+footer{color:var(--muted)}
+.notice{background:#f8fafc;border-left-color:var(--teal)}
+.drop{border-color:#cbd5e1;background:#f8fafc}
+/* lab cards on dashboards: white with a topic-colour band */
+.lab{background:#fff;color:var(--ink);border:1px solid var(--line);padding:0;min-height:0}
+.lab .band{height:10px;background:var(--lab)}
+.lab .icon,.lab h3,.lab p,.lab .levels{margin-left:18px;margin-right:18px}
+.lab .icon{margin-top:14px;font-size:2.2rem}.lab .levels{margin-bottom:18px}
+.lab p{color:var(--muted)}
+.lvl{background:#f1f5f9;color:var(--ink);border:1px solid var(--line)}
+.lvl:hover{background:#e2e8f0}
+.lvl .best{background:#fff;color:var(--navy);border:1px solid var(--line)}
+.labs{grid-template-columns:repeat(auto-fill,minmax(320px,1fr))}
