@@ -10,7 +10,9 @@ Live site: https://moayedalkhliefat.github.io/science1971/
 |---|---|---|
 | **Admin** (Moayed) | username + password | Create / reset / delete teacher accounts; see all students and results |
 | **Teacher** | username + password (made by admin) | Upload up to **30 students** from Excel, see their results, preview labs |
-| **Student** | **first name + School ID** | Do the labs; results are saved for the teacher |
+| **Student** | **first name + School ID** | Do the labs their teacher opened for their class; results are saved for the teacher |
+
+Teachers open or close each lab per class (grade + section) in **Teacher dashboard → 🏫 Class Labs**.
 
 Excel columns for teachers: **Name, School ID, Grade, Section** (a template can be downloaded in the teacher page).
 
@@ -24,8 +26,12 @@ student.html          Student home (labs + my results)
 assets/config.js      Supabase URL + public key, pass mark (75%)
 assets/app.js         Shared helpers (API calls, login session)
 assets/lab-sdk.js     Connects any lab to the login + saves results
+assets/lab-engine.js  Shared lab engine: explore step, 12 adaptive tasks, scoring, calculator
+assets/lab.css        Shared lab styles
 labs/catalog.js       List of labs and their levels
-labs/digestive/       Lab 1: Functions of the Digestive System (3 levels)
+labs/digestive/       Biology: Functions of the Digestive System (Grades 7–8, 3 levels)
+labs/speed/           Physics: Speed and How to Calculate It (Grade 7, 3 levels)
+labs/atom/            Chemistry: Build an Atom (Grades 9–10, 3 levels)
 ```
 
 Database: Supabase project **Science1971** (tables: staff, students, sessions, results, login_attempts — the setup is saved as migrations inside Supabase).

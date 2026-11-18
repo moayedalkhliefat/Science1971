@@ -1,0 +1,464 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Build an Atom · Science1971</title>
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>⚛️</text></svg>">
+<link rel="stylesheet" href="../../assets/style.css">
+<link rel="stylesheet" href="../../assets/lab.css">
+<style>
+  .atom-wrap{display:grid;grid-template-columns:minmax(280px,520px) minmax(260px,1fr);gap:18px;align-items:start}
+  @media(max-width:860px){.atom-wrap{grid-template-columns:1fr}}
+  .atom-box{background:radial-gradient(circle at 50% 50%,#1e1b52 0,#110f33 70%);border-radius:22px;padding:6px;touch-action:none;user-select:none}
+  .atom-box svg{width:100%;height:auto;display:block}
+  .palette{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-bottom:12px}
+  .pal{border:3px solid #e2ddff;background:#fff;border-radius:16px;padding:10px 6px;text-align:center;cursor:grab;user-select:none;touch-action:none;font-weight:800}
+  .pal.sel{border-color:#7b4dff;background:#f3efff}
+  .pal .ball{width:42px;height:42px;border-radius:50%;margin:0 auto 4px;display:grid;place-items:center;color:#fff;font-size:1.3rem;font-weight:900}
+  .ball.p{background:radial-gradient(circle at 35% 30%,#ff9a9a,#e0262f 60%,#8f0d14)}
+  .ball.n{background:radial-gradient(circle at 35% 30%,#e9e9f2,#9a9ab0 60%,#5a5a70)}
+  .ball.e{background:radial-gradient(circle at 35% 30%,#9fd1ff,#2f80ff 60%,#123f8f);width:30px;height:30px;font-size:1rem}
+  .pal .cnt{display:flex;align-items:center;justify-content:center;gap:6px;margin-top:4px}
+  .pal .cnt button{border:none;background:#eee9ff;color:#5a36d6;border-radius:8px;font-weight:900;width:26px;height:26px;cursor:pointer}
+  .drag-ghost{position:fixed;pointer-events:none;z-index:90;transform:translate(-50%,-50%)}
+  .readout{display:grid;grid-template-columns:repeat(auto-fit,minmax(120px,1fr));gap:8px;margin-bottom:12px}
+  .ro{background:#f7f5ff;border-radius:14px;padding:8px 10px;text-align:center}
+  .ro small{display:block;color:var(--muted);font-weight:800;font-size:.75rem}
+  .ro b{font-family:'Baloo 2','Nunito',sans-serif;font-size:1.5rem}
+  .tile{display:inline-grid;grid-template-rows:auto 1fr auto;width:140px;height:150px;border-radius:16px;background:linear-gradient(160deg,#fff,#f0ecff);border:3px solid #7b4dff;padding:8px 10px;box-shadow:0 6px 0 #d8d2ff;vertical-align:top}
+  .tile .z{font-weight:900;color:#7b4dff;font-size:1.1rem}
+  .tile .sym{font-family:'Baloo 2','Nunito',sans-serif;font-size:3rem;font-weight:800;text-align:center;line-height:1}
+  .tile .nm{text-align:center;font-weight:800;font-size:.9rem}
+  .tile .a{font-size:.8rem;color:var(--muted);text-align:center;font-weight:700}
+  .target-card{display:flex;gap:14px;align-items:center;background:#fff7e6;border-radius:18px;padding:12px;margin-bottom:12px;flex-wrap:wrap}
+  .ptable{display:grid;grid-template-columns:repeat(8,1fr);gap:5px;max-width:520px}
+  .pt{border:2px solid #e2ddff;background:#fff;border-radius:10px;padding:4px 0;text-align:center;cursor:pointer;font-weight:800;line-height:1.05}
+  .pt small{display:block;font-size:.65rem;color:var(--muted)}
+  .pt b{font-size:1.15rem}
+  .pt.sel{border-color:#7b4dff;background:#efe9ff}.pt.ok{border-color:#16c172;background:#e6fbf0}.pt.no{border-color:#ff4d4d;background:#ffeded}.pt.cur{border-color:#ff9f1c;background:#fff4dc}
+  .pt.blank{visibility:hidden}
+  .pt.static{cursor:default}
+  .checklist{list-style:none;padding:0;margin:0}
+  .checklist li{padding:6px 0;font-weight:700}
+  .mini-atoms{display:grid;grid-template-columns:repeat(auto-fit,minmax(170px,1fr));gap:10px}
+  .mini{border:3px solid #e2ddff;border-radius:16px;background:#110f33;cursor:pointer;padding:4px;font:inherit;color:#fff;font-weight:800}
+  .mini.sel{border-color:#ff9f1c}.mini.ok{border-color:#16c172}.mini.no{border-color:#ff4d4d}
+  .mini svg{width:100%;height:auto;display:block}
+  @keyframes spin{to{transform:rotate(360deg)}}
+  .orbit{transform-origin:260px 260px;animation:spin linear infinite}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="topbar">
+    <a class="brand" id="home-link" href="../../index.html"><span class="logo">⚛️</span><b>Science1971</b></a>
+    <div class="row gap"><span class="pill" id="lvl-pill" style="background:#7b4dff"></span><a class="btn sm ghost" id="back-btn" href="../../index.html">⬅ Back</a></div>
+  </div>
+  <div id="banner"></div>
+  <div class="card" id="stage"><div class="empty">Loading the lab… ⚛️</div></div>
+  <footer>Built by Mr. Moayed Alkhliefat · Science Teacher · ATS-AQB</footer>
+</div>
+
+<script src="../../assets/config.js"></script>
+<script src="../../assets/app.js"></script>
+<script src="../catalog.js"></script>
+<script src="../../assets/lab-sdk.js"></script>
+<script src="../../assets/lab-engine.js"></script>
+<script>
+"use strict";
+const E = LabEngine, esc = E.esc, choice = E.choice;
+
+/* ===================== DATA: first 20 elements ===================== */
+const EL = [null,
+  ["H", "Hydrogen", 1], ["He", "Helium", 4], ["Li", "Lithium", 7], ["Be", "Beryllium", 9], ["B", "Boron", 11],
+  ["C", "Carbon", 12], ["N", "Nitrogen", 14], ["O", "Oxygen", 16], ["F", "Fluorine", 19], ["Ne", "Neon", 20],
+  ["Na", "Sodium", 23], ["Mg", "Magnesium", 24], ["Al", "Aluminium", 27], ["Si", "Silicon", 28], ["P", "Phosphorus", 31],
+  ["S", "Sulfur", 32], ["Cl", "Chlorine", 35], ["Ar", "Argon", 40], ["K", "Potassium", 39], ["Ca", "Calcium", 40]
+].map((e, z) => e && { z, sym: e[0], name: e[1], A: e[2] });
+const ION = { 3: 1, 4: 2, 7: -3, 8: -2, 9: -1, 11: 1, 12: 2, 13: 3, 15: -3, 16: -2, 17: -1, 19: 1, 20: 2 };
+const ISO = [[1, 2], [1, 3], [6, 13], [6, 14], [3, 6], [8, 18], [17, 37], [19, 40], [12, 26], [20, 44]]; // [z, A]
+const CAP = [2, 8, 8, 2];
+const config = e => { const s = []; let left = e; for (const c of CAP) { const k = Math.min(c, left); s.push(k); left -= k; } return s; };
+const cfgText = sh => sh.filter((x, i) => x > 0 || sh.slice(i).some(y => y > 0)).join(", ") || "0";
+const chargeText = q => q === 0 ? "0 (neutral)" : (Math.abs(q) > 1 ? Math.abs(q) : "") + (q > 0 ? "+" : "−");
+const sup = q => q === 0 ? "" : (Math.abs(q) > 1 ? Math.abs(q) : "") + (q > 0 ? "⁺" : "⁻");
+const supN = n => String(n).split("").map(d => "⁰¹²³⁴⁵⁶⁷⁸⁹"[d]).join("");
+const subN = n => String(n).split("").map(d => "₀₁₂₃₄₅₆₇₈₉"[d]).join("");
+
+/* ===================== ATOM DRAWING ===================== */
+const C0 = 260, SHELL_R = [92, 142, 190, 236];
+function nucleusR(N) { return Math.max(22, 10.5 * Math.sqrt(N) + 14); }
+function atomSVG(st, opts) {
+  opts = opts || {};
+  const N = st.p + st.n, nR = nucleusR(N);
+  const shellsUsed = Math.max(st.sh.reduce((m, x, i) => x > 0 ? i + 1 : m, 0), opts.minShells || 0);
+  let s = `<svg viewBox="0 0 520 520" xmlns="http://www.w3.org/2000/svg">
+    <defs>
+      <radialGradient id="gp" cx="35%" cy="30%"><stop offset="0" stop-color="#ff9a9a"/><stop offset=".6" stop-color="#e0262f"/><stop offset="1" stop-color="#8f0d14"/></radialGradient>
+      <radialGradient id="gn" cx="35%" cy="30%"><stop offset="0" stop-color="#f1f1f8"/><stop offset=".6" stop-color="#9a9ab0"/><stop offset="1" stop-color="#5a5a70"/></radialGradient>
+      <radialGradient id="ge" cx="35%" cy="30%"><stop offset="0" stop-color="#bfe0ff"/><stop offset=".6" stop-color="#2f80ff"/><stop offset="1" stop-color="#123f8f"/></radialGradient>
+      <radialGradient id="glow"><stop offset="0" stop-color="#ffcf6b" stop-opacity=".45"/><stop offset="1" stop-color="#ffcf6b" stop-opacity="0"/></radialGradient>
+    </defs>`;
+  // shells
+  const showShells = opts.shells || 4;
+  for (let i = 0; i < showShells; i++) {
+    const hl = opts.hlShell === i;
+    s += `<circle cx="${C0}" cy="${C0}" r="${SHELL_R[i]}" fill="none" stroke="${hl ? "#ffcf6b" : i < shellsUsed ? "#8d86d9" : "#3c3878"}" stroke-width="${hl ? 4 : 2.5}" stroke-dasharray="${i < shellsUsed ? "0" : "6 7"}"/>`;
+    if (opts.labels) s += `<text x="${C0 + SHELL_R[i] * .71 + 8}" y="${C0 - SHELL_R[i] * .71 - 6}" font-family="Nunito,sans-serif" font-size="14" font-weight="800" fill="#8d86d9">shell ${i + 1}</text>`;
+  }
+  // nucleus
+  s += `<circle cx="${C0}" cy="${C0}" r="${nR + 18}" fill="url(#glow)"/>`;
+  if (N === 0) s += `<circle cx="${C0}" cy="${C0}" r="26" fill="none" stroke="#ffcf6b" stroke-width="2.5" stroke-dasharray="5 5"/><text x="${C0}" y="${C0 + 5}" text-anchor="middle" font-family="Nunito,sans-serif" font-size="12" font-weight="800" fill="#ffcf6b">nucleus</text>`;
+  const parts = []; let pp = st.p, nn = st.n;
+  while (pp + nn > 0) { if (pp > 0 && (pp >= nn || parts.length % 2 === 0)) { parts.push("p"); pp--; } else if (nn > 0) { parts.push("n"); nn--; } else { parts.push("p"); pp--; } }
+  const c = 10.5;
+  parts.forEach((t, i) => {
+    const r = c * Math.sqrt(i + 0.5) * (N > 1 ? 1 : 0), th = i * 2.39996;
+    const x = C0 + r * Math.cos(th), y = C0 + r * Math.sin(th);
+    s += `<g class="${opts.edit ? "rm" : ""}" data-t="${t}"><circle cx="${x}" cy="${y}" r="11" fill="url(#g${t})" stroke="rgba(0,0,0,.25)"/>${t === "p" ? `<text x="${x}" y="${y + 4.5}" text-anchor="middle" font-size="13" font-weight="900" fill="#fff" style="pointer-events:none">+</text>` : ""}</g>`;
+  });
+  // electrons
+  st.sh.forEach((cnt, i) => {
+    if (!cnt) return;
+    const R = SHELL_R[i];
+    s += `<g class="${opts.spin === false ? "" : "orbit"}" style="animation-duration:${18 + i * 8}s">`;
+    for (let k = 0; k < cnt; k++) {
+      const th = -Math.PI / 2 + k * 2 * Math.PI / cnt + i * 0.3;
+      const x = C0 + R * Math.cos(th), y = C0 + R * Math.sin(th);
+      s += `<g class="${opts.edit ? "rm" : ""}" data-t="e" data-shell="${i}"><circle cx="${x}" cy="${y}" r="9.5" fill="url(#ge)" stroke="#9fd1ff" stroke-width="1"/><text x="${x}" y="${y + 4}" text-anchor="middle" font-size="12" font-weight="900" fill="#fff" style="pointer-events:none">−</text></g>`;
+    }
+    s += `</g>`;
+  });
+  return s + `</svg>`;
+}
+const stTotalE = st => st.sh.reduce((a, b) => a + b, 0);
+function readout(st, show) {
+  const e = stTotalE(st), z = st.p, el = EL[z];
+  const items = [];
+  if (show.counts !== false) items.push(["Protons", st.p], ["Neutrons", st.n], ["Electrons", e]);
+  if (show.name) items.push(["Element", el ? `${el.sym} · ${el.name}` : (z ? "> 20?" : "—")]);
+  if (show.Z) items.push(["Atomic number", z]);
+  if (show.A) items.push(["Mass number", st.p + st.n]);
+  if (show.charge) items.push(["Charge", chargeText(st.p - e)]);
+  if (show.cfg) items.push(["Shells", cfgText(st.sh)]);
+  return `<div class="readout">${items.map(i => `<div class="ro"><small>${i[0]}</small><b>${i[1]}</b></div>`).join("")}</div>`;
+}
+function tile(z, A, q) {
+  const el = EL[z];
+  return `<div class="tile"><div class="z">${z}</div><div class="sym">${el.sym}<span style="font-size:1.4rem">${q ? sup(q) : ""}</span></div><div><div class="nm">${el.name}</div>${A ? `<div class="a">mass number ${A}</div>` : ""}</div></div>`;
+}
+const nuclide = (z, A, q) => `<span style="font-size:1.6rem;font-weight:900"><sup>${A}</sup><sub style="margin-left:-.6em">${z}</sub>${EL[z].sym}<sup>${q ? sup(q) : ""}</sup></span>`;
+function ptable(mark, clickable) {
+  const pos = { 1: [0, 0], 2: [0, 7] };
+  for (let z = 3; z <= 10; z++) pos[z] = [1, z <= 4 ? z - 3 : z - 3];
+  for (let z = 11; z <= 18; z++) pos[z] = [2, z - 11];
+  pos[19] = [3, 0]; pos[20] = [3, 1];
+  const grid = Array.from({ length: 4 }, () => Array(8).fill(0));
+  for (let z = 1; z <= 20; z++) grid[pos[z][0]][pos[z][1]] = z;
+  return `<div class="ptable">${grid.flat().map(z => z ? `<div class="pt ${clickable ? "" : "static"} ${mark[z] || ""}" data-z="${z}"><small>${z}</small><b>${EL[z].sym}</b></div>` : `<div class="pt blank"></div>`).join("")}</div>`;
+}
+
+/* ===================== INTERACTIVE BUILDER ===================== */
+// st = {p,n,sh:[..]} ; onChange() redraws
+function builder(container, st, opts, onChange) {
+  opts = opts || {};
+  let sel = null;
+  const svgBox = container.querySelector(".atom-box"), pal = container.querySelector(".palette");
+  const draw = () => {
+    svgBox.innerHTML = atomSVG(st, { edit: true, labels: opts.labels, spin: false });
+    pal.innerHTML = [["p", "Proton", "+", st.p], ["n", "Neutron", "", st.n], ["e", "Electron", "−", stTotalE(st)]].map(([t, nm, sg, c]) =>
+      `<div class="pal ${sel === t ? "sel" : ""}" data-t="${t}"><div class="ball ${t}">${sg}</div>${nm}<div class="cnt"><button data-minus="${t}" title="remove one">−</button><b>${c}</b></div></div>`).join("");
+    wire();
+    onChange && onChange();
+  };
+  const svgPoint = (cx, cy) => { const svg = svgBox.querySelector("svg"), pt = svg.createSVGPoint(); pt.x = cx; pt.y = cy; return pt.matrixTransform(svg.getScreenCTM().inverse()); };
+  const drop = (t, cx, cy) => {
+    const p = svgPoint(cx, cy), d = Math.hypot(p.x - C0, p.y - C0), nR = nucleusR(st.p + st.n);
+    if (t === "p" || t === "n") {
+      if (d <= nR + 24) { if (st.p + st.n >= 60) return S1971.toast("The nucleus is full for this lab.", "bad"); st[t]++; draw(); }
+      else S1971.toast(t === "p" ? "Protons go in the nucleus (centre)." : "Neutrons go in the nucleus (centre).", "bad");
+      return;
+    }
+    if (d <= nR + 10) return S1971.toast("Electrons go on a shell, not in the nucleus.", "bad");
+    let k = -1, best = 1e9;
+    SHELL_R.forEach((R, i) => { const g = Math.abs(d - R); if (g < best) { best = g; k = i; } });
+    if (best > 30) return S1971.toast("Drop the electron ON a shell ring.", "bad");
+    if (st.sh[k] >= CAP[k]) return S1971.toast(`Shell ${k + 1} is full (max ${CAP[k]} electrons here).`, "bad");
+    st.sh[k]++; draw();
+  };
+  const removeOne = t => {
+    if (t === "e") { for (let i = 3; i >= 0; i--) if (st.sh[i] > 0) { st.sh[i]--; break; } }
+    else if (st[t] > 0) st[t]--;
+    draw();
+  };
+  function wire() {
+    pal.querySelectorAll("[data-minus]").forEach(b => { b.onpointerdown = e => e.stopPropagation(); b.onclick = e => { e.stopPropagation(); removeOne(b.dataset.minus); }; });
+    pal.querySelectorAll(".pal").forEach(el => {
+      el.onpointerdown = ev => {
+        if (ev.target.closest("button")) return;
+        ev.preventDefault();
+        const t = el.dataset.t, x0 = ev.clientX, y0 = ev.clientY;
+        let moved = false;
+        const g = document.createElement("div"); g.className = "drag-ghost"; g.innerHTML = `<div class="ball ${t}" style="width:${t === "e" ? 30 : 38}px;height:${t === "e" ? 30 : 38}px;border-radius:50%;display:grid;place-items:center;color:#fff;font-weight:900">${t === "p" ? "+" : t === "e" ? "−" : ""}</div>`;
+        const mv = e => { if (Math.hypot(e.clientX - x0, e.clientY - y0) > 6) { moved = true; if (!g.parentNode) document.body.appendChild(g); } g.style.left = e.clientX + "px"; g.style.top = e.clientY + "px"; };
+        const up = e => {
+          window.removeEventListener("pointermove", mv); window.removeEventListener("pointerup", up); g.remove();
+          if (moved) { const r = svgBox.getBoundingClientRect(); if (e.clientX >= r.left && e.clientX <= r.right && e.clientY >= r.top && e.clientY <= r.bottom) drop(t, e.clientX, e.clientY); }
+          else { sel = sel === t ? null : t; draw(); }
+        };
+        window.addEventListener("pointermove", mv); window.addEventListener("pointerup", up);
+      };
+    });
+    svgBox.onclick = ev => {
+      const rm = ev.target.closest(".rm");
+      if (rm && !sel) { const t = rm.dataset.t; if (t === "e") st.sh[+rm.dataset.shell]--; else st[t]--; draw(); return; }
+      if (sel) drop(sel, ev.clientX, ev.clientY);
+    };
+  }
+  draw();
+  return { draw, drop };
+}
+const builderHTML = extra => `<div class="atom-wrap"><div><div class="atom-box"></div><p class="hint" style="margin:6px 2px">Drag a particle onto the atom — or tap a particle, then tap the nucleus or a shell. Tap a particle in the atom to remove it.</p></div>
+  <div><div class="palette"></div><div id="ro"></div>${extra || ""}</div></div>`;
+
+/* ===================== TASK TEMPLATES ===================== */
+const range = (a, b) => Array.from({ length: b - a + 1 }, (_, i) => a + i);
+const T = {
+  // build a target atom/ion/isotope on the model
+  build: (diff, zs, kind, uses = 1, shells = false) => ({ type: kind === "ion" ? "ion" : kind === "iso" ? "iso" : "build", diff, uses, build() {
+    let z, A, q = 0, title;
+    if (kind === "isoion") { const c = choice([[17, 37], [8, 18], [12, 26], [19, 40]]); z = c[0]; A = c[1]; q = ION[z]; }
+    else if (kind === "iso") { [z, A] = choice(ISO.filter(x => !zs || zs.includes(x[0]))); title = `${EL[z].name}-${A}`; }
+    else { z = choice(zs); A = EL[z].A; }
+    if (kind === "ion") q = ION[z];
+    const needSh = shells || kind === "ion" || kind === "iso" || kind === "isoion";
+    const e = z - q, target = { p: z, n: A - z, e, sh: config(e) };
+    const name = kind === "ion" || kind === "isoion" ? `${EL[z].name} ion ${EL[z].sym}${sup(q)}` : kind === "iso" ? title : `a neutral ${EL[z].name} atom`;
+    const showTile = kind === "plain" || kind === "ion";
+    return { target, shells: needSh, z, A, q, kind, showTile,
+      prompt: kind === "zA" ? `Build the neutral atom with <b>atomic number ${z}</b> and <b>mass number ${A}</b>.${needSh ? " Put the electrons on the <b>correct shells</b>." : ""}` : `Build <b>${name}</b>${kind === "iso" || kind === "isoion" ? " (use the symbol below)" : " (use the element card)"}.${needSh ? " Put the electrons on the <b>correct shells</b>." : ""}`,
+      explain: `${EL[z].sym}: protons = atomic number = ${z}; neutrons = mass number − protons = ${A} − ${z} = ${A - z}; electrons = ${q ? `${z} ${q > 0 ? "−" : "+"} ${Math.abs(q)} = ${e} (a ${q > 0 ? "positive ion LOSES" : "negative ion GAINS"} electrons)` : `${z} (neutral: electrons = protons)`}; shells ${cfgText(config(e))}.`,
+      summary: kind === "ion" || kind === "isoion" ? `Build ion ${EL[z].sym}${sup(q)}` : kind === "iso" ? `Build isotope ${title}` : `Build ${EL[z].name} (Z=${z}, A=${A})` };
+  }}),
+  // fix a wrongly-built atom
+  fix: (diff, zs, uses = 1) => ({ type: "fix", diff, uses, build() {
+    const z = choice(zs), A = EL[z].A, target = { p: z, n: A - z, e: z, sh: config(z) };
+    const start = { p: z, n: A - z, sh: config(z).slice() };
+    const bugs = [];
+    const i2 = start.sh.findIndex((x, i) => i > 0 && x > 0);
+    if (i2 > 0 && start.sh[i2 - 1] > 1) { start.sh[i2 - 1]--; start.sh[i2]++; bugs.push("shells"); }
+    if (Math.random() < .5 || !bugs.length) { start.n += choice([1, 2, -1].filter(d => start.n + d >= 0)); bugs.push("neutrons"); }
+    if (Math.random() < .4) { start.sh[start.sh.findIndex((x, i) => x < CAP[i])]++; bugs.push("electrons"); }
+    return { target, start, shells: true, z, A, prompt: `A student tried to build <b>a neutral ${EL[z].name} atom</b> (Z = ${z}, A = ${A}) but made mistakes. <b>Fix the model.</b>`,
+      explain: `Correct ${EL[z].sym}: ${z} p, ${A - z} n, ${z} e on shells ${cfgText(config(z))}. Fill the inner shells first (2, then 8, then 8).`, summary: `Fix ${EL[z].name}` };
+  }}),
+  // identify the element shown on the model — click it on the periodic table
+  identify: (diff, zs, withA, uses = 1) => ({ type: "identify", diff, uses, build() {
+    const z = choice(zs), A = EL[z].A;
+    return { z, A, withA, st: { p: z, n: A - z, sh: config(z) }, prompt: `Look at the model. Which element is it? <b>Click it on the periodic table</b>${withA ? " and type its <b>mass number</b>" : ""}.`,
+      explain: `Count the protons: ${z} protons → atomic number ${z} → ${EL[z].name} (${EL[z].sym}).${withA ? ` Mass number = protons + neutrons = ${z} + ${A - z} = ${A}.` : ""}`, summary: `Identify ${EL[z].name} from the model` };
+  }}),
+  // read a (small) model: count particles
+  count: (diff, zs, uses = 1) => ({ type: "count", diff, uses, build() {
+    const z = choice(zs), A = EL[z].A, q = 0;
+    return { z, A, st: { p: z, n: A - z, sh: config(z) }, prompt: "Count the particles in the model and fill in the table.",
+      explain: `${z} protons (red, +), ${A - z} neutrons (grey), ${z} electrons (blue, −). Mass number = ${z} + ${A - z} = ${A}.`, summary: `Count particles (${EL[z].sym})` };
+  }}),
+  // read electron shells
+  shellsRead: (diff, zs, uses = 1) => ({ type: "shells", diff, uses, build() {
+    const z = choice(zs), A = EL[z].A;
+    return { z, A, st: { p: z, n: A - z, sh: config(z) }, prompt: "Write the <b>electron configuration</b> shown by the model (e.g. 2, 8, 1) and the <b>number of outer-shell electrons</b>.",
+      explain: `${EL[z].name}: ${cfgText(config(z))}. Outer shell: ${config(z).filter(x => x).slice(-1)[0]} electron(s).`, summary: `Electron configuration of ${EL[z].sym}` };
+  }}),
+  // read an ion's charge + identify
+  charge: (diff, zs, uses = 1) => ({ type: "charge", diff, uses, build() {
+    const z = choice(zs), q = ION[z], A = EL[z].A;
+    return { z, q, st: { p: z, n: A - z, sh: config(z - q) }, prompt: "This model is an <b>ion</b>. Click the element on the periodic table and type its <b>charge</b> (for example 2+ or 1−).",
+      explain: `${z} protons → ${EL[z].name}. Electrons = ${z - q}. Charge = protons − electrons = ${z} − ${z - q} = ${chargeText(q)}.`, summary: `Charge of ${EL[z].sym}${sup(q)}` };
+  }}),
+  // click the two isotopes among three models
+  isoPick: (diff, uses = 1) => ({ type: "isoPick", diff, uses, build() {
+    const [z, A2] = choice(ISO.filter(x => x[0] > 1));
+    const A1 = EL[z].A, zo = z + choice([1, -1].filter(d => EL[z + d]));
+    const models = E.shuffle([{ p: z, n: A1 - z, iso: true }, { p: z, n: A2 - z, iso: true }, { p: zo, n: A1 - z, iso: false }]).map(m => ({ ...m, sh: config(m.p) }));
+    return { models, z, prompt: "👆 Click the <b>TWO</b> models that are <b>isotopes of each other</b>.",
+      explain: `Isotopes have the SAME number of protons (same element) but a DIFFERENT number of neutrons. Here both have ${z} protons (${EL[z].name}).`, summary: "Find the two isotopes" };
+  }})
+};
+
+/* ===================== LEVELS ===================== */
+const LEVELS = {
+  1: { intro: "Protons, neutrons and electrons: build atoms and use the atomic number.", pool: () => [
+    T.build(1, range(1, 5), "plain", 3), T.identify(1, range(1, 6), false, 2), T.count(1, range(1, 5), 2),
+    T.build(2, range(6, 12), "plain", 3), T.identify(2, range(1, 12), false, 2), T.count(2, range(3, 6), 1),
+    T.build(3, range(11, 20), "plain", 3), T.identify(3, range(1, 20), false, 2), T.build(3, range(7, 18), "zA", 2)
+  ]},
+  2: { intro: "Mass number and electron shells (2, 8, 8, 2): build atoms with every electron on the right shell.", pool: () => [
+    T.build(1, range(1, 10), "plain", 3, true), T.identify(1, range(1, 10), true, 2), T.shellsRead(1, range(3, 10), 1),
+    T.build(2, range(11, 18), "plain", 3, true), T.fix(2, range(5, 14), 2), T.shellsRead(2, range(11, 18), 2), T.identify(2, range(11, 20), true, 1),
+    T.build(3, [19, 20], "plain", 2, true), T.fix(3, range(11, 20), 2), T.build(3, range(9, 20), "zA", 2, true), T.shellsRead(3, [19, 20, 13, 17], 1)
+  ]},
+  3: { intro: "Ions (atoms that gain or lose electrons) and isotopes (atoms with different numbers of neutrons).", pool: () => [
+    T.build(1, [1, 6, 3], "iso", 2), T.build(1, [3, 9, 11, 17], "ion", 2), T.charge(1, [3, 9, 11], 1),
+    T.build(2, [8, 11, 12, 17, 16, 9], "ion", 3), T.isoPick(2, 2), T.charge(2, [8, 12, 13, 16, 17], 2), T.build(2, [6, 8, 17, 12, 19], "iso", 1),
+    T.build(3, [7, 13, 15, 16, 19, 20], "ion", 3), T.build(3, null, "isoion", 2), T.charge(3, [7, 13, 15, 19, 20], 2), T.isoPick(3, 1)
+  ]}
+};
+
+/* ===================== RENDERERS ===================== */
+function numBox(id, label, unit, state, val) {
+  return `<div class="numans ${state || ""}"><label style="margin:0;min-width:150px">${label}</label><input id="${id}" autocomplete="off" value="${val != null ? esc(val) : ""}" ${state ? "disabled" : ""}><span class="unit">${unit || ""}</span></div>`;
+}
+function targetCard(q) {
+  if (q.kind === "zA") return `<div class="target-card"><div class="sign"><small>ATOMIC NUMBER</small>${q.z}</div><div class="sign"><small>MASS NUMBER</small>${q.A}</div><span class="hint">Use the periodic table if you need it.</span></div>`;
+  if (q.kind === "iso" || q.kind === "isoion") return `<div class="target-card">${nuclide(q.z, q.A, q.q)}<span class="hint">top number = mass number · bottom number = atomic number${q.q ? " · top right = charge" : ""}</span></div>`;
+  return `<div class="target-card">${tile(q.z, q.A, q.q)}<span class="hint">The small number is the <b>atomic number</b>.${q.q ? " The sign shows the ion's <b>charge</b>." : ""}</span></div>`;
+}
+function renderBuild(q) {
+  const st = q.start ? { p: q.start.p, n: q.start.n, sh: q.start.sh.slice() } : { p: 0, n: 0, sh: [0, 0, 0, 0] };
+  E.stage.innerHTML = E.header() + builderHTML(`${q.start ? "" : targetCard(q)}<div id="res"></div>`) + `<div id="act"></div>`;
+  if (q.start) E.stage.querySelector(".atom-wrap > div:last-child").insertAdjacentHTML("afterbegin", `<div class="target-card"><div class="sign"><small>TARGET</small>${EL[q.z].name} · Z ${q.z} · A ${q.A}</div></div>`);
+  const ro = E.stage.querySelector("#ro");
+  let checked = false;
+  const b = builder(E.stage, st, { labels: true }, () => {
+    ro.innerHTML = readout(st, { counts: true, cfg: q.shells });
+    if (!checked) E.stage.querySelector("#act").innerHTML = E.actions(st.p + st.n + stTotalE(st) > 0);
+    const c = document.getElementById("check");
+    if (c) c.onclick = () => {
+      checked = true;
+      const t = q.target, parts = [["Protons", st.p, t.p], ["Neutrons", st.n, t.n], ["Electrons", stTotalE(st), t.e]];
+      if (q.shells) parts.push(["Shells", cfgText(st.sh), cfgText(t.sh)]);
+      const ok = parts.map(x => String(x[1]) === String(x[2]));
+      E.stage.querySelector("#act").innerHTML = "";
+      E.stage.querySelector(".palette").style.pointerEvents = "none"; E.stage.querySelector(".atom-box").style.pointerEvents = "none";
+      E.stage.querySelector("#res").innerHTML = `<div class="step-box">${parts.map((x, i) => `${ok[i] ? "✅" : "❌"} <b>${x[0]}</b>: you ${x[1]} · correct <b>${x[2]}</b>`).join("<br>")}</div>`;
+      E.grade(ok.filter(Boolean).length / ok.length);
+    };
+  });
+}
+function renderIdentify(q) {
+  let sel = null, val = "", checked = false;
+  const draw = res => {
+    const mark = {}; if (sel) mark[sel] = checked ? (sel === q.z ? "ok" : "no") : "sel"; if (checked && sel !== q.z) mark[q.z] = "ok";
+    E.stage.innerHTML = E.header() + `<div class="atom-wrap"><div class="atom-box">${atomSVG(q.st, { spin: true })}</div>
+      <div><div class="step-box"><b>Periodic table (elements 1–20)</b><div style="margin-top:8px">${ptable(mark, !checked)}</div>
+        <p class="hint" style="margin:8px 0 0">${sel ? `You chose: <b>${checked ? EL[sel].name : EL[sel].sym}</b>` : "Click an element."} 💡 It is a <b>neutral</b> atom: electrons = protons.</p></div>
+        ${q.withA ? `<div class="step-box">${numBox("a1", "Mass number", "", res && (res[1] ? "ok" : "no"), val)}${res ? `<p class="fix">✔ ${q.A}</p>` : ""}</div>` : ""}
+        ${checked ? "" : E.actions(!!sel)}</div></div>`;
+    if (checked) return;
+    E.stage.querySelectorAll(".pt[data-z]").forEach(c => c.onclick = () => { sel = +c.dataset.z; draw(); });
+    const a = document.getElementById("a1"); if (a) a.oninput = e => val = e.target.value;
+    const b = document.getElementById("check");
+    if (b) b.onclick = () => { checked = true; const r = [sel === q.z, q.withA ? E.num(val) === q.A : true]; draw(r); E.grade(q.withA ? r.filter(Boolean).length / 2 : (r[0] ? 1 : 0)); };
+  };
+  draw();
+}
+function renderCount(q) {
+  const v = {}; let checked = false;
+  const draw = res => {
+    E.stage.innerHTML = E.header() + `<div class="atom-wrap"><div class="atom-box">${atomSVG(q.st, { spin: false })}</div>
+      <div><div class="step-box"><p class="hint" style="margin-top:0">🔴 proton (+) · ⚪ neutron · 🔵 electron (−)</p>
+      ${numBox("c1", "Protons", "", res && (res[0] ? "ok" : "no"), v.c1)}${numBox("c2", "Neutrons", "", res && (res[1] ? "ok" : "no"), v.c2)}${numBox("c3", "Electrons", "", res && (res[2] ? "ok" : "no"), v.c3)}${numBox("c4", "Mass number", "", res && (res[3] ? "ok" : "no"), v.c4)}
+      ${res ? `<p class="fix">✔ ${q.z} p · ${q.A - q.z} n · ${q.z} e · A = ${q.A}</p>` : ""}</div>${checked ? "" : E.actions(true)}</div></div>`;
+    if (checked) return;
+    ["c1", "c2", "c3", "c4"].forEach(id => document.getElementById(id).oninput = e => v[id] = e.target.value);
+    document.getElementById("check").onclick = () => { const r = [E.num(v.c1) === q.z, E.num(v.c2) === q.A - q.z, E.num(v.c3) === q.z, E.num(v.c4) === q.A]; checked = true; draw(r); E.grade(r.filter(Boolean).length / 4); };
+  };
+  draw();
+}
+function parseCfg(s) { return String(s || "").split(/[^0-9]+/).filter(Boolean).map(Number).join(", "); }
+function renderShells(q) {
+  const v = {}; let checked = false;
+  const outer = config(q.z).filter(x => x).slice(-1)[0];
+  const draw = res => {
+    E.stage.innerHTML = E.header() + `<div class="atom-wrap"><div class="atom-box">${atomSVG(q.st, { spin: false, labels: true })}</div>
+      <div><div class="step-box">${numBox("s1", "Configuration", "", res && (res[0] ? "ok" : "no"), v.s1)}${numBox("s2", "Outer-shell electrons", "", res && (res[1] ? "ok" : "no"), v.s2)}
+      ${res ? `<p class="fix">✔ ${cfgText(config(q.z))} · outer shell ${outer}</p>` : ""}<p class="hint">Count the electrons on shell 1, then shell 2, …</p></div>${checked ? "" : E.actions(true)}</div></div>`;
+    if (checked) return;
+    ["s1", "s2"].forEach(id => document.getElementById(id).oninput = e => v[id] = e.target.value);
+    document.getElementById("check").onclick = () => { const r = [parseCfg(v.s1) === cfgText(config(q.z)), E.num(v.s2) === outer]; checked = true; draw(r); E.grade(r.filter(Boolean).length / 2); };
+  };
+  draw();
+}
+function parseCharge(s) {
+  s = String(s || "").replace(/\s/g, "").replace("−", "-").replace("–", "-");
+  const m = s.match(/^([+-]?)(\d*)([+-]?)$/); if (!m) return NaN;
+  const sign = m[1] || m[3]; if (!sign) return m[2] === "0" ? 0 : NaN;
+  return (sign === "-" ? -1 : 1) * (m[2] ? +m[2] : 1);
+}
+function renderCharge(q) {
+  let sel = null, val = "", checked = false;
+  const draw = res => {
+    const mark = {}; if (sel) mark[sel] = checked ? (sel === q.z ? "ok" : "no") : "sel"; if (checked && sel !== q.z) mark[q.z] = "ok";
+    E.stage.innerHTML = E.header() + `<div class="atom-wrap"><div class="atom-box">${atomSVG(q.st, { spin: false, labels: true })}</div>
+      <div><div class="step-box">${ptable(mark, !checked)}<p class="hint" style="margin:8px 0 0">${sel ? `You chose: <b>${checked ? EL[sel].name : EL[sel].sym}</b>` : "Click the element."}</p></div>
+      <div class="step-box">${numBox("q1", "Charge of the ion", "", res && (res[1] ? "ok" : "no"), val)}${res ? `<p class="fix">✔ ${EL[q.z].sym}${sup(q.q)} → ${chargeText(q.q)}</p>` : ""}<p class="hint">charge = protons − electrons</p></div>
+      ${checked ? "" : E.actions(!!sel)}</div></div>`;
+    if (checked) return;
+    E.stage.querySelectorAll(".pt[data-z]").forEach(c => c.onclick = () => { sel = +c.dataset.z; draw(); });
+    document.getElementById("q1").oninput = e => val = e.target.value;
+    const b = document.getElementById("check");
+    if (b) b.onclick = () => { checked = true; const r = [sel === q.z, parseCharge(val) === q.q]; draw(r); E.grade(r.filter(Boolean).length / 2); };
+  };
+  draw();
+}
+function renderIsoPick(q) {
+  const sel = new Set(); let checked = false;
+  const draw = () => {
+    E.stage.innerHTML = E.header() + `<div class="mini-atoms">${q.models.map((m, i) => {
+      const cls = checked ? (m.iso ? "ok" : sel.has(i) ? "no" : "") : sel.has(i) ? "sel" : "";
+      return `<button class="mini ${cls}" data-i="${i}" ${checked ? "disabled" : ""}>Model ${String.fromCharCode(65 + i)}${atomSVG(m, { spin: false })}${checked ? `<div style="padding:4px">${m.p} p · ${m.n} n · ${EL[m.p].sym}-${m.p + m.n}</div>` : ""}</button>`;
+    }).join("")}</div><p class="hint">💡 Tip: these are <b>neutral</b> atoms, so electrons = protons. Count the electrons on the shells to find each atom's protons.</p>${checked ? "" : E.actions(sel.size === 2)}`;
+    if (checked) return;
+    E.stage.querySelectorAll(".mini").forEach(b => b.onclick = () => { const i = +b.dataset.i; sel.has(i) ? sel.delete(i) : (sel.size < 2 && sel.add(i)); draw(); });
+    const c = document.getElementById("check");
+    if (c) c.onclick = () => { checked = true; draw(); E.grade([...sel].every(i => q.models[i].iso) ? 1 : 0); };
+  };
+  draw();
+}
+
+/* ===================== EXPLORE: free build with live readouts ===================== */
+function explore(lvl, done) {
+  const st = { p: 0, n: 0, sh: [0, 0, 0, 0] };
+  const goals = [
+    { id: "a", txt: "Build any neutral atom (protons = electrons)", test: () => st.p > 0 && stTotalE(st) === st.p },
+    { id: "b", txt: "Build 3 different elements", test: () => made.size >= 3 },
+    { id: "c", txt: "Make an atom with 2 shells of electrons", test: () => st.sh[1] > 0 }
+  ];
+  if (lvl >= 2) goals.push({ id: "d", txt: "Build Sodium (Na) with shells 2, 8, 1", test: () => st.p === 11 && cfgText(st.sh) === "2, 8, 1" });
+  if (lvl >= 3) goals.push({ id: "e", txt: "Make an ION (protons ≠ electrons)", test: () => st.p > 0 && stTotalE(st) > 0 && stTotalE(st) !== st.p },
+                           { id: "f", txt: "Make an ISOTOPE (change only the neutrons)", test: () => isoSeen });
+  const made = new Set(), doneG = new Set(); let isoSeen = false, lastNfor = {};
+  E.stage.innerHTML = `<div class="lab-head"><b>🔍 Step 1: Free build — explore the atom</b><b id="gcount"></b></div><div class="bar"><i id="gbar"></i></div>
+    <p class="prompt">Drag protons and neutrons into the nucleus and electrons onto the shells. Watch what changes!</p>` +
+    builderHTML(`<div class="step-box"><b>🎯 Goals</b><ul class="checklist" id="goals"></ul></div><div class="step-box"><b>Periodic table</b><div id="pt" style="margin-top:6px"></div></div>
+    <div class="formula-card" style="background:#1d1b4b;color:#fff;border-radius:16px;padding:12px"><b>atomic number = protons</b><br>mass number = protons + neutrons<br>charge = protons − electrons</div>`) +
+    `<div class="actions"><span class="hint" id="ghint"></span><button class="btn green" id="go" disabled>Step 2: Start the ${E.TOTAL} tasks 🚀</button></div>`;
+  const ro = E.stage.querySelector("#ro");
+  builder(E.stage, st, { labels: true }, () => {
+    ro.innerHTML = readout(st, { counts: true, name: true, A: true, charge: true, cfg: true });
+    if (st.p > 0 && st.p <= 20 && stTotalE(st) === st.p) made.add(st.p);
+    if (st.p > 0) { if (lastNfor[st.p] != null && lastNfor[st.p] !== st.n) isoSeen = true; lastNfor[st.p] = st.n; }
+    goals.forEach(g => { if (g.test()) doneG.add(g.id); });
+    document.getElementById("goals").innerHTML = goals.map(g => `<li>${doneG.has(g.id) ? "✅" : "⬜"} ${g.txt}</li>`).join("");
+    document.getElementById("pt").innerHTML = ptable(st.p >= 1 && st.p <= 20 ? { [st.p]: "cur" } : {}, false);
+    document.getElementById("gcount").textContent = `Goals: ${doneG.size} / ${goals.length}`;
+    document.getElementById("gbar").style.width = (100 * doneG.size / goals.length) + "%";
+    const all = doneG.size === goals.length;
+    document.getElementById("go").disabled = !all;
+    document.getElementById("ghint").textContent = all ? "Great — you've explored the atom!" : "Complete all goals to continue.";
+  });
+  document.getElementById("go").onclick = done;
+}
+
+E.start({
+  labId: "atom", total: 12, emoji: "⚛️", levels: LEVELS, explore, typeCycle: 3,
+  taskNote: "build atoms, ions and isotopes, fix models, read shells and identify elements — all on the atom model",
+  confetti: ["⚛️", "⭐", "🔴", "🔵", "✨"],
+  typeInfo: { build: "⚛️ Build the atom", ion: "⚡ Build the ion", iso: "🧬 Build the isotope", fix: "🛠️ Fix the model", identify: "🔎 Identify the element", count: "🔢 Count the particles", shells: "🌀 Read the shells", charge: "⚡ Read the ion", isoPick: "🧬 Find the isotopes" },
+  renderers: { build: renderBuild, ion: renderBuild, iso: renderBuild, fix: renderBuild, identify: renderIdentify, count: renderCount, shells: renderShells, charge: renderCharge, isoPick: renderIsoPick }
+});
+</script>
+</body>
+</html>

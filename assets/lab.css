@@ -53,3 +53,5 @@
 .calc .keys{display:grid;grid-template-columns:repeat(4,1fr);gap:7px}
 .calc button{font:inherit;font-weight:800;font-size:1.1rem;border:none;border-radius:10px;padding:11px 0;background:#2e2b6b;color:#fff;cursor:pointer}
 .calc button.op{background:#7b4dff}.calc button.eq{background:#16c172}.calc button.cl{background:#ff4d4d}
+.sign{background:#fff7e6;border:3px solid #ff9f1c;border-radius:14px;padding:8px 14px;font-weight:800}
+.sign small{display:block;color:#8a5a00;font-size:.75rem}

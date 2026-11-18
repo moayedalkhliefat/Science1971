@@ -30,5 +30,20 @@ window.S1971_LABS = [
       { n: 2, id: "speed-l2", name: "Level 2 · Investigator" },
       { n: 3, id: "speed-l3", name: "Level 3 · Expert" }
     ]
+  },
+  {
+    id: "atom",
+    title: "Build an Atom",
+    subject: "Chemistry",
+    icon: "⚛️",
+    color: "linear-gradient(135deg,#7b4dff,#ff4d9d)",
+    grades: ["9", "10"],
+    path: "labs/atom/index.html",
+    description: "Drag protons, neutrons and electrons onto a Bohr model to build atoms, ions and isotopes of the first 20 elements.",
+    levels: [
+      { n: 1, id: "atom-l1", name: "Level 1 · Explorer" },
+      { n: 2, id: "atom-l2", name: "Level 2 · Investigator" },
+      { n: 3, id: "atom-l3", name: "Level 3 · Expert" }
+    ]
   }
 ];
