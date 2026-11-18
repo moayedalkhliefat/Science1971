@@ -207,7 +207,7 @@ async function readFile(file) {
     if (ii < 0) throw new Error('Could not find a "School ID" column. Use the template (Name, School ID, Grade, Section).');
     PENDING = rows.slice(hr + 1).map(r => ({
       name: String(r[ni] || "").trim(), school_id: String(r[ii] || "").trim(),
-      grade: gi >= 0 ? String(r[gi] || "").trim() : "", section: si >= 0 ? String(r[si] || "").trim() : ""
+      grade: gi >= 0 ? (gradeNum(r[gi]) || String(r[gi] || "").trim()) : "", section: si >= 0 ? String(r[si] || "").trim() : ""
     })).filter(r => r.name || r.school_id);
     if (!PENDING.length) throw new Error("The sheet has no student rows.");
     if (ME.role === "teacher" && PENDING.length > 30) throw new Error(`This file has ${PENDING.length} students. The maximum is 30 per teacher.`);
