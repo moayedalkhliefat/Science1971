@@ -1,0 +1,251 @@
+// Science1971 Lab Engine — shared by every lab.
+// A lab calls LabEngine.start({ labId, total, levels, renderers, explore, typeInfo, emoji, calculator })
+//   levels[n] = { intro, pool: () => [templates] }   template = { type, diff (1-3), uses, build() -> question }
+//   renderers[type](q, E)  draws the task into E.stage and calls E.grade(points 0..1) when checked.
+//   explore(level, done)  optional "Step 1" screen; call done() to start the tasks.
+(function () {
+  const esc = S1971.esc;
+  const PASS = S1971_CONFIG.PASS_MARK;
+  const DIFF_NAME = { 1: "⭐ Easy", 2: "⭐⭐ Medium", 3: "⭐⭐⭐ Hard" };
+  const shuffle = a => { a = a.slice(); for (let i = a.length - 1; i > 0; i--) { const j = Math.floor(Math.random() * (i + 1)); [a[i], a[j]] = [a[j], a[i]]; } return a; };
+  const pick = (a, n) => shuffle(a).slice(0, Math.min(n, a.length));
+  const rnd = (a, b) => a + Math.floor(Math.random() * (b - a + 1));
+  const choice = a => a[Math.floor(Math.random() * a.length)];
+  const fmt = n => (Math.round(n * 100) / 100).toString();
+
+  const E = { esc, shuffle, pick, rnd, choice, fmt, PASS, G: null, C: null, stage: null };
+
+  E.start = async function (cfg) {
+    E.C = cfg; E.TOTAL = cfg.total || 12;
+    E.stage = document.getElementById("stage");
+    try { await S1971Lab.init(cfg.labId); }
+    catch (e) { E.stage.innerHTML = `<div class="empty">${esc(e.message)}</div>`; return; }
+    document.getElementById("lvl-pill").textContent = S1971Lab.levelInfo.name;
+    const home = S1971Lab.homeUrl();
+    document.getElementById("back-btn").href = home; document.getElementById("home-link").href = home;
+    const ban = document.getElementById("banner");
+    if (S1971Lab.mode === "preview") ban.innerHTML = `<div class="banner preview">👁️ Teacher preview — you can try every level. Results are not saved.</div>`;
+    if (S1971Lab.mode === "guest") ban.innerHTML = `<div class="banner guest">⚠️ You are not logged in — your score will NOT be saved. <a href="${S1971.root()}index.html">Log in here</a></div>`;
+    if (cfg.calculator) addCalculator();
+    showIntro();
+  };
+
+  function showIntro() {
+    const L = E.C.levels[S1971Lab.level], info = S1971Lab.levelInfo, st = E.stage;
+    if (S1971Lab.notAssigned) {
+      st.innerHTML = `<div class="center"><div style="font-size:4rem">🚪</div><h1>This lab is not open yet</h1>
+        <p class="prompt">Your teacher has not opened <b>${esc(S1971Lab.lab.title)}</b> for your class.</p>
+        <div class="actions" style="justify-content:center"><a class="btn orange" href="${S1971Lab.homeUrl()}">⬅ Back to my labs</a></div></div>`;
+      return;
+    }
+    if (S1971Lab.locked) {
+      st.innerHTML = `<div class="center"><div style="font-size:4rem">🔒</div><h1>${esc(info.name)} is locked</h1>
+        <p class="prompt">Score <b>${PASS}%</b> or more in <b>${esc(S1971Lab.locked.name)}</b> to unlock it.</p>
+        <div class="actions" style="justify-content:center"><a class="btn green" href="${S1971Lab.levelUrl(S1971Lab.level - 1)}">Go to ${esc(S1971Lab.locked.name)}</a></div></div>`;
+      return;
+    }
+    st.innerHTML = `<div class="center">
+      <div style="font-size:4rem">${E.C.emoji || "🧪"}</div>
+      <h1>${esc(S1971Lab.lab.title)}</h1>
+      <p><span class="pill" style="background:#ff4d9d;font-size:1rem">${esc(info.name)}</span></p>
+      <p class="prompt">${esc(L.intro)}</p>
+      <div class="grid" style="grid-template-columns:repeat(auto-fit,minmax(170px,1fr));text-align:left;margin:16px 0">
+        ${E.C.explore ? `<div class="notice">🔍 <b>Step 1:</b> explore the model.</div>` : ""}
+        <div class="notice">🧩 <b>Step ${E.C.explore ? 2 : 1}:</b> ${E.TOTAL} hands-on tasks${E.C.taskNote ? " — " + esc(E.C.taskNote) : ""}.</div>
+        <div class="notice">📈 Answer correctly and the tasks get <b>harder</b> ⭐⭐⭐</div>
+        <div class="notice">🔓 Score <b>${PASS}%</b> to ${S1971Lab.nextLevel ? "unlock <b>" + esc(S1971Lab.nextLevel.name) + "</b>" : "finish as an Expert"}!</div>
+      </div>
+      <button class="btn green" id="start" style="font-size:1.4rem;padding:14px 34px">${E.C.explore ? "Step 1: Explore 🔍" : "Start 🚀"}</button></div>`;
+    document.getElementById("start").onclick = () => E.C.explore ? E.C.explore(S1971Lab.level, startTasks) : startTasks();
+  }
+
+  function startTasks() { newGame(); next(); window.scrollTo({ top: 0, behavior: "smooth" }); }
+  E.startTasks = startTasks;
+
+  function newGame() {
+    const pool = E.C.levels[S1971Lab.level].pool().map(t => Object.assign(t, { used: 0, uses: t.uses || 1 }));
+    E.G = { pool, diff: 1, qn: 0, score: 0, answers: [], lastType: null, typesSeen: new Set(), q: null };
+  }
+
+  function nextTemplate() {
+    const G = E.G, avail = G.pool.filter(t => t.used < t.uses);
+    if (!avail.length) return null;
+    for (let d = 0; d <= 2; d++) {
+      let c = avail.filter(t => Math.abs(t.diff - G.diff) === d);
+      if (!c.length) continue;
+      if (d > 0 && c.some(t => t.diff < G.diff)) c = c.filter(t => t.diff < G.diff);
+      const fresh = c.filter(t => !G.typesSeen.has(t.type) && t.type !== G.lastType);
+      const other = c.filter(t => t.type !== G.lastType);
+      return shuffle(fresh.length ? fresh : other.length ? other : c)[0];
+    }
+    return null;
+  }
+
+  function next() {
+    const G = E.G;
+    if (G.qn >= E.TOTAL) return finish();
+    const t = nextTemplate();
+    if (!t) return finish();
+    t.used++;
+    G.q = Object.assign(t.build(), { diff: t.diff, type: t.type });
+    G.qn++;
+    G.lastType = G.q.type; G.typesSeen.add(G.q.type);
+    if (G.typesSeen.size >= (E.C.typeCycle || 4)) G.typesSeen = new Set([G.q.type]);
+    const r = E.C.renderers[G.q.type];
+    r(G.q, E);
+  }
+
+  E.header = function () {
+    const G = E.G, q = G.q, ti = (E.C.typeInfo || {})[q.type] || "🧩 Task";
+    return `<div class="lab-head"><b>Task ${G.qn} of ${E.TOTAL}</b><span class="diff">${DIFF_NAME[q.diff]}</span><b class="score-now">Score: ${fmt(G.score)}</b></div>
+      <div class="bar"><i style="width:${100 * (G.qn - 1) / E.TOTAL}%"></i></div>
+      <div class="qtype">${ti}</div>${q.prompt ? `<div class="prompt">${q.prompt}</div>` : ""}`;
+  };
+
+  E.actions = function (ready, label) {
+    return `<div class="actions"><span class="hint">${ready ? "" : "Finish the task to check it."}</span><button class="btn" id="check" ${ready ? "" : "disabled"}>${label || "Check ✔"}</button></div>`;
+  };
+
+  // reads a typed number (accepts comma decimals); returns NaN if empty
+  E.num = v => { const s = String(v == null ? "" : v).trim().replace(",", "."); return s === "" ? NaN : Number(s); };
+  E.close = (got, want, tol) => Math.abs(got - want) <= (tol != null ? tol : Math.max(0.011, Math.abs(want) * 0.02));
+
+  E.grade = function (points, extra) {
+    const G = E.G, q = G.q;
+    points = Math.max(0, Math.min(1, points));
+    G.score += points;
+    G.answers.push({ task: q.summary || q.type, type: q.type, difficulty: q.diff, points: Math.round(points * 100) / 100 });
+    const old = G.diff;
+    if (points >= 0.999) G.diff = Math.min(3, G.diff + 1);
+    else if (points < 0.5) G.diff = Math.max(1, G.diff - 1);
+    const cls = points >= 0.999 ? "good" : points >= 0.5 ? "mid" : "bad";
+    const title = points >= 0.999 ? "🎉 Excellent! All correct." : points > 0 ? `👍 ${Math.round(points * 100)}% correct.` : "❌ Not this time.";
+    const move = G.diff > old ? " Next task will be harder ⬆️" : G.diff < old ? " Next task will be a bit easier ⬇️" : "";
+    const box = document.createElement("div");
+    box.innerHTML = `<div class="feedback ${cls}">${title}${move}${q.explain || extra ? `<br><span style="font-weight:600">💡 ${extra || ""}${q.explain || ""}</span>` : ""}</div>
+      <div class="actions"><button class="btn green" id="next">${G.qn >= E.TOTAL ? "See my result 🏁" : "Next task ➜"}</button></div>`;
+    E.stage.appendChild(box);
+    const sc = E.stage.querySelector(".score-now"); if (sc) sc.textContent = "Score: " + fmt(G.score);
+    const bar = E.stage.querySelector(".bar i"); if (bar) bar.style.width = (100 * G.qn / E.TOTAL) + "%";
+    document.getElementById("next").onclick = () => { next(); window.scrollTo({ top: 0, behavior: "smooth" }); };
+    box.scrollIntoView({ behavior: "smooth", block: "nearest" });
+  };
+
+  async function finish() {
+    const G = E.G, max = Math.max(1, G.answers.length);
+    const score = Math.round(G.score * 10) / 10, pct = Math.round(100 * score / max), passed = pct >= PASS;
+    const hard = G.answers.filter(a => a.difficulty === 3).length;
+    E.stage.innerHTML = `<div class="center">
+      <div style="font-size:4rem">${passed ? "🏆" : "💪"}</div>
+      <h1>${passed ? "Great job!" : "Keep going!"}</h1>
+      <div class="big-score" style="color:${passed ? "#16c172" : "#ff9f1c"}">${pct}%</div>
+      <p class="prompt">${fmt(score)} / ${max} points · ${hard} hard ⭐⭐⭐ tasks</p>
+      <p>${passed ? (S1971Lab.nextLevel ? `🔓 You unlocked <b>${esc(S1971Lab.nextLevel.name)}</b>!` : "🎓 You finished the final level — Expert!") : `You need <b>${PASS}%</b> to pass. Read the tips and try again!`}</p>
+      <p id="save-msg" class="hint">Saving your result…</p>
+      <div class="actions" style="justify-content:center">
+        <button class="btn ghost" id="again">🔁 Try again</button>
+        ${passed && S1971Lab.nextLevel ? `<a class="btn green" href="${S1971Lab.levelUrl(S1971Lab.level + 1)}">Go to ${esc(S1971Lab.nextLevel.name)} ➜</a>` : ""}
+        <a class="btn orange" href="${S1971Lab.homeUrl()}">⬅ Back to my labs</a>
+      </div></div>`;
+    document.getElementById("again").onclick = startTasks;
+    if (passed) burst();
+    const r = await S1971Lab.submit(score, max, { level: S1971Lab.level, answers: G.answers });
+    const msg = document.getElementById("save-msg");
+    if (msg) { msg.textContent = r.message; msg.style.color = r.saved ? "#0c8a50" : "#b52f2f"; msg.style.fontWeight = "800"; }
+  }
+
+  function burst() {
+    const b = document.createElement("div"); b.className = "burst";
+    const em = E.C.confetti || ["🎉", "⭐", "✨", "🧪"];
+    for (let i = 0; i < 40; i++) {
+      const s = document.createElement("span");
+      s.textContent = em[i % em.length];
+      s.style.left = Math.random() * 100 + "vw"; s.style.animationDelay = Math.random() * 0.8 + "s";
+      b.appendChild(s);
+    }
+    document.body.appendChild(b); setTimeout(() => b.remove(), 3800);
+  }
+
+  // ---------- shared renderers ----------
+  // chips into slots: q.slots=[{left(html), answer}], optional q.side(html) shown at left (e.g. a diagram)
+  E.chipTask = function (q, opts) {
+    opts = opts || {};
+    const chips = shuffle(q.slots.map((s, i) => ({ id: i, text: s.answer })));
+    const placed = {}; let selected = null, checked = false;
+    const draw = states => {
+      const free = chips.filter(c => !Object.values(placed).includes(c.id));
+      const ready = Object.keys(placed).length === q.slots.length;
+      const slotsHtml = q.slots.map((s, i) => {
+        const c = placed[i] != null ? chips.find(x => x.id === placed[i]) : null;
+        const st = states ? (states[i] ? "ok" : "no") : "";
+        return `<div class="slot"><div class="left">${s.left}</div>
+          <div class="target ${c ? "filled" : ""} ${st}" data-slot="${i}">${c ? esc(c.text) : `<span class="hint">${opts.dropText || "drop here"}</span>`}
+          ${states && !states[i] ? `<span class="fix">✔ ${esc(s.answer)}</span>` : ""}</div></div>`;
+      }).join("");
+      const chipsHtml = checked ? "" : `<div class="chips">${free.map(c => `<span class="chip ${selected === c.id ? "sel" : ""}" draggable="true" data-chip="${c.id}">${esc(c.text)}</span>`).join("") || `<span class="hint">All placed ✔</span>`}</div>`;
+      const side = opts.side ? opts.side(states) : "";
+      const body = side ? `<div class="split"><div class="diagram">${side}</div><div>${chipsHtml}<div class="slots">${slotsHtml}</div></div></div>` : chipsHtml + `<div class="slots">${slotsHtml}</div>`;
+      E.stage.innerHTML = E.header() + `<p class="hint">Tap a card, then tap a box — or drag it. Tap a filled box to take the card back.</p>` + body + (checked ? "" : E.actions(ready));
+      if (checked) return;
+      E.stage.querySelectorAll(".chip").forEach(el => {
+        el.onclick = () => { selected = selected === +el.dataset.chip ? null : +el.dataset.chip; draw(); };
+        el.ondragstart = e => { e.dataTransfer.setData("text/plain", el.dataset.chip); selected = +el.dataset.chip; };
+      });
+      E.stage.querySelectorAll(".target").forEach(el => {
+        const i = +el.dataset.slot;
+        el.onclick = () => { if (selected != null) { placed[i] = selected; selected = null; } else if (placed[i] != null) delete placed[i]; draw(); };
+        el.ondragover = e => { e.preventDefault(); el.classList.add("over"); };
+        el.ondragleave = () => el.classList.remove("over");
+        el.ondrop = e => { e.preventDefault(); const id = +e.dataTransfer.getData("text/plain"); for (const k in placed) if (placed[k] === id) delete placed[k]; placed[i] = id; selected = null; draw(); };
+      });
+      const btn = document.getElementById("check");
+      if (btn) btn.onclick = () => {
+        const states = q.slots.map((s, i) => chips.find(c => c.id === placed[i]).text === s.answer);
+        checked = true; draw(states);
+        E.grade(states.filter(Boolean).length / states.length);
+      };
+    };
+    draw();
+  };
+
+  // multiple-choice block (returns html + wires events); used inside other tasks
+  E.optionsHtml = (options, sel, checked) => `<div class="opts">${options.map((o, i) => {
+    let cls = sel === i ? "sel" : ""; if (checked) cls = o.correct ? "ok" : sel === i ? "no" : "";
+    return `<button class="opt ${cls}" data-i="${i}" ${checked ? "disabled" : ""}>${String.fromCharCode(65 + i)}. ${esc(o.text)}</button>`;
+  }).join("")}</div>`;
+  E.mkOptions = (correct, wrong) => shuffle([{ text: correct, correct: true }].concat(wrong.map(w => ({ text: w, correct: false }))));
+
+  // ---------- calculator ----------
+  function addCalculator() {
+    const fab = document.createElement("button");
+    fab.className = "btn sm blue"; fab.innerHTML = "🧮 Calculator"; fab.type = "button";
+    const bar = document.querySelector(".topbar .row");
+    if (bar) bar.insertBefore(fab, bar.firstChild); else { fab.classList.add("calc-fab"); document.body.appendChild(fab); }
+    let box = null, expr = "";
+    fab.onclick = () => {
+      if (box) { box.remove(); box = null; return; }
+      box = document.createElement("div"); box.className = "calc";
+      const keys = ["7", "8", "9", "÷", "4", "5", "6", "×", "1", "2", "3", "−", "0", ".", "=", "+", "C", "⌫", "(", ")"];
+      box.innerHTML = `<div class="row between" style="margin-bottom:6px"><b style="color:#b9b4ff">🧮 Calculator</b><button class="cl" id="calc-x" style="padding:4px 10px">✕</button></div><div class="scr" id="calc-scr">0</div><div class="keys">${keys.map(k => `<button class="${"÷×−+".includes(k) ? "op" : k === "=" ? "eq" : k === "C" ? "cl" : ""}" data-k="${k}">${k}</button>`).join("")}</div>`;
+      document.body.appendChild(box);
+      const scr = box.querySelector("#calc-scr");
+      box.querySelector("#calc-x").onclick = () => { box.remove(); box = null; };
+      box.querySelectorAll("button[data-k]").forEach(b => b.onclick = () => {
+        const k = b.dataset.k;
+        if (k === "C") expr = "";
+        else if (k === "⌫") expr = expr.slice(0, -1);
+        else if (k === "=") {
+          try {
+            const js = expr.replace(/÷/g, "/").replace(/×/g, "*").replace(/−/g, "-");
+            if (!/^[0-9+\-*/(). ]+$/.test(js)) throw 0;
+            const v = Function('"use strict";return (' + js + ")")();
+            expr = Number.isFinite(v) ? String(Math.round(v * 1e6) / 1e6) : "Error";
+          } catch (e) { expr = "Error"; }
+        } else { if (expr === "Error") expr = ""; expr += k; }
+        scr.textContent = expr || "0";
+      });
+    };
+  }
+
+  window.LabEngine = E;
+})();

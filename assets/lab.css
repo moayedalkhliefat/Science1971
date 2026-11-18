@@ -1,0 +1,55 @@
+/* Shared styles for all Science1971 labs */
+.lab-head{display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap}
+.bar{height:14px;background:#eee9ff;border-radius:99px;overflow:hidden;margin:10px 0 4px}
+.bar i{display:block;height:100%;width:0;background:linear-gradient(90deg,#16c172,#00b4d8);border-radius:99px;transition:width .4s}
+.qtype{font-family:'Baloo 2','Nunito',system-ui,sans-serif;font-size:1.5rem;margin:6px 0 2px}
+.prompt{font-size:1.15rem;font-weight:700;margin:6px 0 14px}
+.diff{font-weight:800;padding:3px 12px;border-radius:999px;background:#fff4cc;color:#8a6100}
+.banner{border-radius:16px;padding:10px 14px;margin-bottom:14px;font-weight:700}
+.banner.preview{background:#e8f1ff;color:#1b56b8}.banner.guest{background:#fff0f0;color:#b52f2f}
+.split{display:grid;grid-template-columns:minmax(280px,420px) 1fr;gap:20px;align-items:start}
+.split.wide{grid-template-columns:minmax(0,1.5fr) minmax(260px,1fr)}
+@media(max-width:780px){.split,.split.wide{grid-template-columns:1fr}}
+.diagram{background:#fff;border:2px solid #eee9ff;border-radius:18px;padding:6px;overflow:hidden}
+.diagram svg{width:100%;height:auto;display:block}
+.chips{display:flex;flex-wrap:wrap;gap:8px;min-height:46px;padding:10px;border-radius:16px;background:#f7f5ff;margin-bottom:12px}
+.chip{background:#fff;border:2px solid #d8d2ff;border-radius:12px;padding:8px 12px;font-weight:700;cursor:grab;user-select:none;box-shadow:0 3px 0 #d8d2ff;font-size:.95rem}
+.chip.sel{border-color:#7b4dff;background:#efe9ff;box-shadow:0 3px 0 #7b4dff}
+.slots{display:flex;flex-direction:column;gap:9px}
+.slot{display:grid;grid-template-columns:auto 1fr;gap:10px;align-items:center}
+.slot .left{font-weight:800;background:#fff7e6;border-radius:12px;padding:9px 12px}
+.slot .num{display:inline-grid;place-items:center;width:28px;height:28px;border-radius:50%;background:#7b4dff;color:#fff}
+.target{min-height:44px;border:2.5px dashed #cfc6ff;border-radius:12px;padding:8px 12px;display:flex;flex-direction:column;justify-content:center;cursor:pointer;font-weight:700;background:#fff}
+.target.filled{border-style:solid;border-color:#7b4dff;background:#f3efff}
+.target.over{background:#ece7ff}
+.target.ok{border-color:#16c172;background:#e6fbf0}.target.no{border-color:#ff4d4d;background:#ffeded}
+.fix{display:block;font-size:.85rem;color:#0c8a50;font-weight:800}
+.opts{display:grid;gap:10px}
+.opt{text-align:left;font:inherit;font-weight:700;font-size:1.05rem;padding:13px 16px;border-radius:14px;border:2.5px solid #e2ddff;background:#fff;cursor:pointer}
+.opt:hover{border-color:#a993ff}.opt.sel{border-color:#7b4dff;background:#f3efff}
+.opt.ok{border-color:#16c172;background:#e6fbf0}.opt.no{border-color:#ff4d4d;background:#ffeded}
+.feedback{margin-top:14px;padding:12px 16px;border-radius:14px;font-weight:700}
+.feedback.good{background:#e6fbf0;color:#0c6b3e}.feedback.mid{background:#fff4dc;color:#8a5a00}.feedback.bad{background:#ffeded;color:#a12828}
+.actions{display:flex;justify-content:flex-end;align-items:center;gap:10px;margin-top:16px;flex-wrap:wrap}
+.hint{color:var(--muted);font-size:.9rem}
+.big-score{font-family:'Baloo 2','Nunito',system-ui,sans-serif;font-size:4rem;line-height:1;margin:10px 0}
+.center{text-align:center}
+.burst{position:fixed;inset:0;pointer-events:none;overflow:hidden;z-index:60}
+.burst span{position:absolute;top:-40px;font-size:28px;animation:fall 2.6s linear forwards}
+@keyframes fall{to{transform:translateY(110vh) rotate(540deg)}}
+.marker{cursor:default}.marker.hot{cursor:pointer}
+.part{display:inline-block;background:#7b4dff;color:#fff;border-radius:999px;padding:2px 12px;font-weight:800;font-size:.85rem;margin-right:6px}
+.part.done{background:#16c172}
+.step-box{background:#f7f5ff;border-radius:16px;padding:14px 16px;margin-bottom:12px}
+.numans{display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin:8px 0}
+.numans input{width:160px;display:inline-block;margin:0;font-size:1.2rem;font-weight:800;text-align:center}
+.numans .unit{font-weight:800;font-size:1.1rem}
+.numans.ok input{border-color:#16c172;background:#e6fbf0}.numans.no input{border-color:#ff4d4d;background:#ffeded}
+.formula{display:inline-block;background:#1d1b4b;color:#fff;border-radius:12px;padding:6px 14px;font-weight:800;font-family:ui-monospace,Menlo,Consolas,monospace}
+/* calculator */
+.calc-fab{position:fixed;right:18px;bottom:18px;z-index:40}
+.calc{position:fixed;right:18px;top:110px;z-index:41;width:250px;background:#1d1b4b;border-radius:20px;padding:12px;box-shadow:0 20px 50px rgba(0,0,0,.35)}
+.calc .scr{background:#0f0e2b;color:#7dffb3;font-family:ui-monospace,Menlo,Consolas,monospace;font-size:1.5rem;text-align:right;padding:10px 12px;border-radius:12px;margin-bottom:10px;min-height:52px;word-break:break-all}
+.calc .keys{display:grid;grid-template-columns:repeat(4,1fr);gap:7px}
+.calc button{font:inherit;font-weight:800;font-size:1.1rem;border:none;border-radius:10px;padding:11px 0;background:#2e2b6b;color:#fff;cursor:pointer}
+.calc button.op{background:#7b4dff}.calc button.eq{background:#16c172}.calc button.cl{background:#ff4d4d}

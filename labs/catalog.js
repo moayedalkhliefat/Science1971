@@ -15,5 +15,20 @@ window.S1971_LABS = [
       { n: 2, id: "digestive-l2", name: "Level 2 · Investigator" },
       { n: 3, id: "digestive-l3", name: "Level 3 · Expert" }
     ]
+  },
+  {
+    id: "speed",
+    title: "Speed and How to Calculate It",
+    subject: "Physics",
+    icon: "🏎️",
+    color: "linear-gradient(135deg,#2f80ff,#00b4d8)",
+    grades: ["7"],
+    path: "labs/speed/index.html",
+    description: "Race on the virtual road, time it with the stopwatch, read the speedometer and decode distance–time graphs.",
+    levels: [
+      { n: 1, id: "speed-l1", name: "Level 1 · Explorer" },
+      { n: 2, id: "speed-l2", name: "Level 2 · Investigator" },
+      { n: 3, id: "speed-l3", name: "Level 3 · Expert" }
+    ]
   }
 ];

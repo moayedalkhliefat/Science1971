@@ -1,0 +1,574 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Speed Lab · Science1971</title>
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🏎️</text></svg>">
+<link rel="stylesheet" href="../../assets/style.css">
+<link rel="stylesheet" href="../../assets/lab.css">
+<style>
+  .scene{background:#fff;border:2px solid #eee9ff;border-radius:18px;padding:8px;overflow:hidden}
+  .scene svg{width:100%;height:auto;display:block}
+  .instruments{display:flex;gap:12px;flex-wrap:wrap;align-items:stretch;margin:10px 0}
+  .stopwatch{background:linear-gradient(180deg,#1d1b4b,#2b2870);color:#7dffb3;border-radius:16px;padding:10px 18px;min-width:170px;box-shadow:inset 0 0 0 3px #3d3a8a}
+  .stopwatch small{display:block;color:#b9b4ff;font-weight:800;font-size:.75rem;letter-spacing:.08em}
+  .stopwatch b{font-family:ui-monospace,Menlo,Consolas,monospace;font-size:2rem}
+  .sign{background:#fff7e6;border:3px solid #ff9f1c;border-radius:14px;padding:8px 14px;font-weight:800}
+  .sign small{display:block;color:#8a5a00;font-size:.75rem}
+  .formula-card{background:#1d1b4b;color:#fff;border-radius:18px;padding:16px;text-align:center}
+  .formula-card .big{font-family:'Baloo 2','Nunito',sans-serif;font-size:1.6rem}
+  table.res{width:100%;border-collapse:collapse;font-size:.95rem}
+  table.res th,table.res td{padding:8px;border-bottom:1px solid #eee9ff;text-align:center}
+  table.res th{background:#f5f3ff}
+  .objs{display:flex;gap:8px;flex-wrap:wrap}
+  .objbtn{font:inherit;font-weight:800;border:3px solid #e2ddff;background:#fff;border-radius:14px;padding:8px 12px;cursor:pointer}
+  .objbtn.sel{border-color:#7b4dff;background:#f3efff}
+  .lane-hit{cursor:pointer}
+  .seg-hit{cursor:pointer}
+  .gopts{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:10px}
+  .gopt{border:3px solid #e2ddff;border-radius:14px;background:#fff;cursor:pointer;padding:6px;font:inherit;font-weight:800}
+  .gopt.sel{border-color:#7b4dff;background:#f3efff}.gopt.ok{border-color:#16c172;background:#e6fbf0}.gopt.no{border-color:#ff4d4d;background:#ffeded}
+  .gopt svg{width:100%;height:auto;display:block}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="topbar">
+    <a class="brand" id="home-link" href="../../index.html"><span class="logo">🏎️</span><b>Science1971</b></a>
+    <div class="row gap"><span class="pill" id="lvl-pill" style="background:#2f80ff"></span><a class="btn sm ghost" id="back-btn" href="../../index.html">⬅ Back</a></div>
+  </div>
+  <div id="banner"></div>
+  <div class="card" id="stage"><div class="empty">Loading the lab… 🏁</div></div>
+  <footer>Built by Mr. Moayed Alkhliefat · Science Teacher · ATS-AQB</footer>
+</div>
+
+<script src="../../assets/config.js"></script>
+<script src="../../assets/app.js"></script>
+<script src="../catalog.js"></script>
+<script src="../../assets/lab-sdk.js"></script>
+<script src="../../assets/lab-engine.js"></script>
+<script>
+"use strict";
+const E = LabEngine, esc = E.esc, rnd = E.rnd, choice = E.choice, fmt = E.fmt;
+const OBJ = {
+  runner:  { e: "🏃", name: "Runner" },
+  cyclist: { e: "🚴", name: "Cyclist" },
+  car:     { e: "🚗", name: "Car" },
+  bus:     { e: "🚌", name: "Bus" },
+  scooter: { e: "🛵", name: "Scooter" },
+  horse:   { e: "🐎", name: "Horse" }
+};
+const LANE_COL = ["#7b4dff", "#ff4d9d", "#16c172"];
+
+/* ===================== VISUALS ===================== */
+// Road scene. lanes: [{obj, pts:[[t,d],...], tag}] ; max = scale length (m)
+function road(lanes, max, opts) {
+  opts = opts || {};
+  const W = 1000, L = 70, R = 940, laneH = 96, top = 30, H = top + lanes.length * laneH + 80;
+  const X = d => L + (R - L) * d / max;
+  const step = max <= 50 ? 5 : max <= 120 ? 10 : max <= 300 ? 25 : 50, minor = step / 5;
+  let s = `<svg viewBox="0 0 ${W} ${H}" xmlns="http://www.w3.org/2000/svg">
+    <defs><linearGradient id="asph" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#4a505e"/><stop offset="1" stop-color="#363b46"/></linearGradient>
+    <linearGradient id="grass" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#dff5e6"/><stop offset="1" stop-color="#c9ecd4"/></linearGradient>
+    <pattern id="chk" width="10" height="10" patternUnits="userSpaceOnUse"><rect width="5" height="5" fill="#fff"/><rect x="5" y="5" width="5" height="5" fill="#fff"/><rect x="5" width="5" height="5" fill="#111"/><rect y="5" width="5" height="5" fill="#111"/></pattern></defs>
+    <rect width="${W}" height="${H}" fill="url(#grass)"/>
+    <rect x="20" y="${top - 10}" width="${W - 40}" height="${lanes.length * laneH + 20}" rx="14" fill="url(#asph)"/>`;
+  for (let i = 1; i < lanes.length; i++) s += `<line x1="30" x2="${W - 30}" y1="${top + i * laneH}" y2="${top + i * laneH}" stroke="#fff" stroke-width="4" stroke-dasharray="26 18" opacity=".85"/>`;
+  lanes.forEach((ln, i) => {
+    const y = top + i * laneH, d0 = ln.pts[0][1], d1 = ln.pts[ln.pts.length - 1][1];
+    s += `<rect x="${X(d0) - 4}" y="${y + 6}" width="8" height="${laneH - 12}" fill="#fff"/>`;
+    if (!opts.hideFinish) s += `<rect x="${X(d1) - 7}" y="${y + 6}" width="14" height="${laneH - 12}" fill="url(#chk)"/>`;
+    s += `<text x="34" y="${y + laneH / 2 + 7}" font-family="Nunito,sans-serif" font-weight="800" font-size="20" fill="${LANE_COL[i]}">${lanes.length > 1 ? String.fromCharCode(65 + i) : ""}</text>`;
+    if (opts.laneHit) s += `<rect class="lane-hit" data-lane="${i}" x="20" y="${y}" width="${W - 40}" height="${laneH}" fill="transparent"/>`;
+    s += `<g id="mv${i}" transform="translate(${X(d0)},${y + laneH / 2})" style="pointer-events:none"><g transform="scale(-1,1)"><text x="0" y="16" text-anchor="middle" font-size="52">${OBJ[ln.obj].e}</text></g></g>`;
+    s += `<g id="tag${i}" style="pointer-events:none"></g>`;
+  });
+  (opts.flags || []).forEach(f => { s += `<g id="${f.id}" transform="translate(${X(f.d)},${top - 10})"><line y1="0" y2="${lanes.length * laneH + 20}" stroke="#ffd23f" stroke-width="5" stroke-dasharray="10 6"/><text y="-4" text-anchor="middle" font-size="28">🚩</text></g>`; });
+  // scale
+  const sy = top + lanes.length * laneH + 28;
+  s += `<rect x="${L - 14}" y="${sy - 6}" width="${R - L + 28}" height="46" rx="8" fill="#fffbe9" stroke="#e0c46c" stroke-width="2"/>`;
+  for (let d = 0; d <= max + 1e-9; d += minor) {
+    const major = Math.abs(d / step - Math.round(d / step)) < 1e-9;
+    s += `<line x1="${X(d)}" x2="${X(d)}" y1="${sy - 6}" y2="${sy - 6 + (major ? 18 : 9)}" stroke="#5a4a12" stroke-width="${major ? 2.5 : 1.2}"/>`;
+    if (major) s += `<text x="${X(d)}" y="${sy + 32}" text-anchor="middle" font-family="Nunito,sans-serif" font-weight="800" font-size="16" fill="#5a4a12">${fmt(d)}</text>`;
+  }
+  s += `<text x="${R + 18}" y="${sy + 32}" font-family="Nunito,sans-serif" font-weight="800" font-size="15" fill="#5a4a12">m</text></svg>`;
+  return { svg: s, X, laneY: i => top + i * laneH + laneH / 2 };
+}
+function posAt(pts, t) {
+  if (t <= pts[0][0]) return pts[0][1];
+  for (let i = 1; i < pts.length; i++) if (t <= pts[i][0]) { const [t0, d0] = pts[i - 1], [t1, d1] = pts[i]; return d0 + (d1 - d0) * (t - t0) / (t1 - t0); }
+  return pts[pts.length - 1][1];
+}
+// animate lanes; stopwatch element id "sw"; returns promise
+function run(lanes, geo, opts) {
+  opts = opts || {};
+  const tEnd = Math.max(...lanes.map(l => l.pts[l.pts.length - 1][0]));
+  const real = Math.min(4.5, Math.max(2, tEnd * 0.35)) * 1000, k = tEnd / real;
+  const sw = document.getElementById("sw");
+  return new Promise(res => {
+    const t0 = performance.now();
+    const frame = now => {
+      const t = Math.min(tEnd, (now - t0) * k);
+      lanes.forEach((ln, i) => {
+        const g = document.getElementById("mv" + i); if (!g) return;
+        g.setAttribute("transform", `translate(${geo.X(posAt(ln.pts, t))},${geo.laneY(i)})`);
+        const lt = ln.pts[ln.pts.length - 1][0];
+        if (t >= lt && opts.tags && !g.dataset.done) {
+          g.dataset.done = 1;
+          document.getElementById("tag" + i).innerHTML = `<rect x="${geo.X(ln.pts[ln.pts.length - 1][1]) - 130}" y="${geo.laneY(i) - 44}" width="120" height="30" rx="8" fill="#fff"/><text x="${geo.X(ln.pts[ln.pts.length - 1][1]) - 70}" y="${geo.laneY(i) - 23}" text-anchor="middle" font-family="Nunito,sans-serif" font-weight="800" font-size="18" fill="#1d1b4b">⏱ ${fmt(lt)} s</text>`;
+        }
+      });
+      if (sw) sw.textContent = t.toFixed(1);
+      if (t < tEnd) requestAnimationFrame(frame); else { if (sw) sw.textContent = fmt(tEnd); res(); }
+    };
+    requestAnimationFrame(frame);
+  });
+}
+const stopwatch = label => `<div class="stopwatch"><small>${label || "STOPWATCH"}</small><b id="sw">0.0</b> <b style="font-size:1.1rem">s</b></div>`;
+
+// Speedometer (km/h)
+function gauge(val, max) {
+  const cx = 200, cy = 190, r = 150, a = v => (-210 + 240 * v / max) * Math.PI / 180;
+  let s = `<svg viewBox="0 0 400 385" xmlns="http://www.w3.org/2000/svg"><defs><radialGradient id="dial"><stop offset="0" stop-color="#2b2870"/><stop offset="1" stop-color="#14123a"/></radialGradient></defs>
+    <circle cx="${cx}" cy="${cy}" r="${r + 22}" fill="#c9c6e8"/><circle cx="${cx}" cy="${cy}" r="${r + 14}" fill="url(#dial)"/>`;
+  const step = max <= 120 ? 10 : 20;
+  for (let v = 0; v <= max; v += step / 2) {
+    const major = v % step === 0, an = a(v), r1 = r - (major ? 22 : 12);
+    s += `<line x1="${cx + r * Math.cos(an)}" y1="${cy + r * Math.sin(an)}" x2="${cx + r1 * Math.cos(an)}" y2="${cy + r1 * Math.sin(an)}" stroke="${v > max * .8 ? "#ff4d4d" : "#fff"}" stroke-width="${major ? 4 : 2}"/>`;
+    if (major) s += `<text x="${cx + (r - 44) * Math.cos(an)}" y="${cy + (r - 44) * Math.sin(an) + 7}" text-anchor="middle" font-family="Nunito,sans-serif" font-weight="800" font-size="19" fill="#fff">${v}</text>`;
+  }
+  const an = a(val);
+  s += `<line id="needle" x1="${cx}" y1="${cy}" x2="${cx + (r - 18) * Math.cos(an)}" y2="${cy + (r - 18) * Math.sin(an)}" stroke="#ff9f1c" stroke-width="7" stroke-linecap="round"/>
+    <circle cx="${cx}" cy="${cy}" r="14" fill="#ff9f1c"/><text x="${cx}" y="${cy + 62}" text-anchor="middle" font-family="Nunito,sans-serif" font-weight="800" font-size="22" fill="#b9b4ff">km/h</text>
+    <rect x="${cx - 60}" y="${cy + 72}" width="120" height="0"/></svg>`;
+  return s;
+}
+
+// Trip map: places [{name, emoji, stop?: seconds}], legs [{d (m), t (s)}] between consecutive places
+function tripMap(places, legs) {
+  const W = 1000, H = 320, xs = places.map((_, i) => 90 + i * (820 / (places.length - 1)));
+  const ys = places.map((_, i) => i % 2 ? 120 : 210);
+  let s = `<svg viewBox="0 0 ${W} ${H}" xmlns="http://www.w3.org/2000/svg"><rect width="${W}" height="${H}" rx="16" fill="#eef6ff"/>`;
+  for (let x = 0; x < W; x += 50) s += `<line x1="${x}" x2="${x}" y1="0" y2="${H}" stroke="#dbe8fb"/>`;
+  for (let y = 0; y < H; y += 50) s += `<line y1="${y}" y2="${y}" x1="0" x2="${W}" stroke="#dbe8fb"/>`;
+  legs.forEach((lg, i) => {
+    const x1 = xs[i], y1 = ys[i], x2 = xs[i + 1], y2 = ys[i + 1], mx = (x1 + x2) / 2, my = (y1 + y2) / 2, up = i % 2 ? -1 : 1;
+    s += `<line x1="${x1}" y1="${y1}" x2="${x2}" y2="${y2}" stroke="#2f80ff" stroke-width="10" stroke-linecap="round"/>
+      <rect x="${mx - 92}" y="${my + (up > 0 ? -82 : 26)}" width="184" height="56" rx="10" fill="#fff" stroke="#2f80ff" stroke-width="2"/>
+      <text x="${mx}" y="${my + (up > 0 ? -58 : 50)}" text-anchor="middle" font-family="Nunito,sans-serif" font-weight="800" font-size="18" fill="#1d1b4b">📏 ${fmt(lg.d)} m</text>
+      <text x="${mx}" y="${my + (up > 0 ? -35 : 73)}" text-anchor="middle" font-family="Nunito,sans-serif" font-weight="800" font-size="18" fill="#7b4dff">⏱ ${fmt(lg.t)} s</text>`;
+  });
+  places.forEach((pl, i) => {
+    const below = i % 2 === 0;
+    s += `<circle cx="${xs[i]}" cy="${ys[i]}" r="32" fill="#fff" stroke="#1d1b4b" stroke-width="4"/><text x="${xs[i]}" y="${ys[i] + 12}" text-anchor="middle" font-size="32">${pl.emoji}</text>
+      <text x="${xs[i]}" y="${ys[i] + (below ? 60 : -44)}" text-anchor="middle" font-family="Nunito,sans-serif" font-weight="800" font-size="18" fill="#1d1b4b">${esc(pl.name)}</text>`;
+    if (pl.stop) s += `<rect x="${xs[i] - 82}" y="${ys[i] + (below ? 70 : -96)}" width="164" height="32" rx="16" fill="#ff9f1c"/><text x="${xs[i]}" y="${ys[i] + (below ? 92 : -74)}" text-anchor="middle" font-family="Nunito,sans-serif" font-weight="800" font-size="16" fill="#fff">⏸ stopped ${pl.stop} s</text>`;
+  });
+  return s + `</svg>`;
+}
+
+// Distance–time graph. lines: [{pts:[[t,d]...], color, name}] ; opts: {tMax, dMax, tStep, dStep, segLetters, hit, mini, states}
+function dtGraph(lines, o) {
+  const W = o.mini ? 320 : 720, H = o.mini ? 230 : 470, L = o.mini ? 34 : 80, B = o.mini ? 26 : 64, T = 20, Rm = 24;
+  const X = t => L + (W - L - Rm) * t / o.tMax, Y = d => H - B - (H - B - T) * d / o.dMax;
+  let s = `<svg viewBox="0 0 ${W} ${H}" xmlns="http://www.w3.org/2000/svg"><rect width="${W}" height="${H}" fill="#fff"/>`;
+  if (!o.mini) {
+    for (let t = 0; t <= o.tMax + 1e-9; t += o.tStep) s += `<line x1="${X(t)}" x2="${X(t)}" y1="${T}" y2="${H - B}" stroke="#e6e3fb"/><text x="${X(t)}" y="${H - B + 24}" text-anchor="middle" font-family="Nunito,sans-serif" font-weight="700" font-size="16" fill="#4a4870">${fmt(t)}</text>`;
+    for (let d = 0; d <= o.dMax + 1e-9; d += o.dStep) s += `<line y1="${Y(d)}" y2="${Y(d)}" x1="${L}" x2="${W - Rm}" stroke="#e6e3fb"/><text x="${L - 10}" y="${Y(d) + 5}" text-anchor="end" font-family="Nunito,sans-serif" font-weight="700" font-size="16" fill="#4a4870">${fmt(d)}</text>`;
+    s += `<text x="${(L + W) / 2}" y="${H - 12}" text-anchor="middle" font-family="Nunito,sans-serif" font-weight="800" font-size="17" fill="#1d1b4b">Time (s)</text>
+      <text transform="translate(20,${(T + H - B) / 2}) rotate(-90)" text-anchor="middle" font-family="Nunito,sans-serif" font-weight="800" font-size="17" fill="#1d1b4b">Distance (m)</text>`;
+  } else {
+    s += `<text x="${(L + W) / 2}" y="${H - 6}" text-anchor="middle" font-family="Nunito,sans-serif" font-weight="800" font-size="13" fill="#4a4870">time →</text>
+      <text transform="translate(14,${(T + H - B) / 2}) rotate(-90)" text-anchor="middle" font-family="Nunito,sans-serif" font-weight="800" font-size="13" fill="#4a4870">distance →</text>`;
+  }
+  s += `<line x1="${L}" y1="${H - B}" x2="${W - Rm + 6}" y2="${H - B}" stroke="#1d1b4b" stroke-width="3"/><line x1="${L}" y1="${H - B}" x2="${L}" y2="${T - 6}" stroke="#1d1b4b" stroke-width="3"/>`;
+  lines.forEach((ln, li) => {
+    const p = ln.pts;
+    for (let i = 1; i < p.length; i++) {
+      const st = o.states && o.states[i - 1], col = st === "ok" ? "#16c172" : st === "no" ? "#ff4d4d" : st === "sel" ? "#ff9f1c" : (o.hl === i - 1 ? "#ff9f1c" : ln.color || "#7b4dff");
+      s += `<line x1="${X(p[i - 1][0])}" y1="${Y(p[i - 1][1])}" x2="${X(p[i][0])}" y2="${Y(p[i][1])}" stroke="${col}" stroke-width="${o.mini ? 5 : 7}" stroke-linecap="round"/>`;
+      if (o.segLetters) { const mx = (X(p[i - 1][0]) + X(p[i][0])) / 2, my = (Y(p[i - 1][1]) + Y(p[i][1])) / 2;
+        s += `<circle cx="${mx}" cy="${my - 26}" r="17" fill="${col}"/><text x="${mx}" y="${my - 20}" text-anchor="middle" font-family="Nunito,sans-serif" font-weight="800" font-size="18" fill="#fff">${String.fromCharCode(65 + i - 1)}</text>`; }
+      if (o.hit) s += `<line class="seg-hit" data-seg="${i - 1}" x1="${X(p[i - 1][0])}" y1="${Y(p[i - 1][1])}" x2="${X(p[i][0])}" y2="${Y(p[i][1])}" stroke="transparent" stroke-width="36"/>`;
+    }
+    if (!o.mini) p.forEach(pt => { s += `<circle cx="${X(pt[0])}" cy="${Y(pt[1])}" r="6" fill="#1d1b4b"/>`; });
+    if (ln.name) { const last = p[p.length - 1]; s += `<text x="${X(last[0]) - 8}" y="${Y(last[1]) - 14}" text-anchor="end" font-family="Nunito,sans-serif" font-weight="800" font-size="20" fill="${ln.color}">${esc(ln.name)}</text>`; }
+  });
+  return s + `</svg>`;
+}
+
+/* ===================== TASK BUILDERS ===================== */
+const nice = { // speed, time pairs that give whole-number or .5 distances
+  d1: () => { const v = choice([2, 4, 5, 8, 10]), t = choice([2, 4, 5, 10]); return { v, t }; },
+};
+function lanesFor(obj, from, d, t) { return [{ obj, pts: [[0, from], [t, from + d]] }]; }
+function scaleMax(x) { return x <= 50 ? 50 : x <= 100 ? 100 : x <= 120 ? 120 : x <= 200 ? 200 : x <= 300 ? 300 : 500; }
+
+const T = {
+  // MEASURE: read distance from the scale and time from the stopwatch, then calculate speed
+  measure: (diff, uses) => ({ type: "measure", diff, uses, build() {
+    let obj, from, d, t;
+    if (diff === 1) { obj = choice(["runner", "cyclist"]); t = choice([2, 4, 5]); const v = obj === "runner" ? choice([4, 5, 6]) : choice([8, 10]); d = v * t; from = 0; }
+    else if (diff === 2) { obj = choice(["cyclist", "scooter", "horse"]); t = choice([4, 5, 6, 8]); const v = choice([5, 6, 8, 10, 12]); d = v * t; from = choice([10, 20]); }
+    else { obj = choice(["car", "horse", "scooter"]); t = choice([4, 6, 8]); const v = choice([7.5, 12.5, 15, 17.5, 22.5]); d = v * t; from = choice([10, 15, 20]); }
+    const max = scaleMax(from + d);
+    return { obj, from, d, t, max, v: d / t, prompt: `Press <b>▶ Run</b>. Read the distance on the scale and the time on the stopwatch, then calculate the ${OBJ[obj].name.toLowerCase()}'s speed.`,
+      explain: `Speed = distance ÷ time = ${fmt(d)} m ÷ ${fmt(t)} s = ${fmt(d / t)} m/s.${from ? ` (Distance = finish − start = ${fmt(from + d)} − ${fmt(from)} = ${fmt(d)} m.)` : ""}`,
+      summary: `Measure & calculate speed (${OBJ[obj].name})` };
+  }}),
+  // RACE: run 2-3 lanes; click the fastest (or slowest)
+  race: (diff, uses, slowest) => ({ type: "race", diff, uses, build() {
+    let rows;
+    if (diff === 1) { const t = choice([4, 5]); const vs = E.shuffle([4, 6]); rows = [{ obj: "runner", v: vs[0], t }, { obj: "cyclist", v: vs[1], t }]; }
+    else if (diff === 2) { const cfg = E.shuffle([{ v: 5, t: 8 }, { v: 6, t: 5 }, { v: 4, t: 10 }]); rows = cfg.map((c, i) => ({ obj: ["runner", "cyclist", "horse"][i], ...c })); }
+    else { const cfg = E.shuffle([{ v: 7.5, t: 8 }, { v: 8, t: 6 }, { v: 7, t: 10 }]); rows = cfg.map((c, i) => ({ obj: ["horse", "scooter", "cyclist"][i], ...c })); }
+    rows.forEach(r => r.d = r.v * r.t);
+    const max = scaleMax(Math.max(...rows.map(r => r.d)));
+    const target = slowest ? rows.indexOf(rows.reduce((a, b) => (a.v < b.v ? a : b))) : rows.indexOf(rows.reduce((a, b) => (a.v > b.v ? a : b)));
+    return { rows, max, target, slowest: !!slowest, prompt: `Press <b>▶ Run the race</b>. Each lane stops at a different place and time. Use <b>speed = distance ÷ time</b>, then click the <b>${slowest ? "SLOWEST" : "FASTEST"}</b> lane.`,
+      explain: rows.map((r, i) => `${String.fromCharCode(65 + i)}: ${fmt(r.d)} ÷ ${fmt(r.t)} = ${fmt(r.v)} m/s`).join(" · ") + ". Going further does not always mean faster — you must divide by the time!",
+      summary: `Race: find the ${slowest ? "slowest" : "fastest"}` };
+  }}),
+  // PREDICT: given speed and time, where will it stop?  (d = s × t)
+  predict: (diff, uses, kmh) => ({ type: "predict", diff, uses, build() {
+    let obj, v, t, vShow, unit = "m/s";
+    if (diff === 1) { obj = "cyclist"; v = choice([4, 5, 6, 8]); t = choice([5, 6, 10]); }
+    else if (diff === 2) { obj = choice(["horse", "scooter"]); v = choice([7, 9, 12]); t = choice([4, 6, 8]); }
+    else { obj = "car"; v = kmh ? choice([10, 15, 20, 25]) : choice([7.5, 12.5]); t = choice([4, 6, 8, 10]); }
+    vShow = kmh ? v * 3.6 : v; if (kmh) unit = "km/h";
+    const d = v * t, max = scaleMax(d * 1.25);
+    return { obj, v, t, d, max, vShow, unit, prompt: `The ${OBJ[obj].name.toLowerCase()} moves at <b>${fmt(vShow)} ${unit}</b> for <b>${fmt(t)} s</b>. Type where it will stop — your 🚩 moves on the scale. Then press <b>▶ Run</b> to test it.`,
+      explain: `Distance = speed × time = ${kmh ? `(${fmt(vShow)} ÷ 3.6 = ${fmt(v)} m/s) × ` : fmt(v) + " m/s × "}${fmt(t)} s = ${fmt(d)} m.`,
+      summary: `Predict the distance (${fmt(vShow)} ${unit}, ${fmt(t)} s)` };
+  }}),
+  // TIME: how long to reach the finish?  (t = d ÷ s)
+  time: (diff, uses) => ({ type: "time", diff, uses, build() {
+    let obj, v, d;
+    if (diff === 1) { obj = "runner"; v = choice([4, 5]); d = v * choice([5, 8, 10]); }
+    else if (diff === 2) { obj = choice(["cyclist", "horse"]); v = choice([6, 8, 10]); d = v * choice([5, 7, 9]); }
+    else { obj = "car"; v = choice([12, 16, 25]); d = choice([60, 100, 150, 200]); }
+    const t = d / v, max = scaleMax(d);
+    return { obj, v, d, t, max, prompt: `The ${OBJ[obj].name.toLowerCase()} moves at <b>${fmt(v)} m/s</b>. The finish line is at <b>${fmt(d)} m</b>. How long will it take? Type your answer, then press <b>▶ Run</b> to check with the stopwatch.`,
+      explain: `Time = distance ÷ speed = ${fmt(d)} m ÷ ${fmt(v)} m/s = ${fmt(t)} s.`, summary: `Calculate the time (${fmt(d)} m at ${fmt(v)} m/s)` };
+  }}),
+  // GAUGE: speedometer conversions
+  gauge: (diff, uses, toKmh) => ({ type: "gauge", diff, uses, build() {
+    if (!toKmh) { const kmh = choice([36, 54, 72, 90, 108]); return { kmh, ms: kmh / 3.6, toKmh: false,
+      prompt: `Read the car's <b>speedometer</b>. Convert the speed to <b>m/s</b>.`, explain: `km/h → m/s: divide by 3.6. ${kmh} ÷ 3.6 = ${fmt(kmh / 3.6)} m/s. (1 km/h = 1000 m ÷ 3600 s)`, summary: `Speedometer ${kmh} km/h → m/s` }; }
+    const ms = choice([10, 15, 20, 25, 30]); return { kmh: ms * 3.6, ms, toKmh: true,
+      prompt: `A speed camera measured this car at <b>${ms} m/s</b>. What will its <b>speedometer</b> show in km/h? Type it — the needle will move to your answer.`, explain: `m/s → km/h: multiply by 3.6. ${ms} × 3.6 = ${fmt(ms * 3.6)} km/h.`, summary: `${ms} m/s → km/h on the speedometer` };
+  }}),
+  // TRIP: average speed from the map
+  trip: (diff, uses) => ({ type: "trip", diff, uses, build() {
+    let legs, places;
+    if (diff <= 2) { const a = choice([{ d: 300, t: 60 }, { d: 400, t: 80 }, { d: 240, t: 40 }]), b = choice([{ d: 200, t: 40 }, { d: 360, t: 60 }, { d: 160, t: 40 }]);
+      legs = [a, b]; places = [{ name: "Home", emoji: "🏠" }, { name: "Park", emoji: "🌳" }, { name: "School", emoji: "🏫" }]; }
+    else { const c = choice([{ legs: [{ d: 450, t: 90 }, { d: 750, t: 150 }], stop: 60 }, { legs: [{ d: 600, t: 100 }, { d: 300, t: 90 }], stop: 50 }]);
+      legs = c.legs; places = [{ name: "Home", emoji: "🏠" }, { name: "Shop", emoji: "🛒", stop: c.stop }, { name: "Mall", emoji: "🏬" }]; }
+    const stopT = places.reduce((s, p) => s + (p.stop || 0), 0);
+    const D = legs.reduce((s, l) => s + l.d, 0), Tt = legs.reduce((s, l) => s + l.t, 0) + stopT;
+    return { legs, places, D, T: Tt, v: D / Tt, prompt: `Look at the trip on the map. Find the <b>total distance</b>, the <b>total time</b>, and the <b>average speed</b> for the whole trip.`,
+      explain: `Average speed = total distance ÷ total time = ${D} m ÷ ${Tt} s = ${fmt(D / Tt)} m/s.${stopT ? " The stopped time still counts in the total time!" : ""}`, summary: `Average speed of a trip${stopT ? " (with a stop)" : ""}` };
+  }}),
+  // GRAPH PICK: click a segment
+  gpick: (diff, uses, what) => ({ type: "gpick", diff, uses, build() {
+    let pts;
+    if (what === "stop") pts = choice([[[0, 0], [4, 40], [8, 40], [12, 80]], [[0, 0], [2, 30], [6, 50], [10, 50]], [[0, 0], [4, 0], [8, 60], [12, 90]]]);
+    else if (what === "fast") pts = choice([[[0, 0], [4, 20], [6, 60], [12, 80]], [[0, 0], [4, 40], [8, 50], [10, 90]], [[0, 0], [2, 10], [6, 30], [8, 70]]]);
+    else pts = choice([[[0, 0], [4, 60], [8, 80], [12, 120]], [[0, 0], [2, 40], [8, 70], [10, 100]]]);
+    const sp = pts.slice(1).map((p, i) => (p[1] - pts[i][1]) / (p[0] - pts[i][0]));
+    const target = what === "stop" ? sp.indexOf(0) : what === "fast" ? sp.indexOf(Math.max(...sp)) : sp.indexOf(Math.min(...sp));
+    const word = what === "stop" ? "the object is NOT moving (stationary)" : what === "fast" ? "the object is moving FASTEST" : "the object is moving SLOWEST";
+    return { pts, target, tMax: 12, dMax: Math.max(100, Math.ceil(Math.max(...pts.map(p => p[1])) / 20) * 20), tStep: 2, dStep: 10, prompt: `👆 Click the part of the graph where ${word}.`,
+      explain: what === "stop" ? "A flat (horizontal) line means the distance is not changing — the object is stopped." : "The steeper the line, the faster the object is moving.", summary: `Graph: click where ${word}` };
+  }}),
+  // GRAPH CALC: speed of a highlighted segment, or average of the journey
+  gcalc: (diff, uses, avg) => ({ type: "gcalc", diff, uses, build() {
+    let pts, seg;
+    if (diff === 2) { pts = choice([[[0, 0], [4, 20], [8, 20], [10, 40]], [[0, 0], [2, 20], [6, 40], [10, 80]], [[0, 0], [4, 40], [6, 40], [10, 60]]]); }
+    else { pts = choice([[[0, 0], [4, 30], [6, 30], [10, 80]], [[0, 0], [2, 15], [8, 30], [12, 90]], [[0, 0], [4, 50], [10, 50], [12, 80]]]); }
+    const segs = pts.slice(1).map((p, i) => ({ i, dd: p[1] - pts[i][1], dt: p[0] - pts[i][0] })).filter(s => s.dd > 0);
+    seg = choice(segs);
+    const last = pts[pts.length - 1];
+    const ans = avg ? last[1] / last[0] : seg.dd / seg.dt;
+    return { pts, seg: avg ? null : seg.i, ans, avg: !!avg, tMax: 12, dMax: Math.max(100, Math.ceil(last[1] / 20) * 20), tStep: 2, dStep: 10,
+      prompt: avg ? "Use the graph to find the <b>average speed for the whole journey</b>." : `Use the graph to find the speed in part <b>${String.fromCharCode(65 + seg.i)}</b> (the orange part).`,
+      explain: avg ? `Average speed = total distance ÷ total time = ${last[1]} m ÷ ${last[0]} s = ${fmt(ans)} m/s.` : `Speed = change in distance ÷ change in time = ${seg.dd} m ÷ ${seg.dt} s = ${fmt(ans)} m/s.`,
+      summary: avg ? "Graph: average speed of whole journey" : `Graph: speed of part ${String.fromCharCode(65 + seg.i)}` };
+  }}),
+  // GRAPH MATCH: watch the motion, pick the matching graph
+  gmatch: (diff, uses) => ({ type: "gmatch", diff, uses, build() {
+    const motions = [
+      [[0, 0], [4, 40], [8, 40], [12, 80]],   // move, stop, move
+      [[0, 0], [4, 20], [8, 80], [12, 100]],  // slow, fast, slow
+      [[0, 0], [6, 60], [12, 60], [12, 60]],  // move then stop
+      [[0, 0], [4, 0], [8, 40], [12, 80]]     // wait then move
+    ].map(p => p.filter((x, i, a) => i === 0 || x[0] !== a[i - 1][0]));
+    const opts = E.pick(motions, 3), correct = rnd(0, 2);
+    return { motions: opts, correct, obj: choice(["cyclist", "horse", "scooter"]), prompt: `Press <b>▶ Run</b> and watch carefully: does it stop? speed up? Then click the graph that matches the motion.`,
+      explain: "Flat line = stopped. Steeper line = faster. A straight line means constant speed.", summary: "Match the motion to its graph" };
+  }}),
+  // TWO OBJECTS on one graph
+  g2: (diff, uses) => ({ type: "g2", diff, uses, build() {
+    const a = choice([10, 8, 6]), b = choice([4, 5, 3].filter(x => x < a)), tE = 10;
+    const ln = E.shuffle([{ v: a, name: "Car A" }, { v: b, name: "Car B" }]);
+    const lines = ln.map((l, i) => ({ pts: [[0, 0], [tE, l.v * tE]], color: LANE_COL[i], name: l.name, v: l.v }));
+    return { lines, ans: a - b, tMax: 10, dMax: Math.ceil(a * tE / 20) * 20, tStep: 1, dStep: 10,
+      prompt: "Two cars start together. Use the graph to find each car's speed. <b>How much faster is the faster car?</b> (in m/s)",
+      explain: lines.map(l => `${l.name}: ${l.v * tE} m ÷ ${tE} s = ${l.v} m/s`).join(" · ") + ` → difference = ${a - b} m/s.`, summary: "Graph: compare two cars" };
+  }})
+};
+
+/* ===================== LEVELS ===================== */
+const LEVELS = {
+  1: { intro: "What is speed? Measure distance and time on the road and calculate speed = distance ÷ time (m/s).", pool: () => [
+    T.measure(1, 3), T.race(1, 2), T.time(1, 1),
+    T.measure(2, 3), T.race(2, 2), T.race(2, 1, true),
+    T.measure(3, 3), T.race(3, 2), T.predict(3, 1)
+  ]},
+  2: { intro: "Rearrange the formula (distance = speed × time, time = distance ÷ speed), use km/h and m/s, and find the average speed of a trip.", pool: () => [
+    T.predict(1, 2), T.time(1, 2), T.measure(2, 1),
+    T.gauge(2, 2), T.gauge(2, 1, true), T.trip(2, 2), T.time(2, 1),
+    T.trip(3, 2), T.predict(3, 2, true), T.time(3, 2), T.predict(2, 1)
+  ]},
+  3: { intro: "Distance–time graphs: read them, find when an object stops or moves fastest, and calculate speed from the graph.", pool: () => [
+    T.gpick(1, 2, "stop"), T.gpick(1, 2, "fast"), T.gmatch(1, 1),
+    T.gcalc(2, 3), T.gmatch(2, 2), T.gpick(2, 1, "slow"),
+    T.gcalc(3, 2, true), T.g2(3, 2), T.gcalc(3, 2), T.gmatch(3, 1)
+  ]}
+};
+
+/* ===================== RENDERERS ===================== */
+function numBox(id, label, unit, state, val) {
+  return `<div class="numans ${state || ""}"><label style="margin:0;min-width:150px">${label}</label><input id="${id}" inputmode="decimal" autocomplete="off" value="${val != null ? esc(val) : ""}" ${state ? "disabled" : ""}><span class="unit">${unit}</span></div>`;
+}
+
+function renderMeasure(q) {
+  const lanes = lanesFor(q.obj, q.from, q.d, q.t);
+  let ran = false, checked = false, vals = {};
+  const draw = res => {
+    const geo = road(lanes, q.max);
+    E.stage.innerHTML = E.header() + `<div class="scene">${geo.svg}</div>
+      <div class="instruments">${stopwatch()}<button class="btn orange" id="run" ${checked ? "disabled" : ""}>▶ Run</button>
+        <div class="formula">speed = distance ÷ time</div></div>
+      <div class="step-box">${numBox("a1", "Distance travelled", "m", res && (res[0] ? "ok" : "no"), vals.a1)}${numBox("a2", "Time taken", "s", res && (res[1] ? "ok" : "no"), vals.a2)}${numBox("a3", "Speed", "m/s", res && (res[2] ? "ok" : "no"), vals.a3)}
+        ${res ? `<p class="fix">✔ ${fmt(q.d)} m · ${fmt(q.t)} s · ${fmt(q.v)} m/s</p>` : ""}</div>
+      ${checked ? "" : E.actions(ran, "Check ✔")}`;
+    if (checked) { const g = road(lanes, q.max); document.getElementById("mv0").setAttribute("transform", `translate(${g.X(q.from + q.d)},${g.laneY(0)})`); document.getElementById("sw").textContent = fmt(q.t); return; }
+    if (ran) { document.getElementById("mv0").setAttribute("transform", `translate(${geo.X(q.from + q.d)},${geo.laneY(0)})`); document.getElementById("sw").textContent = fmt(q.t); }
+    ["a1", "a2", "a3"].forEach(id => document.getElementById(id).oninput = e => vals[id] = e.target.value);
+    document.getElementById("run").onclick = async () => { document.getElementById("run").disabled = true; await run(lanes, geo); ran = true; draw(); };
+    const b = document.getElementById("check");
+    if (b) b.onclick = () => {
+      const r = [E.close(E.num(vals.a1), q.d), E.close(E.num(vals.a2), q.t), E.close(E.num(vals.a3), q.v)];
+      checked = true; draw(r); E.grade(r.filter(Boolean).length / 3);
+    };
+  };
+  draw();
+}
+
+function renderRace(q) {
+  const lanes = q.rows.map(r => ({ obj: r.obj, pts: [[0, 0], [r.t, r.d]] }));
+  let ran = false, sel = null, checked = false;
+  const draw = () => {
+    const geo = road(lanes, q.max, { laneHit: ran && !checked });
+    E.stage.innerHTML = E.header() + `<div class="scene">${geo.svg}</div>
+      <div class="instruments">${stopwatch("RACE CLOCK")}<button class="btn orange" id="run" ${ran ? "disabled" : ""}>▶ Run the race</button><div class="formula">speed = distance ÷ time</div></div>
+      <div class="step-box">${ran ? (checked ? "" : "👆 Click a lane on the road to choose it.") : "Run the race first."} ${sel != null ? `<b>Your choice: lane ${String.fromCharCode(65 + sel)}</b>` : ""}
+        ${checked ? `<div class="notice">${q.rows.map((r, i) => `${i === q.target ? "✅" : "▫️"} Lane ${String.fromCharCode(65 + i)} (${OBJ[r.obj].name}): ${fmt(r.d)} m ÷ ${fmt(r.t)} s = <b>${fmt(r.v)} m/s</b>`).join("<br>")}</div>` : ""}</div>
+      ${checked ? "" : E.actions(sel != null)}`;
+    if (ran) lanes.forEach((ln, i) => {
+      document.getElementById("mv" + i).setAttribute("transform", `translate(${geo.X(ln.pts[1][1])},${geo.laneY(i)})`);
+      const x = geo.X(ln.pts[1][1]);
+      document.getElementById("tag" + i).innerHTML = `<rect x="${x - 140}" y="${geo.laneY(i) - 46}" width="130" height="30" rx="8" fill="${sel === i ? "#ff9f1c" : "#fff"}"/><text x="${x - 75}" y="${geo.laneY(i) - 25}" text-anchor="middle" font-family="Nunito,sans-serif" font-weight="800" font-size="18" fill="#1d1b4b">⏱ ${fmt(ln.pts[1][0])} s</text>`;
+      if (checked) document.getElementById("tag" + i).innerHTML += `<text x="${x + 20}" y="${geo.laneY(i) + 10}" font-size="30">${i === q.target ? "✅" : sel === i ? "❌" : ""}</text>`;
+    });
+    if (ran) document.getElementById("sw").textContent = fmt(Math.max(...q.rows.map(r => r.t)));
+    if (checked) return;
+    document.getElementById("run").onclick = async () => { document.getElementById("run").disabled = true; await run(lanes, geo, { tags: true }); ran = true; draw(); };
+    E.stage.querySelectorAll(".lane-hit").forEach(h => h.onclick = () => { sel = +h.dataset.lane; draw(); });
+    const b = document.getElementById("check");
+    if (b) b.onclick = () => { checked = true; draw(); E.grade(sel === q.target ? 1 : 0); };
+  };
+  draw();
+}
+
+function renderPredict(q) {
+  const lanes = lanesFor(q.obj, 0, q.d, q.t);
+  let val = "", checked = false;
+  const draw = res => {
+    const g = E.num(val), fl = Number.isFinite(g) && g >= 0 && g <= q.max ? [{ id: "flag", d: g }] : [];
+    const geo = road(lanes, q.max, { flags: fl, hideFinish: true });
+    E.stage.innerHTML = E.header() + `<div class="scene">${geo.svg}</div>
+      <div class="instruments"><div class="sign"><small>SPEED</small>${fmt(q.vShow)} ${q.unit}</div><div class="sign"><small>TIME</small>${fmt(q.t)} s</div>${stopwatch()}<div class="formula">distance = speed × time</div></div>
+      <div class="step-box">${numBox("p1", "It will stop at", "m", res && (res[0] ? "ok" : "no"), val)}${res ? `<p class="fix">✔ ${fmt(q.d)} m</p>` : ""}</div>
+      ${checked ? "" : E.actions(Number.isFinite(g), "▶ Run to test ✔")}`;
+    if (checked) { document.getElementById("mv0").setAttribute("transform", `translate(${geo.X(q.d)},${geo.laneY(0)})`); document.getElementById("sw").textContent = fmt(q.t); return; }
+    const inp = document.getElementById("p1");
+    inp.oninput = e => { val = e.target.value; const pos = inp.selectionStart; draw(); const n = document.getElementById("p1"); n.focus(); n.setSelectionRange(pos, pos); };
+    const b = document.getElementById("check");
+    if (b) b.onclick = async () => { b.disabled = true; await run(lanes, geo); checked = true; const ok = E.close(E.num(val), q.d, Math.max(1, q.d * 0.02)); draw([ok]); E.grade(ok ? 1 : 0); };
+  };
+  draw();
+}
+
+function renderTime(q) {
+  const lanes = lanesFor(q.obj, 0, q.d, q.t);
+  let val = "", checked = false;
+  const draw = res => {
+    const geo = road(lanes, q.max);
+    E.stage.innerHTML = E.header() + `<div class="scene">${geo.svg}</div>
+      <div class="instruments"><div class="sign"><small>SPEED</small>${fmt(q.v)} m/s</div><div class="sign"><small>FINISH LINE</small>${fmt(q.d)} m</div>${stopwatch()}<div class="formula">time = distance ÷ speed</div></div>
+      <div class="step-box">${numBox("t1", "Time to finish", "s", res && (res[0] ? "ok" : "no"), val)}${res ? `<p class="fix">✔ ${fmt(q.t)} s</p>` : ""}</div>
+      ${checked ? "" : E.actions(true, "▶ Run to test ✔")}`;
+    if (checked) { document.getElementById("mv0").setAttribute("transform", `translate(${geo.X(q.d)},${geo.laneY(0)})`); document.getElementById("sw").textContent = fmt(q.t); return; }
+    document.getElementById("t1").oninput = e => val = e.target.value;
+    document.getElementById("check").onclick = async () => {
+      if (!Number.isFinite(E.num(val))) return S1971.toast("Type your answer first.", "bad");
+      document.getElementById("check").disabled = true; await run(lanes, geo); checked = true; const ok = E.close(E.num(val), q.t); draw([ok]); E.grade(ok ? 1 : 0);
+    };
+  };
+  draw();
+}
+
+function renderGauge(q) {
+  let val = "", checked = false;
+  const max = q.kmh > 100 ? 160 : 120;
+  const draw = res => {
+    const shown = q.toKmh ? (checked ? q.kmh : Math.min(max, Math.max(0, E.num(val) || 0))) : q.kmh;
+    E.stage.innerHTML = E.header() + `<div class="split"><div class="scene" style="max-width:420px">${gauge(shown, max)}</div>
+      <div><div class="step-box">${q.toKmh ? `<div class="sign" style="display:inline-block;margin-bottom:8px"><small>SPEED CAMERA</small>📷 ${q.ms} m/s</div>` : ""}
+        ${numBox("g1", q.toKmh ? "Speedometer shows" : "Speed in m/s", q.toKmh ? "km/h" : "m/s", res && (res[0] ? "ok" : "no"), val)}
+        ${res ? `<p class="fix">✔ ${fmt(q.toKmh ? q.kmh : q.ms)} ${q.toKmh ? "km/h" : "m/s"}</p>` : ""}
+        <p class="hint">1 km = 1000 m and 1 hour = 3600 s, so <span class="formula">1 m/s = 3.6 km/h</span></p></div>
+        ${checked ? "" : E.actions(true)}</div></div>`;
+    if (checked) return;
+    const inp = document.getElementById("g1");
+    inp.oninput = e => { val = e.target.value; if (q.toKmh) { const pos = inp.selectionStart; draw(); const n = document.getElementById("g1"); n.focus(); n.setSelectionRange(pos, pos); } };
+    document.getElementById("check").onclick = () => {
+      if (!Number.isFinite(E.num(val))) return S1971.toast("Type your answer first.", "bad");
+      const ok = E.close(E.num(val), q.toKmh ? q.kmh : q.ms); checked = true; draw([ok]); E.grade(ok ? 1 : 0);
+    };
+  };
+  draw();
+}
+
+function renderTrip(q) {
+  const vals = {}; let checked = false;
+  const draw = res => {
+    E.stage.innerHTML = E.header() + `<div class="scene">${tripMap(q.places, q.legs)}</div>
+      <div class="step-box">${numBox("r1", "Total distance", "m", res && (res[0] ? "ok" : "no"), vals.r1)}${numBox("r2", "Total time", "s", res && (res[1] ? "ok" : "no"), vals.r2)}${numBox("r3", "Average speed", "m/s", res && (res[2] ? "ok" : "no"), vals.r3)}
+      ${res ? `<p class="fix">✔ ${q.D} m · ${q.T} s · ${fmt(q.v)} m/s</p>` : ""}<p class="hint"><span class="formula">average speed = total distance ÷ total time</span></p></div>
+      ${checked ? "" : E.actions(true)}`;
+    if (checked) return;
+    ["r1", "r2", "r3"].forEach(id => document.getElementById(id).oninput = e => vals[id] = e.target.value);
+    document.getElementById("check").onclick = () => {
+      const r = [E.close(E.num(vals.r1), q.D), E.close(E.num(vals.r2), q.T), E.close(E.num(vals.r3), q.v)];
+      checked = true; draw(r); E.grade(r.filter(Boolean).length / 3);
+    };
+  };
+  draw();
+}
+
+function renderGpick(q) {
+  let sel = null, checked = false;
+  const draw = () => {
+    const states = {}; if (sel != null) states[sel] = checked ? (sel === q.target ? "ok" : "no") : "sel"; if (checked && sel !== q.target) states[q.target] = "ok";
+    E.stage.innerHTML = E.header() + `<div class="scene" style="max-width:760px">${dtGraph([{ pts: q.pts }], { ...q, segLetters: true, hit: !checked, states })}</div>
+      <div class="step-box">${sel != null ? `Your choice: <b>part ${String.fromCharCode(65 + sel)}</b>` : "👆 Click a part of the line."}</div>${checked ? "" : E.actions(sel != null)}`;
+    if (checked) return;
+    E.stage.querySelectorAll(".seg-hit").forEach(h => h.onclick = () => { sel = +h.dataset.seg; draw(); });
+    const b = document.getElementById("check"); if (b) b.onclick = () => { checked = true; draw(); E.grade(sel === q.target ? 1 : 0); };
+  };
+  draw();
+}
+
+function renderGcalc(q) {
+  let val = "", checked = false;
+  const draw = res => {
+    E.stage.innerHTML = E.header() + `<div class="split wide"><div class="scene">${dtGraph([{ pts: q.pts }], { ...q, segLetters: !q.avg, hl: q.seg })}</div>
+      <div><div class="step-box">${numBox("c1", q.avg ? "Average speed" : "Speed in part " + String.fromCharCode(65 + q.seg), "m/s", res && (res[0] ? "ok" : "no"), val)}${res ? `<p class="fix">✔ ${fmt(q.ans)} m/s</p>` : ""}
+        <p class="hint">Read the points from the grid. <span class="formula">speed = Δdistance ÷ Δtime</span></p></div>${checked ? "" : E.actions(true)}</div></div>`;
+    if (checked) return;
+    document.getElementById("c1").oninput = e => val = e.target.value;
+    document.getElementById("check").onclick = () => { if (!Number.isFinite(E.num(val))) return S1971.toast("Type your answer first.", "bad"); const ok = E.close(E.num(val), q.ans); checked = true; draw([ok]); E.grade(ok ? 1 : 0); };
+  };
+  draw();
+}
+
+function renderGmatch(q) {
+  const pts = q.motions[q.correct], lanes = [{ obj: q.obj, pts }];
+  let ran = false, sel = null, checked = false;
+  const draw = () => {
+    const geo = road(lanes, 100, { hideFinish: true });
+    E.stage.innerHTML = E.header() + `<div class="scene">${geo.svg}</div>
+      <div class="instruments">${stopwatch()}<button class="btn orange" id="run">${ran ? "🔁 Watch again" : "▶ Run"}</button></div>
+      <div class="gopts">${q.motions.map((m, i) => `<button class="gopt ${checked ? (i === q.correct ? "ok" : sel === i ? "no" : "") : sel === i ? "sel" : ""}" data-i="${i}" ${checked || !ran ? "disabled" : ""}>Graph ${i + 1}${dtGraph([{ pts: m }], { tMax: 12, dMax: 100, mini: true })}</button>`).join("")}</div>
+      ${checked ? "" : E.actions(sel != null)}`;
+    if (ran) { document.getElementById("mv0").setAttribute("transform", `translate(${geo.X(pts[pts.length - 1][1])},${geo.laneY(0)})`); }
+    document.getElementById("run").onclick = async () => { document.getElementById("run").disabled = true; await run(lanes, road(lanes, 100, { hideFinish: true })); ran = true; draw(); };
+    if (checked) return;
+    E.stage.querySelectorAll(".gopt").forEach(b => b.onclick = () => { sel = +b.dataset.i; draw(); });
+    const b = document.getElementById("check"); if (b) b.onclick = () => { checked = true; draw(); E.grade(sel === q.correct ? 1 : 0); };
+  };
+  draw();
+}
+
+function renderG2(q) {
+  let val = "", checked = false;
+  const draw = res => {
+    E.stage.innerHTML = E.header() + `<div class="split wide"><div class="scene">${dtGraph(q.lines, q)}</div>
+      <div><div class="step-box">${numBox("d1", "Difference in speed", "m/s", res && (res[0] ? "ok" : "no"), val)}${res ? `<p class="fix">✔ ${fmt(q.ans)} m/s</p>` : ""}
+      <p class="hint">Find each car's speed from its line first.</p></div>${checked ? "" : E.actions(true)}</div></div>`;
+    if (checked) return;
+    document.getElementById("d1").oninput = e => val = e.target.value;
+    document.getElementById("check").onclick = () => { if (!Number.isFinite(E.num(val))) return S1971.toast("Type your answer first.", "bad"); const ok = E.close(E.num(val), q.ans); checked = true; draw([ok]); E.grade(ok ? 1 : 0); };
+  };
+  draw();
+}
+
+/* ===================== EXPLORE: the speed bench ===================== */
+const BENCH = { runner: 5, cyclist: 8, car: 20 };
+function explore(lvl, done) {
+  let obj = "runner", dist = 60, busy = false;
+  const runs = [], need = 3;
+  const draw = () => {
+    const t = dist / BENCH[obj], lanes = lanesFor(obj, 0, dist, t), geo = road(lanes, 100);
+    const kinds = new Set(runs.map(r => r.obj)).size, ok = runs.length >= need && kinds >= 2;
+    E.stage.innerHTML = `<div class="lab-head"><b>🔍 Step 1: The speed bench</b><b>Experiments: ${runs.length} / ${need}</b></div>
+      <div class="bar"><i style="width:${Math.min(100, 100 * runs.length / need)}%"></i></div>
+      <p class="prompt">Choose who moves, set the distance, press <b>▶ Run</b> and watch the stopwatch. Do at least ${need} runs with at least 2 different movers.</p>
+      <div class="scene">${geo.svg}</div>
+      <div class="instruments">
+        <div class="objs">${Object.keys(BENCH).map(k => `<button class="objbtn ${obj === k ? "sel" : ""}" data-o="${k}">${OBJ[k].e} ${OBJ[k].name}</button>`).join("")}</div>
+        <label style="margin:0;min-width:220px">Distance: <b>${dist} m</b><input type="range" id="dist" min="20" max="100" step="10" value="${dist}"></label>
+        ${stopwatch()}<button class="btn orange" id="run">▶ Run</button></div>
+      <div class="split wide"><div>
+        <table class="res"><tr><th>Mover</th><th>Distance</th><th>Time</th><th>Speed = d ÷ t</th>${lvl >= 2 ? "<th>in km/h</th>" : ""}</tr>
+        ${runs.map(r => `<tr><td>${OBJ[r.obj].e} ${OBJ[r.obj].name}</td><td>${r.d} m</td><td>${fmt(r.t)} s</td><td><b>${fmt(r.d)} ÷ ${fmt(r.t)} = ${fmt(r.d / r.t)} m/s</b></td>${lvl >= 2 ? `<td>${fmt(r.d / r.t * 3.6)} km/h</td>` : ""}</tr>`).join("") || `<tr><td colspan="5" class="hint">Your results will appear here.</td></tr>`}</table>
+        ${lvl >= 3 && runs.length ? `<div class="scene" style="margin-top:10px">${dtGraph(runs.slice(-3).map((r, i) => ({ pts: [[0, 0], [r.t, r.d]], color: LANE_COL[i], name: OBJ[r.obj].e })), { tMax: 20, dMax: 100, tStep: 2, dStep: 10 })}</div><p class="hint">Distance–time graph of your last runs: the steeper the line, the faster the mover.</p>` : ""}
+      </div>
+      <div class="formula-card"><div class="big">speed = distance ÷ time</div><p style="margin:8px 0">distance in <b>m</b> · time in <b>s</b> → speed in <b>m/s</b></p>
+        ${lvl >= 2 ? `<p style="margin:8px 0">distance = speed × time<br>time = distance ÷ speed<br>1 m/s = 3.6 km/h</p>` : ""}
+        <p class="hint" style="color:#b9b4ff">💡 Same mover → same speed, whatever the distance!</p></div></div>
+      <div class="actions"><span class="hint">${ok ? "Great experiments!" : "Run more experiments to continue."}</span><button class="btn green" id="go" ${ok ? "" : "disabled"}>Step 2: Start the ${E.TOTAL} tasks 🚀</button></div>`;
+    E.stage.querySelectorAll(".objbtn").forEach(b => b.onclick = () => { if (!busy) { obj = b.dataset.o; draw(); } });
+    document.getElementById("dist").oninput = e => { if (!busy) { dist = +e.target.value; draw(); } };
+    document.getElementById("run").onclick = async () => { if (busy) return; busy = true; document.getElementById("run").disabled = true; await run(lanes, geo); runs.push({ obj, d: dist, t }); busy = false; draw(); };
+    document.getElementById("go").onclick = done;
+  };
+  draw();
+}
+
+E.start({
+  labId: "speed", total: 12, emoji: "🏎️", levels: LEVELS, explore, calculator: true, typeCycle: 3,
+  taskNote: "measure on the road, races, predictions, speedometer, trip maps and graphs",
+  confetti: ["🏁", "⭐", "🚗", "⏱️", "✨"],
+  typeInfo: { measure: "📏 Measure & calculate", race: "🏁 The race", predict: "🚩 Predict the distance", time: "⏱️ Predict the time", gauge: "🧭 Speedometer", trip: "🗺️ Trip map", gpick: "📈 Read the graph", gcalc: "📈 Calculate from the graph", gmatch: "🎬 Match the motion", g2: "📈 Compare on the graph" },
+  renderers: { measure: renderMeasure, race: renderRace, predict: renderPredict, time: renderTime, gauge: renderGauge, trip: renderTrip, gpick: renderGpick, gcalc: renderGcalc, gmatch: renderGmatch, g2: renderG2 }
+});
+</script>
+</body>
+</html>

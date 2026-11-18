@@ -47,15 +47,14 @@ const PASS = S1971_CONFIG.PASS_MARK;
   document.getElementById("hello").textContent = `Welcome, ${ME.first_name}! 👋`;
   document.getElementById("pm").textContent = PASS + "%";
 
-  let mine = [];
-  try { mine = await rpc("student_my_results", { p_token: ME.token }); } catch (e) { toast(e.message, "bad"); }
+  let mine = [], open = [];
+  try { [mine, open] = await Promise.all([rpc("student_my_results", { p_token: ME.token }), rpc("student_assigned_labs", { p_token: ME.token })]); } catch (e) { toast(e.message, "bad"); }
   const best = {};
   mine.forEach(r => { const p = Math.round(100 * r.score / r.max_score); best[r.lab_id] = Math.max(best[r.lab_id] || 0, p); });
 
-  const g = gradeNum(ME.grade);
-  const labs = window.S1971_LABS.filter(l => l.grades.includes("all") || !g || l.grades.includes(g));
+  const labs = window.S1971_LABS.filter(l => open.includes(l.id));
   const box = document.getElementById("labs");
-  if (!labs.length) box.innerHTML = `<div class="card empty">No labs for your grade yet. Check back soon! 🚀</div>`;
+  if (!labs.length) box.innerHTML = `<div class="card empty">Your teacher has not opened any labs for your class yet. Check back soon! 🚀</div>`;
   else box.innerHTML = labs.map(l => `
     <div class="lab" style="background:${l.color}">
       <div class="icon">${l.icon}</div><h3>${esc(l.title)}</h3><p>${esc(l.description)}</p>

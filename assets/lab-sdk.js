@@ -6,7 +6,7 @@
 (function () {
   const params = new URLSearchParams(location.search);
   const Lab = {
-    mode: "guest", locked: null, session: null, lab: null, levelInfo: null, nextLevel: null,
+    mode: "guest", locked: null, notAssigned: false, session: null, lab: null, levelInfo: null, nextLevel: null,
     level: Math.max(1, parseInt(params.get("level") || "1", 10) || 1),
 
     async init(labId) {
@@ -27,6 +27,10 @@
       if (r.kind === "staff") { this.mode = "preview"; return this; }
 
       this.mode = "student";
+      try {
+        const open = await S1971.rpc("student_assigned_labs", { p_token: s.token });
+        if (!open.includes(lab.id)) { this.notAssigned = true; return this; }
+      } catch (e) { this.notAssigned = true; return this; }
       if (this.level > 1) {
         const prev = lab.levels[this.level - 2];
         try {

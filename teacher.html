@@ -22,7 +22,8 @@
   <div class="tabs">
     <button class="tab active" data-tab="students">👩‍🎓 My Students</button>
     <button class="tab" data-tab="results">📊 Results</button>
-    <button class="tab" data-tab="labs">🔬 Labs</button>
+    <button class="tab" data-tab="classes">🏫 Class Labs</button>
+    <button class="tab" data-tab="labs">🔬 Preview Labs</button>
   </div>
 
   <!-- STUDENTS -->
@@ -85,6 +86,15 @@
     </div>
   </section>
 
+  <!-- CLASS LABS -->
+  <section id="tab-classes" class="hidden">
+    <div class="card" style="margin-bottom:18px">
+      <h2>🏫 Choose the labs for each class</h2>
+      <p class="muted">Switch a lab <b>ON</b> to open it for that class. Students only see the labs that are ON for their grade and section. Classes come from your uploaded student list.</p>
+    </div>
+    <div id="classes" class="grid" style="grid-template-columns:repeat(auto-fill,minmax(320px,1fr))"></div>
+  </section>
+
   <!-- LABS -->
   <section id="tab-labs" class="hidden">
     <div class="card" style="margin-bottom:18px">
@@ -117,13 +127,13 @@ let ME = null, STUDENTS = [], RESULTS = [], PENDING = [];
   }
   document.getElementById("pass-mark").textContent = S1971_CONFIG.PASS_MARK + "%";
   renderLabs();
-  await Promise.all([loadStudents(), loadResults()]);
+  await Promise.all([loadStudents(), loadResults(), loadClasses()]);
 })();
 
 // ---------- tabs ----------
 document.querySelectorAll(".tab").forEach(b => b.onclick = () => {
   document.querySelectorAll(".tab").forEach(x => x.classList.toggle("active", x === b));
-  ["students", "results", "labs"].forEach(t => document.getElementById("tab-" + t).classList.toggle("hidden", t !== b.dataset.tab));
+  ["students", "results", "classes", "labs"].forEach(t => document.getElementById("tab-" + t).classList.toggle("hidden", t !== b.dataset.tab));
 });
 
 // ---------- students ----------
@@ -153,7 +163,7 @@ function renderStudents() {
       <td><button class="btn sm red" data-del="${esc(x.id)}" data-name="${esc(x.full_name)}">🗑️</button></td></tr>`).join("");
   t.querySelectorAll("[data-del]").forEach(b => b.onclick = async () => {
     if (!confirm(`Remove ${b.dataset.name}? Their lab results will also be deleted.`)) return;
-    try { await rpc("teacher_delete_student", { p_token: ME.token, p_student_id: b.dataset.del }); toast("Student removed", "good"); loadStudents(); loadResults(); }
+    try { await rpc("teacher_delete_student", { p_token: ME.token, p_student_id: b.dataset.del }); toast("Student removed", "good"); loadStudents(); loadResults(); loadClasses(); }
     catch (e) { toast(e.message, "bad"); }
   });
 }
@@ -229,7 +239,7 @@ document.getElementById("do-upload").onclick = async () => {
     if (r.skipped && r.skipped.length) html += `<br>⚠️ ${r.skipped.length} skipped:<ul>` + r.skipped.map(s => `<li>${esc(s.name || "(no name)")} — ${esc(s.school_id || "(no ID)")}: ${esc(s.reason)}</li>`).join("") + "</ul>";
     document.getElementById("upload-result").innerHTML = html + "</div>";
     toast("Students uploaded ✔", "good");
-    loadStudents();
+    loadStudents(); loadClasses();
   } catch (e) { toast(e.message, "bad"); } finally { btn.disabled = false; }
 };
 
@@ -277,6 +287,31 @@ document.getElementById("r-export").onclick = () => {
     filteredResults().map(r => [r.full_name, r.school_id, r.grade, r.section, labTitle(r.lab_id), +r.score, +r.max_score, pct(r) + "%", fmtDate(r.completed_at)]));
   S1971.downloadCSV("Science1971_results.csv", rows);
 };
+
+// ---------- class labs ----------
+async function loadClasses() {
+  let classes = [];
+  try { classes = await rpc("teacher_list_classes", { p_token: ME.token }); } catch (e) { return toast(e.message, "bad"); }
+  const box = document.getElementById("classes");
+  if (!classes.length) { box.innerHTML = `<div class="card empty">Upload your students first — your classes will appear here.</div>`; return; }
+  box.innerHTML = classes.map(c => `
+    <div class="card">
+      <div class="row between"><h3 style="margin:0">🎓 ${c.grade ? "Grade " + esc(c.grade) : "No grade"}${c.section ? " · " + esc(c.section) : ""}</h3><span class="pill student">${c.students} students</span></div>
+      <div class="slots" style="margin-top:12px">${window.S1971_LABS.map(l => {
+        const on = c.labs.includes(l.id);
+        return `<label class="switch-row"><span>${l.icon} <b>${esc(l.title)}</b><br><span class="muted small">${esc(l.subject)} · suggested for grade ${l.grades.join(", ")}</span></span>
+          <input type="checkbox" class="sw" data-g="${esc(c.grade)}" data-s="${esc(c.section)}" data-l="${l.id}" ${on ? "checked" : ""}></label>`;
+      }).join("")}</div>
+    </div>`).join("");
+  box.querySelectorAll("input.sw").forEach(cb => cb.onchange = async () => {
+    cb.disabled = true;
+    try {
+      await rpc("teacher_set_class_lab", { p_token: ME.token, p_grade: cb.dataset.g, p_section: cb.dataset.s, p_lab_id: cb.dataset.l, p_on: cb.checked });
+      toast(cb.checked ? "Lab opened for this class ✔" : "Lab closed for this class", "good");
+    } catch (e) { cb.checked = !cb.checked; toast(e.message, "bad"); }
+    cb.disabled = false;
+  });
+}
 
 // ---------- labs ----------
 function renderLabs() {
