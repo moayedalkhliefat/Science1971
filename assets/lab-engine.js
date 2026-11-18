@@ -27,6 +27,7 @@
     if (S1971Lab.mode === "preview") ban.innerHTML = `<div class="banner preview">👁️ Teacher preview — you can try every level. Results are not saved.</div>`;
     if (S1971Lab.mode === "guest") ban.innerHTML = `<div class="banner guest">⚠️ You are not logged in — your score will NOT be saved. <a href="${S1971.root()}index.html">Log in here</a></div>`;
     if (cfg.calculator) addCalculator();
+    new MutationObserver(() => layout()).observe(E.stage, { childList: true });
     showIntro();
   };
 
@@ -59,7 +60,7 @@
     document.getElementById("start").onclick = () => E.C.explore ? E.C.explore(S1971Lab.level, startTasks) : startTasks();
   }
 
-  function startTasks() { newGame(); next(); window.scrollTo({ top: 0, behavior: "smooth" }); }
+  function startTasks() { newGame(); E.t0 = Date.now(); E.tEnd = null; startTimer(); next(); window.scrollTo({ top: 0, behavior: "smooth" }); }
   E.startTasks = startTasks;
 
   function newGame() {
@@ -101,13 +102,13 @@
     if (G.typesSeen.size >= (E.C.typeCycle || 4)) G.typesSeen = new Set([G.q.type]);
     const r = E.C.renderers[G.q.type];
     r(G.q, E);
+    updateBar();
   }
 
   E.header = function () {
     const G = E.G, q = G.q, ti = (E.C.typeInfo || {})[q.type] || "🧩 Task";
     const badge = E.C.plan ? (q.cat === "sim" ? `<span class="catb sim">🧪 Lab challenge</span>` : `<span class="catb dia">🖼️ Diagram task</span>`) : "";
-    return `<div class="lab-head"><b>Task ${G.qn} of ${E.TOTAL}</b>${badge}<span class="diff">${DIFF_NAME[q.diff]}</span><b class="score-now">Score: ${fmt(G.score)}</b></div>
-      <div class="bar"><i style="width:${100 * (G.qn - 1) / E.TOTAL}%"></i></div>
+    return `<div class="qhead"><span class="qnum">Task ${G.qn}</span>${badge}<span class="diff">${DIFF_NAME[q.diff]}</span></div>
       <div class="qtype">${ti}</div>${q.prompt ? `<div class="prompt">${q.prompt}</div>` : ""}`;
   };
 
@@ -134,7 +135,7 @@
     box.innerHTML = `<div class="feedback ${cls}">${title}${move}${q.explain || extra ? `<br><span style="font-weight:600">💡 ${extra || ""}${q.explain || ""}</span>` : ""}</div>
       <div class="actions"><button class="btn green" id="next">${G.qn >= E.TOTAL ? "See my result 🏁" : "Next task ➜"}</button></div>`;
     E.stage.appendChild(box);
-    const sc = E.stage.querySelector(".score-now"); if (sc) sc.textContent = "Score: " + fmt(G.score);
+    updateBar();
     const bar = E.stage.querySelector(".bar i"); if (bar) bar.style.width = (100 * G.qn / E.TOTAL) + "%";
     document.getElementById("next").onclick = () => { next(); window.scrollTo({ top: 0, behavior: "smooth" }); };
     box.scrollIntoView({ behavior: "smooth", block: "nearest" });
@@ -142,13 +143,14 @@
 
   async function finish() {
     const G = E.G, max = Math.max(1, G.answers.length);
+    E.tEnd = Date.now(); const timeS = Math.round((E.tEnd - E.t0) / 1000); updateBar();
     const score = Math.round(G.score * 10) / 10, pct = Math.round(100 * score / max), passed = pct >= PASS;
     const hard = G.answers.filter(a => a.difficulty === 3).length;
     E.stage.innerHTML = `<div class="center">
       <div style="font-size:4rem">${passed ? "🏆" : "💪"}</div>
       <h1>${passed ? "Great job!" : "Keep going!"}</h1>
       <div class="big-score" style="color:${passed ? "#16c172" : "#ff9f1c"}">${pct}%</div>
-      <p class="prompt">${fmt(score)} / ${max} points · ${hard} hard ⭐⭐⭐ tasks</p>
+      <p class="prompt">${fmt(score)} / ${max} points · ${hard} hard ⭐⭐⭐ tasks · ⏱ ${mmss(timeS)}</p>
       <p>${passed ? (S1971Lab.nextLevel ? `🔓 You unlocked <b>${esc(S1971Lab.nextLevel.name)}</b>!` : "🎓 You finished the final level — Expert!") : `You need <b>${PASS}%</b> to pass. Read the tips and try again!`}</p>
       <p id="save-msg" class="hint">Saving your result…</p>
       <div class="actions" style="justify-content:center">
@@ -158,7 +160,7 @@
       </div></div>`;
     document.getElementById("again").onclick = startTasks;
     if (passed) burst();
-    const r = await S1971Lab.submit(score, max, { level: S1971Lab.level, answers: G.answers });
+    const r = await S1971Lab.submit(score, max, { level: S1971Lab.level, answers: G.answers, time_s: timeS });
     const msg = document.getElementById("save-msg");
     if (msg) { msg.textContent = r.message; msg.style.color = r.saved ? "#0c8a50" : "#b52f2f"; msg.style.fontWeight = "800"; }
   }
@@ -174,6 +176,64 @@
     }
     document.body.appendChild(b); setTimeout(() => b.remove(), 3800);
   }
+
+  // ---------- sticky student bar: who, lab, task, dots, score, difficulty, streak, timer, tracker ----------
+  const mmss = sec => `${String(Math.floor(sec / 60)).padStart(2, "0")}:${String(sec % 60).padStart(2, "0")}`;
+  E.mmss = mmss;
+  function startTimer() {
+    clearInterval(E._tick);
+    E._tick = setInterval(() => { const el = document.getElementById("sb-time"); if (el && E.t0) el.textContent = mmss(Math.round(((E.tEnd || Date.now()) - E.t0) / 1000)); if (E.tEnd) clearInterval(E._tick); }, 1000);
+  }
+  function who() {
+    const s = S1971Lab.session;
+    if (S1971Lab.mode === "student" && s) return `<b>${esc(s.name)}</b><span>${[s.grade && "Grade " + esc(s.grade), esc(s.section || "")].filter(Boolean).join(" · ")}</span>`;
+    if (S1971Lab.mode === "preview") return `<b>${esc(s ? s.name : "Teacher")}</b><span>Teacher preview</span>`;
+    return `<b>Guest</b><span>not logged in</span>`;
+  }
+  function updateBar() {
+    const G = E.G; if (!G) return;
+    let bar = document.getElementById("sbar");
+    if (!bar) { bar = document.createElement("div"); bar.id = "sbar"; bar.className = "sbar"; const w = document.querySelector(".wrap"); w.insertBefore(bar, w.children[1]); }
+    const done = G.answers.length, cur = Math.min(G.qn, E.TOTAL);
+    let streak = 0; for (let i = G.answers.length - 1; i >= 0 && G.answers[i].points >= 0.999; i--) streak++;
+    const passPts = E.TOTAL * PASS / 100, pct = 100 * G.score / E.TOTAL;
+    const dots = Array.from({ length: E.TOTAL }, (_, i) => { const a = G.answers[i]; const c = a ? (a.points >= 0.999 ? "ok" : a.points > 0 ? "mid" : "no") : (i === cur - 1 && !E.tEnd ? "cur" : ""); return `<i class="dot ${c}" title="Task ${i + 1}"></i>`; }).join("");
+    const open = bar.querySelector(".sb-list:not(.hidden)") != null;
+    const secs = E.t0 ? Math.round(((E.tEnd || Date.now()) - E.t0) / 1000) : 0;
+    bar.innerHTML = `
+      <div class="sb-who">👤 ${who()}</div>
+      <div class="sb-lab">${E.C.emoji || "🧪"} <b>${esc(S1971Lab.lab.title)}</b><span>${esc(S1971Lab.levelInfo.name)}</span></div>
+      <div class="sb-task"><small>TASK</small><b>${cur} / ${E.TOTAL}</b><div class="dots">${dots}</div></div>
+      <div class="sb-score"><small>SCORE ${fmt(G.score)} / ${E.TOTAL} · ${Math.round(pct)}%</small><div class="meter"><i style="width:${Math.min(100, pct)}%" class="${pct >= PASS ? "pass" : ""}"></i><span class="line" style="left:${PASS}%"></span></div>
+        <small class="need">${G.score >= passPts ? "✅ Pass mark reached!" : `Need ${fmt(passPts)} points (${PASS}%) to pass`}</small></div>
+      <div class="sb-diff"><small>DIFFICULTY</small><b>${[1, 2, 3].map(i => `<span class="${i <= G.diff ? "on" : ""}">★</span>`).join("")}</b></div>
+      <div class="sb-streak"><small>STREAK</small><b>🔥 ${streak}</b></div>
+      <div class="sb-time"><small>TIME</small><b id="sb-time">${mmss(secs)}</b></div>
+      <button class="sb-trk" type="button">📋 Tracker</button>
+      <div class="sb-list ${open ? "" : "hidden"}">${done ? `<table><tr><th>#</th><th>Task</th><th>Level</th><th>Points</th><th></th></tr>${G.answers.map((a, i) => `<tr><td>${i + 1}</td><td>${esc(a.task)}</td><td>${"★".repeat(a.difficulty)}</td><td>${fmt(a.points)}</td><td>${a.points >= 0.999 ? "✅" : a.points > 0 ? "🟡" : "❌"}</td></tr>`).join("")}</table>` : `<p class="hint">Your finished tasks will appear here.</p>`}</div>`;
+    bar.querySelector(".sb-trk").onclick = () => bar.querySelector(".sb-list").classList.toggle("hidden");
+  }
+  E.updateBar = updateBar;
+
+  // ---------- two-column layout: simulation/picture LEFT, question + task RIGHT ----------
+  const VIS = ".scene,.diagram,.atom-box,.mini-atoms,.instruments,.controls";
+  function layout() {
+    const st = E.stage; if (!st || st._busy) return;
+    const grid = st.querySelector(":scope > .task-grid");
+    if (grid) { [...st.children].forEach(c => { if (c !== grid) grid.querySelector(".tg-task").appendChild(c); }); return; }
+    const flat = [];
+    [...st.children].forEach(n => { if (n.classList.contains("split") || n.classList.contains("atom-wrap")) flat.push(...n.children); else flat.push(n); });
+    const isVis = n => n.matches(VIS) || (!!n.querySelector(".atom-box,.diagram") && !n.querySelector(".palette,.tray,.chips"));
+    if (!flat.some(isVis)) return;
+    st._busy = true;
+    const g = document.createElement("div"); g.className = "task-grid";
+    const L = document.createElement("div"); L.className = "tg-vis"; const R = document.createElement("div"); R.className = "tg-task";
+    g.append(L, R);
+    flat.forEach(n => (isVis(n) ? L : R).appendChild(n));
+    st.innerHTML = ""; st.appendChild(g);
+    st._busy = false;
+  }
+  E.layout = layout;
 
   // ---------- shared renderers ----------
   // chips into slots: q.slots=[{left(html), answer}], optional q.side(html) shown at left (e.g. a diagram)

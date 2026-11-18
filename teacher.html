@@ -266,25 +266,26 @@ function filteredResults() {
   return RESULTS.filter(r => (!g || r.grade === g) && (!s || r.section === s) && (!l || r.lab_id === l) && (!q || r.full_name.toLowerCase().includes(q) || r.school_id.toLowerCase().includes(q)));
 }
 function pct(r) { return Math.round(100 * r.score / r.max_score); }
+function tTxt(r) { const t = r.details && r.details.time_s; return t ? `${String(Math.floor(t / 60)).padStart(2, "0")}:${String(t % 60).padStart(2, "0")}` : "—"; }
 function renderResults() {
   const list = filteredResults(), t = document.getElementById("results-table");
   if (!RESULTS.length) { t.innerHTML = `<tr><td class="empty">No results yet. They appear here when students finish a lab.</td></tr>`; return; }
-  t.innerHTML = `<tr><th>Student</th><th>School ID</th><th>Grade</th><th>Section</th><th>Lab</th><th>Score</th><th>%</th><th>Finished</th></tr>` +
+  t.innerHTML = `<tr><th>Student</th><th>School ID</th><th>Grade</th><th>Section</th><th>Lab</th><th>Score</th><th>%</th><th>Time</th><th>Finished</th></tr>` +
     list.map(r => { const p = pct(r); return `<tr style="cursor:pointer" data-id="${r.id}"><td><b>${esc(r.full_name)}</b></td><td>${esc(r.school_id)}</td><td>${esc(r.grade)}</td><td>${esc(r.section)}</td>
-      <td>${esc(labTitle(r.lab_id))}</td><td>${+r.score}/${+r.max_score}</td><td><span class="score ${p >= S1971_CONFIG.PASS_MARK ? "hi" : p >= 50 ? "mid" : "lo"}">${p}%</span></td><td>${fmtDate(r.completed_at)}</td></tr>`; }).join("");
+      <td>${esc(labTitle(r.lab_id))}</td><td>${+r.score}/${+r.max_score}</td><td><span class="score ${p >= S1971_CONFIG.PASS_MARK ? "hi" : p >= 50 ? "mid" : "lo"}">${p}%</span></td><td>${tTxt(r)}</td><td>${fmtDate(r.completed_at)}</td></tr>`; }).join("");
   t.querySelectorAll("tr[data-id]").forEach(tr => tr.onclick = () => showDetails(RESULTS.find(r => String(r.id) === tr.dataset.id)));
 }
 function showDetails(r) {
   const d = (r.details && r.details.answers) || [];
-  const m = S1971.modal(`<h3>${esc(r.full_name)}</h3><p class="muted">${esc(labTitle(r.lab_id))} · ${pct(r)}% · ${fmtDate(r.completed_at)}</p>
+  const m = S1971.modal(`<h3>${esc(r.full_name)}</h3><p class="muted">${esc(labTitle(r.lab_id))} · ${pct(r)}% · ⏱ ${tTxt(r)} · ${fmtDate(r.completed_at)}</p>
     ${d.length ? `<div class="table-wrap" style="max-height:50vh"><table><tr><th>#</th><th>Task</th><th>Difficulty</th><th>Result</th></tr>` +
       d.map((a, i) => `<tr><td>${i + 1}</td><td style="white-space:normal">${esc(a.task)}</td><td>${"⭐".repeat(a.difficulty || 1)}</td><td>${a.points >= 1 ? "✅" : a.points > 0 ? "🟡 " + Math.round(a.points * 100) + "%" : "❌"}</td></tr>`).join("") + `</table></div>` : `<p class="muted">No question details saved.</p>`}
     <div class="row end" style="margin-top:12px"><button class="btn" id="close-d">Close</button></div>`);
   m.querySelector("#close-d").onclick = () => m.remove();
 }
 document.getElementById("r-export").onclick = () => {
-  const rows = [["Student", "School ID", "Grade", "Section", "Lab", "Score", "Max", "Percent", "Finished"]].concat(
-    filteredResults().map(r => [r.full_name, r.school_id, r.grade, r.section, labTitle(r.lab_id), +r.score, +r.max_score, pct(r) + "%", fmtDate(r.completed_at)]));
+  const rows = [["Student", "School ID", "Grade", "Section", "Lab", "Score", "Max", "Percent", "Time (mm:ss)", "Finished"]].concat(
+    filteredResults().map(r => [r.full_name, r.school_id, r.grade, r.section, labTitle(r.lab_id), +r.score, +r.max_score, pct(r) + "%", tTxt(r), fmtDate(r.completed_at)]));
   S1971.downloadCSV("Science_Lab_1971_results.csv", rows);
 };
 
