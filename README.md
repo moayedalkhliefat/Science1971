@@ -26,7 +26,7 @@ student.html          Student home (labs + my results)
 assets/config.js      Supabase URL + public key, pass mark (75%)
 assets/app.js         Shared helpers (API calls, login session)
 assets/lab-sdk.js     Connects any lab to the login + saves results
-assets/lab-engine.js  Shared lab engine: explore step, 12 adaptive tasks, scoring, calculator
+assets/lab-engine.js  Shared lab engine: explore step, 10 tasks per level (5 lab challenges + 5 diagram tasks, adaptive difficulty), scoring, calculator
 assets/lab.css        Shared lab styles
 labs/catalog.js       List of labs and their levels
 labs/digestive/       Biology: Functions of the Digestive System (Grades 7–8, 3 levels)

@@ -17,7 +17,7 @@
   .story{background:#fff7e6;border-left:6px solid #ff9f1c;border-radius:12px;padding:12px 14px;font-weight:700;margin-bottom:10px}
 </style>
 </head>
-<body>
+<body class="theme-bio">
 <div class="wrap">
   <div class="topbar">
     <a class="brand" id="home-link" href="../../index.html"><span class="logo">🍎</span><b>Science1971</b></a>
@@ -35,7 +35,7 @@
 <script src="../../assets/lab-engine.js"></script>
 <script>
 "use strict";
-const E = LabEngine, esc = E.esc;
+const E = LabEngine, esc = E.esc, choice = E.choice;
 
 /* ===================== ORGANS & PICTURE ===================== */
 // a = point on the organ in the picture (652 x 1536), side/y = where the number sits
@@ -104,6 +104,14 @@ function diagram(opts) {
       <text x="${x}" y="${y + 15}" text-anchor="middle" font-family="Baloo 2, Nunito, sans-serif" font-weight="800" font-size="42" fill="${tc}">${k.text != null ? k.text : ""}</text>
       ${opts.clickable ? `<circle cx="${x}" cy="${y}" r="58" fill="transparent"/>` : ""}</g>`;
   });
+  const cnt = {};
+  (opts.items || []).forEach(it => {
+    const o = O[it.organ]; if (!o || o.noMark) return;
+    const k = cnt[it.organ] = (cnt[it.organ] || 0) + 1;
+    const x = o.a[0] + X + (k - 1) * 70 - (k > 1 ? 0 : 0), y = o.a[1] - (k - 1) * 18;
+    m += `<g style="pointer-events:none"><circle cx="${x}" cy="${y}" r="44" fill="#fff" stroke="${it.col || "#ff9f1c"}" stroke-width="7" opacity=".95"/>
+      <text x="${x}" y="${y + 22}" text-anchor="middle" font-size="60">${it.em}</text></g>`;
+  });
   const img = new URL(IMG.src, location.href).href;
   return `<svg viewBox="0 0 ${W} ${H}" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Picture of the human digestive system">
     <rect width="${W}" height="${H}" fill="#fff"/>
@@ -146,9 +154,73 @@ const T = {
   }})
 };
 
+/* ===================== LAB CHALLENGES (drag things onto the body) ===================== */
+const TK = {
+  food: ["🍞", "Food bite"], bread: ["🍞", "Bread (starch)"], protein: ["🍗", "Chicken (protein)"], fat: ["🧈", "Butter (fat)"], chips: ["🍟", "Chips (starch + fat)"],
+  saliva: ["💧", "Saliva (amylase)"], acid: ["🧪", "Stomach acid + pepsin"], bile: ["🟢", "Bile"], panc: ["🟡", "Pancreatic juice"],
+  water: ["💦", "Water"], nutr: ["🩸", "Nutrients"], glucose: ["🍬", "Glucose"], amino: ["🔗", "Amino acids"], fatty: ["🫧", "Fatty acids + glycerol"],
+  unblock: ["🔧", "Unblock"], muscle: ["💪", "Restart muscles"], repair: ["🩹", "Repair lining / villi"], chew: ["🦷", "Chew better"],
+  amylase: ["🔵", "Amylase"], pepsin: ["🟣", "Pepsin"], lipase: ["🟠", "Lipase"], bicarb: ["🧂", "Bicarbonate"],
+  tubeP: ["🧫", "Pepsin test tube"], tubeL: ["🧪", "Lipase test tube"]
+};
+const tok = (id, to) => ({ id, em: TK[id][0], label: TK[id][1], to: to || null });
+const D = {
+  // drag ONE item to the organ described
+  move: (diff, uses, cases) => ({ type: "move", cat: "sim", diff, uses, build() {
+    const c = choice(cases);
+    return { goal: c[0], items: [tok(c[1], c[2])], prompt: "Drag the item onto the correct organ in the picture.", explain: `${TK[c[1]][1]} → ${O[c[2]].name}. ${c[3] || ""}`, summary: "Move: " + c[0].replace(/<[^>]+>/g, "") };
+  }}),
+  // drag the food through every organ in order
+  journey: (diff, uses) => ({ type: "journey", cat: "sim", diff, uses, build() {
+    return { goal: "Move the 🍞 food bite through the body <b>one organ at a time</b>, in the right order, until it leaves the body.", items: [tok("food")], journey: L1,
+      prompt: "Drag the food onto the first organ, then the next one, and so on.", explain: "Mouth → esophagus → stomach → small intestine → large intestine → rectum → anus.", summary: "Food journey (drag step by step)" };
+  }}),
+  // place several items; some are distractors that should stay in the tray
+  place: (diff, uses, type, cases) => ({ type, cat: "sim", diff, uses, build() {
+    const c = choice(cases);
+    return { goal: c.goal, story: c.story, items: E.shuffle(c.items.map(x => tok(x[0], x[1]))), start: c.start || {}, prompt: c.prompt || "Drag the right items onto the right organs. Leave the wrong items in the tray.",
+      explain: c.items.filter(x => x[1]).map(x => `${TK[x[0]][1]} → ${O[x[1]].name}`).join(" · ") + (c.why ? ". " + c.why : ""), summary: c.summary || c.goal.replace(/<[^>]+>/g, "").slice(0, 70) };
+  }})
+};
+const FIX_CASES_1 = [
+  { story: "Ali has diarrhea: his feces are very watery.", goal: "Fix the organ that is not taking water back. Use the right tool.", items: [["repair", "large"], ["unblock"], ["muscle"], ["chew"]], why: "The large intestine absorbs water from leftovers.", summary: "Fix: diarrhea" },
+  { story: "Food gets stuck after swallowing — the muscular tube is not squeezing.", goal: "Fix the problem with the right tool on the right organ.", items: [["muscle", "esophagus"], ["unblock"], ["repair"], ["chew"]], why: "Peristalsis in the esophagus pushes food down.", summary: "Fix: no peristalsis" },
+  { story: "Sara swallows huge pieces of food and gets stomach-ache.", goal: "Fix the problem where it starts.", items: [["chew", "mouth"], ["unblock"], ["muscle"], ["repair"]], why: "Chewing in the mouth makes small pieces.", summary: "Fix: no chewing" },
+  { story: "A patient is thin and weak: the lining that absorbs nutrients is damaged.", goal: "Repair the right organ.", items: [["repair", "small"], ["unblock"], ["muscle"], ["chew"]], why: "Nutrients are absorbed through the lining (villi) of the small intestine.", summary: "Fix: damaged lining" }
+];
+const LAB = {
+  1: [
+    D.move(1, 3, [["Put the food where it is <b>chewed and mixed with saliva</b>.", "food", "mouth"], ["Put the food where it is <b>churned with acid</b>.", "food", "stomach"],
+                  ["Put the food where <b>most nutrients are absorbed</b>.", "food", "small"], ["Put the leftovers where <b>water is taken back</b>.", "food", "large"], ["Put the waste where it <b>waits before leaving the body</b>.", "food", "rectum"]]),
+    D.journey(2, 1),
+    D.place(2, 1, "blood", [{ goal: "After digestion: drag the 🩸 <b>nutrients</b> to where they enter the blood, and the 💦 <b>water</b> to where most leftover water is taken back.", items: [["nutr", "small"], ["water", "large"]], summary: "Nutrients and water" }]),
+    D.place(3, 3, "fix", FIX_CASES_1),
+    D.move(3, 2, [["Put the food in the organ where it stays <b>3–4 hours being churned</b>.", "food", "stomach"], ["Put the food in the <b>6-metre tube lined with villi</b>.", "food", "small"], ["Put the food in the muscular tube that does <b>NO digestion at all</b>.", "food", "esophagus"]])
+  ],
+  2: [
+    D.place(1, 1, "juice", [{ goal: "🍞 Bread is in the mouth. Drag the juice that <b>starts digesting starch</b> onto it.", items: [["saliva", "mouth"], ["bile"], ["acid"], ["panc"]], start: { bread: "mouth" }, summary: "Juice for bread" }]),
+    D.move(1, 2, [["Drop the 🟢 bile where it is <b>MADE</b>.", "bile", "liver"], ["Drop the 🟢 bile where it is <b>STORED</b>.", "bile", "gallbladder"], ["Drop the 🟡 pancreatic juice where it is <b>MADE</b>.", "panc", "pancreas"]]),
+    D.place(2, 1, "juice", [{ goal: "Digest the 🧈 <b>fat</b>: move it to where fat is digested and add the <b>TWO</b> juices that help.", items: [["fat", "small"], ["bile", "small"], ["panc", "small"], ["saliva"], ["acid"]], summary: "Digest the fat" }]),
+    D.place(2, 1, "juice", [{ goal: "Start digesting the 🍗 <b>protein</b>: move it to the right organ and add the right juice.", items: [["protein", "stomach"], ["acid", "stomach"], ["saliva"], ["bile"]], summary: "Start protein digestion" }]),
+    D.place(3, 2, "fix", [
+      { story: "The tube that brings bile out is blocked — fatty food is not digested.", goal: "Use the right tool on the organ that <b>stores and releases bile</b>.", items: [["unblock", "gallbladder"], ["muscle"], ["repair"], ["chew"]], summary: "Fix: bile blocked" },
+      { story: "The tube from a helper organ is blocked — no enzymes reach the small intestine.", goal: "Use the right tool on the organ that <b>makes enzymes for fat, protein and starch</b>.", items: [["unblock", "pancreas"], ["muscle"], ["repair"], ["chew"]], summary: "Fix: pancreatic duct" }]),
+    D.place(3, 1, "place", [{ goal: "A cheese sandwich: drag each food to where <b>its digestion STARTS</b>.", items: [["bread", "mouth"], ["protein", "stomach"], ["fat", "small"]], summary: "Where digestion starts" }])
+  ],
+  3: [
+    D.move(1, 2, [["Drop 🟣 <b>pepsin</b> where it works.", "pepsin", "stomach"], ["Drop 🔵 <b>amylase from saliva</b> where it starts working.", "amylase", "mouth"], ["Drop 🟠 <b>lipase</b> where it digests fat.", "lipase", "small"]]),
+    D.place(1, 1, "place", [{ goal: "Drag each <b>enzyme</b> to where it works.", items: [["amylase", "mouth"], ["pepsin", "stomach"], ["lipase", "small"]], summary: "Enzymes to their organs" }]),
+    D.place(2, 1, "blood", [{ goal: "Absorption: drag each product to the organ where it enters the body.", items: [["glucose", "small"], ["amino", "small"], ["fatty", "small"], ["water", "large"]], summary: "Products into the blood" }]),
+    D.place(2, 1, "fix", [{ story: "Celiac disease has flattened the villi.", goal: "Repair the right organ with the right tool.", items: [["repair", "small"], ["unblock"], ["muscle"], ["chew"]], summary: "Fix: flattened villi" }]),
+    D.place(3, 1, "place", [{ goal: "pH experiment: put the <b>pepsin</b> tube where the pH is about 2, and the <b>lipase</b> tube where bile and a neutral pH help it.", items: [["tubeP", "stomach"], ["tubeL", "small"]], summary: "Enzymes and pH" }]),
+    D.place(3, 1, "juice", [{ goal: "🍟 Chips (starch + fat) reach the small intestine. Move them there and add <b>everything needed</b> to finish digesting BOTH.", items: [["chips", "small"], ["panc", "small"], ["bile", "small"], ["acid"], ["pepsin"]], summary: "Finish digesting chips" }]),
+    D.move(3, 1, [["Drop the 🧂 <b>bicarbonate</b> where it is MADE (it neutralises stomach acid).", "bicarb", "pancreas"]])
+  ]
+};
+
 /* ===================== LEVEL CONTENT ===================== */
 const LEVELS = {
-  1: { intro: "The main organs of the digestive tract and the job of each one.", pool: () => [
+  1: { intro: "The main organs of the digestive tract and the job of each one.", pool: () => [...LAB[1],
     T.label(1, ["mouth", "esophagus", "stomach", "small", "large"], 3, 2),
     T.jobs(1, L1, 3, 2),
     T.pick(1, "Click where digestion begins.", "mouth", "Digestion starts in the mouth: teeth chew the food and saliva begins breaking it down."),
@@ -177,7 +249,7 @@ const LEVELS = {
     T.scenario(3, "Someone swallows big pieces of food without chewing.", "Click the organ where the chewing should have happened.", "mouth",
       "What is the most likely result?", "Digestion is slower, because big pieces are harder to break down", ["The food is absorbed faster", "The food skips the stomach", "Nothing changes"], "Chewing makes small pieces with more surface area for digestive juices.")
   ]},
-  2: { intro: "Helper organs (salivary glands, liver, gallbladder, pancreas) and mechanical vs chemical digestion.", pool: () => [
+  2: { intro: "Helper organs (salivary glands, liver, gallbladder, pancreas) and mechanical vs chemical digestion.", pool: () => [...LAB[2],
     T.label(1, ["liver", "gallbladder", "pancreas", "stomach", "small"], 4, 2),
     T.jobs(1, ["liver", "gallbladder", "pancreas"], 3, 1),
     T.pick(1, "Click the organ that STORES bile.", "gallbladder", "The liver makes bile; the gallbladder stores it."),
@@ -204,7 +276,7 @@ const LEVELS = {
     T.scenario(3, "Chewing well makes digestion faster.", "Click where chewing happens.", "mouth",
       "Why does chewing help chemical digestion?", "Smaller pieces have more surface area, so enzymes work faster", ["Chewing makes enzymes", "Chewing removes water", "It stops the stomach working"], "More surface area = more places for enzymes to act.")
   ]},
-  3: { intro: "Enzymes, villi, and where each nutrient is absorbed.", pool: () => [
+  3: { intro: "Enzymes, villi, and where each nutrient is absorbed.", pool: () => [...LAB[3],
     T.pick(1, "Click the organ where pepsin works.", "stomach", "Pepsin works in the strong acid of the stomach."),
     T.pick(1, "Click the organ lined with millions of villi.", "small", "Villi cover the inner wall of the small intestine."),
     T.pick(1, "Click the organ that releases lipase.", "pancreas", "The pancreas makes lipase (and amylase and protease)."),
@@ -330,6 +402,54 @@ function renderScenario(q) {
   draw();
 }
 
+/* ---- lab challenge renderer: drag items onto the body ---- */
+function renderSim(q) {
+  const pos = Object.assign({}, q.start || {}), seq = [];
+  const startItems = Object.keys(q.start || {}).map(id => tok(id, q.start[id]));
+  let checked = false;
+  const dropOrgans = MARK;
+  const draw = res => {
+    const items = startItems.concat(q.items).filter(it => pos[it.id]).map(it => ({ organ: pos[it.id], em: it.em, col: res ? (res[it.id] ? "#16c172" : "#ff4d4d") : "#ff9f1c" }));
+    const states = {}, txt = {};
+    if (q.journey) seq.forEach((o, i) => { states[o] = res ? (q.journey[i] === o ? "ok" : "no") : "sel"; txt[o] = i + 1; });
+    E.stage.innerHTML = E.header() + (q.story ? `<div class="story">📋 ${esc(q.story)}</div>` : "") + `<div class="goal"><small>🎯 YOUR GOAL</small>${q.goal}</div>
+      <div class="split"><div class="diagram" id="zone">${diagram({ dots: dropOrgans.map(k => ({ organ: k, text: txt[k] != null ? txt[k] : "" })), states, items })}</div>
+      <div>${checked ? "" : `<div class="tray">${q.items.map(it => `<div class="tok" data-id="${it.id}" data-ghost="${esc(it.em)}"><span class="em">${it.em}</span>${esc(it.label)}</div>`).join("")}</div>
+        <p class="hint">Drag an item onto an organ circle — or tap the item, then tap the organ. Drag it again to move it.</p>`}
+        ${q.journey ? `<div class="step-box">Stops so far: <b>${seq.length}</b> / ${q.journey.length}${res ? `<ol style="margin:6px 0 0">${seq.map((o, i) => `<li>${esc(O[o].name)} ${q.journey[i] === o ? "✅" : "❌"}</li>`).join("")}</ol>` : ""}</div>` : ""}
+        ${res ? `<div class="notice">${res.html}</div>` : ""}
+        ${checked ? "" : `<div class="actions"><button class="btn ghost" id="reset">↺ Start again</button><button class="btn" id="check" ${Object.keys(pos).length > Object.keys(q.start || {}).length || seq.length ? "" : "disabled"}>Check ✔</button></div>`}</div></div>`;
+    if (checked) return;
+    const zone = document.getElementById("zone");
+    E.dragDrop([...E.stage.querySelectorAll(".tok")], zone, (id, cx, cy) => {
+      const p = E.svgPoint(zone.querySelector("svg"), cx, cy);
+      let best = null, bd = 1e9;
+      dropOrgans.forEach(k => { const d = Math.hypot(p.x - (O[k].a[0] + IMG.pad), p.y - O[k].a[1]); if (d < bd) { bd = d; best = k; } });
+      if (bd > 140) return S1971.toast("Drop it on an organ circle.", "bad");
+      pos[id] = best;
+      if (q.journey && id === "food" && seq[seq.length - 1] !== best && seq.length < q.journey.length) seq.push(best);
+      draw();
+    });
+    document.getElementById("reset").onclick = () => { Object.keys(pos).forEach(k => delete pos[k]); Object.assign(pos, q.start || {}); seq.length = 0; draw(); };
+    document.getElementById("check").onclick = () => {
+      checked = true;
+      let pts, res = {};
+      if (q.journey) { pts = seq.filter((o, i) => q.journey[i] === o).length / q.journey.length; res.food = pts === 1; res.html = `Correct order: ${q.journey.map(k => O[k].name).join(" → ")}`; }
+      else {
+        const need = q.items.filter(it => it.to), bad = q.items.filter(it => !it.to && pos[it.id]);
+        const good = need.filter(it => pos[it.id] === it.to);
+        q.items.forEach(it => res[it.id] = it.to ? pos[it.id] === it.to : !pos[it.id]);
+        startItems.forEach(it => res[it.id] = true);
+        pts = Math.max(0, (good.length - bad.length) / need.length);
+        res.html = need.map(it => `${pos[it.id] === it.to ? "✅" : "❌"} ${it.em} ${esc(it.label)} → <b>${esc(O[it.to].name)}</b>`).join("<br>") +
+          (bad.length ? `<br>❌ Not needed: ${bad.map(it => it.em + " " + esc(it.label)).join(", ")}` : "");
+      }
+      draw(res); E.grade(pts);
+    };
+  };
+  draw();
+}
+
 /* ===================== EXPLORE (Step 1) ===================== */
 function explore(lvl, done) {
   const organs = LEVEL_ORGANS[lvl], seen = new Set(), st = E.stage;
@@ -371,11 +491,11 @@ function explore(lvl, done) {
 
 /* ===================== START ===================== */
 E.start({
-  labId: "digestive", total: 12, emoji: "🍎", levels: LEVELS, explore, typeCycle: 4,
+  labId: "digestive", total: 10, plan: { sim: 5, dia: 5 }, emoji: "🍎", levels: LEVELS, explore, typeCycle: 4,
   taskNote: "label, jobs, find the organ, trace the path and problem scenarios — all on the picture",
   confetti: ["🎉", "⭐", "🍎", "🧪", "✨", "🥕"],
-  typeInfo: { label: "🏷️ Label the picture", jobs: "🔗 Jobs on the picture", pick: "👆 Find the organ", pickMany: "👆 Find ALL the organs", path: "🚶 Trace the path", scenario: "🧠 Problem scenario" },
-  renderers: { label: chipWithPicture, jobs: chipWithPicture, pick: renderPick, pickMany: renderPick, path: renderPath, scenario: renderScenario }
+  typeInfo: { move: "🍞 Move it to the right organ", journey: "🚶 Food journey", place: "🧩 Place them right", juice: "💧 Add the right juice", fix: "🛠️ Fix the problem", blood: "🩸 Into the blood", label: "🏷️ Label the picture", jobs: "🔗 Jobs on the picture", pick: "👆 Find the organ", pickMany: "👆 Find ALL the organs", path: "🚶 Trace the path", scenario: "🧠 Problem scenario" },
+  renderers: { move: renderSim, journey: renderSim, place: renderSim, juice: renderSim, fix: renderSim, blood: renderSim, label: chipWithPicture, jobs: chipWithPicture, pick: renderPick, pickMany: renderPick, path: renderPath, scenario: renderScenario }
 });
 </script>
 </body>

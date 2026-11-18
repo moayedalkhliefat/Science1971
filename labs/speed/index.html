@@ -32,7 +32,7 @@
   .gopt svg{width:100%;height:auto;display:block}
 </style>
 </head>
-<body>
+<body class="theme-speed">
 <div class="wrap">
   <div class="topbar">
     <a class="brand" id="home-link" href="../../index.html"><span class="logo">🏎️</span><b>Science1971</b></a>
@@ -321,22 +321,78 @@ const T = {
   }})
 };
 
+/* ===================== SIMULATION CHALLENGES ===================== */
+const STORIES = {
+  1: () => { const v = choice([5, 10]); return { text: `A cyclist rides at a steady <b>${v} m/s</b> for 12 seconds.`, pts: [0, 2, 4, 6, 8, 10, 12].map(t => v * t) }; },
+  2: () => choice([
+    { text: "A runner runs at <b>10 m/s</b> for 4 s, then <b>stops</b> for 8 s.", pts: [0, 20, 40, 40, 40, 40, 40] },
+    { text: "A walker <b>waits</b> 4 s at a crossing, then walks at <b>5 m/s</b> for 8 s.", pts: [0, 0, 0, 10, 20, 30, 40] },
+    { text: "A scooter moves at <b>5 m/s</b> for 6 s, then <b>stops</b> for 6 s.", pts: [0, 10, 20, 30, 30, 30, 30] }
+  ]),
+  3: () => choice([
+    { text: "A car drives at <b>10 m/s</b> for 4 s, <b>stops</b> at a light for 4 s, then drives at <b>5 m/s</b> for 4 s.", pts: [0, 20, 40, 40, 40, 50, 60] },
+    { text: "A cyclist rides at <b>5 m/s</b> for 4 s, then <b>speeds up to 15 m/s</b> for 4 s, then <b>stops</b>.", pts: [0, 10, 20, 50, 80, 80, 80] },
+    { text: "A bus <b>waits</b> 2 s, drives at <b>10 m/s</b> for 6 s, then slows to <b>5 m/s</b> for 4 s.", pts: [0, 0, 20, 40, 60, 70, 80] }
+  ])
+};
+const C = {
+  // set distance + time so the speed hits the target
+  target: (diff, uses, kmh) => ({ type: "target", cat: "sim", diff, uses, build() {
+    let v, dMax, dStep;
+    if (diff === 1) { v = choice([2, 4, 5, 10]); dMax = 100; dStep = 5; }
+    else if (diff === 2) { v = choice([8, 12, 15, 25]); dMax = 300; dStep = 10; }
+    else if (kmh) { v = choice([15, 20, 25]); dMax = 500; dStep = 10; }
+    else { v = choice([45, 35, 7.5, 12.5, 22.5]); dMax = 500; dStep = 5; }
+    const shown = kmh ? v * 3.6 : v, unit = kmh ? "km/h" : "m/s";
+    return { v, dMax, dStep, shown, unit, kmh: !!kmh, obj: diff === 1 ? "cyclist" : "car",
+      prompt: `🎯 Set the <b>distance</b> and the <b>time</b> so that the ${diff === 1 ? "cyclist" : "car"}'s speed is exactly <b>${fmt(shown)} ${unit}</b>. Then press <b>▶ Run test</b> — the stopwatch and the result will tell you if you did it!`,
+      explain: `Any pair where distance ÷ time = ${fmt(v)} m/s works, e.g. ${fmt(v * 2)} m in 2 s or ${fmt(v * 4)} m in 4 s.${kmh ? ` (${fmt(shown)} km/h ÷ 3.6 = ${fmt(v)} m/s)` : ""}`,
+      summary: `Hit the target speed ${fmt(shown)} ${unit}` };
+  }}),
+  // set the speed so it stops exactly at the finish when the time runs out
+  arrive: (diff, uses) => ({ type: "arrive", cat: "sim", diff, uses, build() {
+    let D, Tt;
+    if (diff === 1) { Tt = choice([4, 5, 10]); D = Tt * choice([3, 4, 6]); }
+    else if (diff === 2) { Tt = choice([4, 6, 8]); D = Tt * choice([7, 9, 11, 14]); }
+    else { Tt = choice([4, 6, 8]); D = Tt * choice([6.5, 8.5, 12.5]); }
+    return { D, T: Tt, max: scaleMax(D * 1.4), obj: "car",
+      prompt: `🏁 The finish line is at <b>${fmt(D)} m</b>. The car will drive for exactly <b>${Tt} s</b>. Set its <b>speed</b> so it stops <b>exactly on the finish line</b>, then press <b>▶ Run test</b>.`,
+      explain: `Speed = distance ÷ time = ${fmt(D)} m ÷ ${Tt} s = ${fmt(D / Tt)} m/s.`, summary: `Arrive on time (${fmt(D)} m in ${Tt} s)` };
+  }}),
+  // beat the rival but stay under the speed limit
+  rival: (diff, uses) => ({ type: "rival", cat: "sim", diff, uses, build() {
+    const r = diff <= 2 ? choice([{ d: 40, t: 8 }, { d: 30, t: 5 }, { d: 50, t: 10 }]) : choice([{ d: 45, t: 6 }, { d: 70, t: 10 }, { d: 36, t: 4 }]);
+    const vr = r.d / r.t, L = diff <= 2 ? vr + choice([3, 4]) : vr + 1.5;
+    return { r, vr, L, prompt: `🏃 Your runner (lane B) must be <b>FASTER</b> than the rival (lane A), but the speed camera fines anyone above <b>${fmt(L)} m/s</b>. The rival runs <b>${r.d} m in ${r.t} s</b>. Set your runner's distance and time, then press <b>▶ Race</b>.`,
+      explain: `Rival: ${r.d} ÷ ${r.t} = ${fmt(vr)} m/s. Your speed had to be more than ${fmt(vr)} and at most ${fmt(L)} m/s.`, summary: `Beat the rival under ${fmt(L)} m/s` };
+  }}),
+  // drag the points to draw the distance–time graph of a story
+  draw: (diff, uses) => ({ type: "draw", cat: "sim", diff, uses, build() {
+    const st = STORIES[diff]();
+    return { story: st.text, target: st.pts, dMax: Math.max(60, Math.ceil(Math.max(...st.pts) / 20) * 20), prompt: `✏️ Drag the points to draw the <b>distance–time graph</b> for this story, then press Check.`,
+      explain: `Distances every 2 s: ${st.pts.join(", ")} m. Flat = stopped, steeper = faster.`, summary: "Draw the graph for a story" };
+  }})
+};
+
 /* ===================== LEVELS ===================== */
 const LEVELS = {
-  1: { intro: "What is speed? Measure distance and time on the road and calculate speed = distance ÷ time (m/s).", pool: () => [
-    T.measure(1, 3), T.race(1, 2), T.time(1, 1),
-    T.measure(2, 3), T.race(2, 2), T.race(2, 1, true),
-    T.measure(3, 3), T.race(3, 2), T.predict(3, 1)
+  1: { intro: "What is speed? Make objects reach a target speed, and measure distance and time to calculate speed = distance ÷ time (m/s).", pool: () => [
+    C.target(1, 2), C.target(2, 2), C.rival(2, 1), C.target(3, 2), C.rival(3, 1),
+    T.measure(1, 2), T.race(1, 1), T.time(1, 1),
+    T.measure(2, 2), T.race(2, 1), T.race(2, 1, true),
+    T.measure(3, 2), T.race(3, 1), T.predict(3, 1)
   ]},
   2: { intro: "Rearrange the formula (distance = speed × time, time = distance ÷ speed), use km/h and m/s, and find the average speed of a trip.", pool: () => [
-    T.predict(1, 2), T.time(1, 2), T.measure(2, 1),
-    T.gauge(2, 2), T.gauge(2, 1, true), T.trip(2, 2), T.time(2, 1),
-    T.trip(3, 2), T.predict(3, 2, true), T.time(3, 2), T.predict(2, 1)
+    C.arrive(1, 2), C.arrive(2, 2), C.rival(2, 1), C.arrive(3, 1), C.target(3, 1, true), C.target(3, 1),
+    T.predict(1, 2), T.time(1, 1), T.measure(2, 1),
+    T.gauge(2, 1), T.gauge(2, 1, true), T.trip(2, 1), T.time(2, 1),
+    T.trip(3, 1), T.predict(3, 1, true), T.time(3, 1)
   ]},
-  3: { intro: "Distance–time graphs: read them, find when an object stops or moves fastest, and calculate speed from the graph.", pool: () => [
-    T.gpick(1, 2, "stop"), T.gpick(1, 2, "fast"), T.gmatch(1, 1),
-    T.gcalc(2, 3), T.gmatch(2, 2), T.gpick(2, 1, "slow"),
-    T.gcalc(3, 2, true), T.g2(3, 2), T.gcalc(3, 2), T.gmatch(3, 1)
+  3: { intro: "Distance–time graphs: draw them from a story, read them, and calculate speed from the graph.", pool: () => [
+    C.draw(1, 2), C.draw(2, 2), C.draw(3, 2), C.target(2, 1),
+    T.gpick(1, 2, "stop"), T.gpick(1, 1, "fast"), T.gmatch(1, 1),
+    T.gcalc(2, 2), T.gmatch(2, 1), T.gpick(2, 1, "slow"),
+    T.gcalc(3, 1, true), T.g2(3, 1), T.gcalc(3, 1), T.gmatch(3, 1)
   ]}
 };
 
@@ -529,6 +585,117 @@ function renderG2(q) {
   draw();
 }
 
+/* ---- challenge renderers ---- */
+function goalBox(html) { return `<div class="goal"><small>🎯 YOUR GOAL</small>${html}</div>`; }
+function wireSlider(id, cb) { const el = document.getElementById(id); el.oninput = () => { document.getElementById(id + "-v").textContent = el.value; cb(+el.value); }; }
+
+function renderTarget(q) {
+  let d = Math.min(q.dMax, q.dStep * 4), t = 3, done = false;
+  const draw = () => {
+    const lanes = lanesFor(q.obj, 0, d, t), geo = road(lanes, q.dMax);
+    E.stage.innerHTML = E.header() + goalBox(`Make the speed exactly <b>${fmt(q.shown)} ${q.unit}</b>`) + `<div class="scene">${geo.svg}</div>
+      <div class="controls">${E.slider("sd", "Distance", q.dStep, q.dMax, q.dStep, d, "m")}${E.slider("st", "Time", 1, 20, 1, t, "s")}</div>
+      <div class="instruments">${stopwatch()}<button class="btn orange" id="run" ${done ? "disabled" : ""}>▶ Run test</button><div class="formula">speed = distance ÷ time</div><div id="out" class="sign" style="display:none"></div></div>`;
+    if (done) return;
+    wireSlider("sd", v => { d = v; redrawRoad(); }); wireSlider("st", v => { t = v; });
+    function redrawRoad() { const g2 = road(lanesFor(q.obj, 0, d, t), q.dMax); E.stage.querySelector(".scene").innerHTML = g2.svg; }
+    document.getElementById("run").onclick = async () => {
+      done = true; E.stage.querySelectorAll("input[type=range]").forEach(x => x.disabled = true); document.getElementById("run").disabled = true;
+      const L = lanesFor(q.obj, 0, d, t), g = road(L, q.dMax); E.stage.querySelector(".scene").innerHTML = g.svg;
+      await run(L, g);
+      const v = d / t, shown = q.kmh ? v * 3.6 : v, ok = E.close(v, q.v, 0.001);
+      const out = document.getElementById("out"); out.style.display = ""; out.innerHTML = `<small>YOUR SPEED</small>${fmt(d)} ÷ ${t} = ${fmt(v)} m/s${q.kmh ? ` = ${fmt(shown)} km/h` : ""} ${ok ? "✅" : "❌"}`;
+      E.grade(ok ? 1 : 0);
+    };
+  };
+  draw();
+}
+
+function renderArrive(q) {
+  let v = 5, done = false;
+  const draw = () => {
+    const lanes = lanesFor(q.obj, 0, Math.min(q.max, v * q.T), q.T);
+    const geo = road(lanes, q.max, { flags: [{ id: "fin", d: q.D }], hideFinish: true });
+    E.stage.innerHTML = E.header() + goalBox(`Stop exactly on the 🚩 at <b>${fmt(q.D)} m</b> after <b>${q.T} s</b>`) + `<div class="scene">${geo.svg}</div>
+      <div class="controls">${E.slider("sv", "Speed", 0.5, 30, 0.5, v, "m/s")}<div class="sign"><small>DRIVING TIME</small>${q.T} s</div></div>
+      <div class="instruments">${stopwatch()}<button class="btn orange" id="run">▶ Run test</button><div class="formula">speed = distance ÷ time</div><div id="out" class="sign" style="display:none"></div></div>`;
+    if (done) return;
+    wireSlider("sv", x => { v = x; });
+    document.getElementById("run").onclick = async () => {
+      done = true; document.getElementById("sv").disabled = true; document.getElementById("run").disabled = true;
+      const L = lanesFor(q.obj, 0, Math.min(q.max, v * q.T), q.T), g = road(L, q.max, { flags: [{ id: "fin", d: q.D }], hideFinish: true });
+      E.stage.querySelector(".scene").innerHTML = g.svg;
+      await run(L, g);
+      const stop = v * q.T, ok = E.close(stop, q.D, 0.001);
+      const out = document.getElementById("out"); out.style.display = ""; out.innerHTML = `<small>RESULT</small>${fmt(v)} m/s × ${q.T} s = ${fmt(stop)} m ${ok ? "✅ on the line!" : stop > q.D ? "❌ too far" : "❌ too short"}`;
+      E.grade(ok ? 1 : 0);
+    };
+  };
+  draw();
+}
+
+function renderRival(q) {
+  let d = 20, t = 5, done = false;
+  const lanesOf = () => [{ obj: "runner", pts: [[0, 0], [q.r.t, q.r.d]] }, { obj: "runner", pts: [[0, 0], [t, d]] }];
+  const draw = () => {
+    const geo = road(lanesOf(), 100);
+    E.stage.innerHTML = E.header() + goalBox(`Faster than <b>${fmt(q.vr)} m/s</b> · not faster than <b>${fmt(q.L)} m/s</b> 📷`) + `<div class="scene">${geo.svg}</div>
+      <div class="controls">${E.slider("rd", "Your distance", 5, 100, 5, d, "m")}${E.slider("rt", "Your time", 1, 20, 1, t, "s")}<div class="sign"><small>RIVAL (lane A)</small>${q.r.d} m in ${q.r.t} s</div><div class="sign"><small>📷 SPEED LIMIT</small>${fmt(q.L)} m/s</div></div>
+      <div class="instruments">${stopwatch("RACE CLOCK")}<button class="btn orange" id="run">▶ Race</button><div id="out" class="sign" style="display:none"></div></div>`;
+    if (done) return;
+    wireSlider("rd", x => { d = x; }); wireSlider("rt", x => { t = x; });
+    document.getElementById("run").onclick = async () => {
+      done = true; E.stage.querySelectorAll("input[type=range]").forEach(x => x.disabled = true); document.getElementById("run").disabled = true;
+      const L = lanesOf(), g = road(L, 100); E.stage.querySelector(".scene").innerHTML = g.svg;
+      await run(L, g, { tags: true });
+      const v = d / t, ok = v > q.vr + 1e-9 && v <= q.L + 1e-9;
+      const out = document.getElementById("out"); out.style.display = "";
+      out.innerHTML = `<small>YOUR SPEED</small>${d} ÷ ${t} = ${fmt(v)} m/s ${ok ? "✅ you win, no fine!" : v <= q.vr ? "❌ not faster than the rival" : "❌ fined — over the limit"}`;
+      E.grade(ok ? 1 : 0);
+    };
+  };
+  draw();
+}
+
+function renderDraw(q) {
+  const times = [0, 2, 4, 6, 8, 10, 12], vals = times.map(() => 0);
+  const W = 720, H = 470, Lm = 80, B = 64, Tm = 20, Rm = 24, dStep = 10;
+  const X = t => Lm + (W - Lm - Rm) * t / 12, Y = d => H - B - (H - B - Tm) * d / q.dMax;
+  let checked = false;
+  const svg = res => {
+    let s = `<svg viewBox="0 0 ${W} ${H}" xmlns="http://www.w3.org/2000/svg" style="touch-action:none"><rect width="${W}" height="${H}" fill="#fff"/>`;
+    for (let t = 0; t <= 12; t += 2) s += `<line x1="${X(t)}" x2="${X(t)}" y1="${Tm}" y2="${H - B}" stroke="#e6e3fb"/><text x="${X(t)}" y="${H - B + 24}" text-anchor="middle" font-family="Nunito,sans-serif" font-weight="700" font-size="16" fill="#4a4870">${t}</text>`;
+    for (let d = 0; d <= q.dMax; d += dStep) s += `<line y1="${Y(d)}" y2="${Y(d)}" x1="${Lm}" x2="${W - Rm}" stroke="#e6e3fb"/><text x="${Lm - 10}" y="${Y(d) + 5}" text-anchor="end" font-family="Nunito,sans-serif" font-weight="700" font-size="15" fill="#4a4870">${d}</text>`;
+    s += `<text x="${(Lm + W) / 2}" y="${H - 12}" text-anchor="middle" font-family="Nunito,sans-serif" font-weight="800" font-size="17" fill="#1d1b4b">Time (s)</text><text transform="translate(20,${(Tm + H - B) / 2}) rotate(-90)" text-anchor="middle" font-family="Nunito,sans-serif" font-weight="800" font-size="17" fill="#1d1b4b">Distance (m)</text>
+      <line x1="${Lm}" y1="${H - B}" x2="${W - Rm + 6}" y2="${H - B}" stroke="#1d1b4b" stroke-width="3"/><line x1="${Lm}" y1="${H - B}" x2="${Lm}" y2="${Tm - 6}" stroke="#1d1b4b" stroke-width="3"/>`;
+    if (res) s += `<polyline points="${times.map((t, i) => X(t) + "," + Y(q.target[i])).join(" ")}" fill="none" stroke="#16c172" stroke-width="5" stroke-dasharray="10 8" opacity=".8"/>`;
+    s += `<polyline points="${times.map((t, i) => X(t) + "," + Y(vals[i])).join(" ")}" fill="none" stroke="#7b4dff" stroke-width="6" stroke-linejoin="round"/>`;
+    times.forEach((t, i) => {
+      const col = res ? (res[i] ? "#16c172" : "#ff4d4d") : i === 0 ? "#1d1b4b" : "#ff9f1c";
+      s += `<circle cx="${X(t)}" cy="${Y(vals[i])}" r="${i === 0 ? 8 : 13}" fill="${col}" stroke="#fff" stroke-width="3"/>${i && !res ? `<circle class="pt-h" data-i="${i}" cx="${X(t)}" cy="${Y(vals[i])}" r="26" fill="transparent" style="cursor:ns-resize"/>` : ""}`;
+    });
+    return s + `</svg>`;
+  };
+  const draw = res => {
+    E.stage.innerHTML = E.header() + `<div class="story" style="background:#fff7e6;border-left:6px solid #ff9f1c;border-radius:12px;padding:12px 14px;font-weight:700;margin-bottom:10px">📖 ${q.story}</div>
+      <div class="split wide"><div class="scene" id="gbox">${svg(res)}</div><div><div class="step-box">Drag each orange point <b>up or down</b> to the right distance (it snaps to the grid). The point at 0 s stays at 0 m.
+      ${res ? `<p class="fix">Green dashed line = correct graph.</p>` : ""}</div>${checked ? "" : E.actions(true)}</div></div>`;
+    if (checked) return;
+    wire();
+    document.getElementById("check").onclick = () => { checked = true; const r = times.map((_, i) => vals[i] === q.target[i]); draw(r); E.grade(r.slice(1).filter(Boolean).length / 6); };
+  };
+  function wire() {
+    const box = document.getElementById("gbox");
+    box.querySelectorAll(".pt-h").forEach(h => h.onpointerdown = ev => {
+      ev.preventDefault(); const i = +h.dataset.i, el = box.querySelector("svg");
+      const mv = e => { const p = E.svgPoint(el, e.clientX, e.clientY); const d = Math.round(Math.max(0, Math.min(q.dMax, (H - B - p.y) / (H - B - Tm) * q.dMax)) / dStep) * dStep; if (d !== vals[i]) { vals[i] = d; box.innerHTML = svg(); } };
+      const up = () => { window.removeEventListener("pointermove", mv); window.removeEventListener("pointerup", up); wire(); };
+      window.addEventListener("pointermove", mv); window.addEventListener("pointerup", up);
+    });
+  }
+  draw();
+}
+
 /* ===================== EXPLORE: the speed bench ===================== */
 const BENCH = { runner: 5, cyclist: 8, car: 20 };
 function explore(lvl, done) {
@@ -563,11 +730,11 @@ function explore(lvl, done) {
 }
 
 E.start({
-  labId: "speed", total: 12, emoji: "🏎️", levels: LEVELS, explore, calculator: true, typeCycle: 3,
+  labId: "speed", total: 10, plan: { sim: 5, dia: 5 }, emoji: "🏎️", levels: LEVELS, explore, calculator: true, typeCycle: 3,
   taskNote: "measure on the road, races, predictions, speedometer, trip maps and graphs",
   confetti: ["🏁", "⭐", "🚗", "⏱️", "✨"],
-  typeInfo: { measure: "📏 Measure & calculate", race: "🏁 The race", predict: "🚩 Predict the distance", time: "⏱️ Predict the time", gauge: "🧭 Speedometer", trip: "🗺️ Trip map", gpick: "📈 Read the graph", gcalc: "📈 Calculate from the graph", gmatch: "🎬 Match the motion", g2: "📈 Compare on the graph" },
-  renderers: { measure: renderMeasure, race: renderRace, predict: renderPredict, time: renderTime, gauge: renderGauge, trip: renderTrip, gpick: renderGpick, gcalc: renderGcalc, gmatch: renderGmatch, g2: renderG2 }
+  typeInfo: { target: "🎯 Hit the target speed", arrive: "🏁 Arrive on time", rival: "🏃 Beat the rival", draw: "✏️ Draw the graph", measure: "📏 Measure & calculate", race: "🏁 The race", predict: "🚩 Predict the distance", time: "⏱️ Predict the time", gauge: "🧭 Speedometer", trip: "🗺️ Trip map", gpick: "📈 Read the graph", gcalc: "📈 Calculate from the graph", gmatch: "🎬 Match the motion", g2: "📈 Compare on the graph" },
+  renderers: { target: renderTarget, arrive: renderArrive, rival: renderRival, draw: renderDraw, measure: renderMeasure, race: renderRace, predict: renderPredict, time: renderTime, gauge: renderGauge, trip: renderTrip, gpick: renderGpick, gcalc: renderGcalc, gmatch: renderGmatch, g2: renderG2 }
 });
 </script>
 </body>

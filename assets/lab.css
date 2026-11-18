@@ -55,3 +55,65 @@
 .calc button.op{background:#7b4dff}.calc button.eq{background:#16c172}.calc button.cl{background:#ff4d4d}
 .sign{background:#fff7e6;border:3px solid #ff9f1c;border-radius:14px;padding:8px 14px;font-weight:800}
 .sign small{display:block;color:#8a5a00;font-size:.75rem}
+.catb{font-weight:800;padding:3px 12px;border-radius:999px;font-size:.85rem}
+.catb.sim{background:#e6fbf0;color:#0c6b3e}.catb.dia{background:#e8f1ff;color:#1b56b8}
+.drag-ghost{position:fixed;pointer-events:none;z-index:90;transform:translate(-50%,-50%);font-size:2rem}
+.tray{display:flex;flex-wrap:wrap;gap:10px;padding:10px;border-radius:16px;background:#f7f5ff;margin-bottom:12px}
+.tok{background:#fff;border:3px solid #d8d2ff;border-radius:14px;padding:8px 12px;font-weight:800;cursor:grab;user-select:none;display:flex;align-items:center;gap:8px;box-shadow:0 3px 0 #d8d2ff}
+.tok .em{font-size:1.6rem}.tok.sel{border-color:#7b4dff;background:#efe9ff}.tok.used{opacity:.55}
+.goal{background:linear-gradient(135deg,#1d1b4b,#3b2a8f);color:#fff;border-radius:16px;padding:12px 16px;font-weight:800;margin-bottom:12px}
+.goal small{display:block;color:#b9b4ff;font-size:.75rem;letter-spacing:.06em}
+.sl input{margin-top:6px}
+.controls{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:12px;background:#f7f5ff;border-radius:16px;padding:12px;margin:10px 0}
+
+/* ================= TOPIC THEMES ================= */
+/* Biology — digestive system: warm, organic, cell-like */
+body.theme-bio{--purple:#e2456b;--line:#ffd9df;--soft:#fff3f5;
+  background:radial-gradient(circle at 12% 18%,rgba(255,255,255,.18) 0 70px,transparent 71px),
+             radial-gradient(circle at 85% 12%,rgba(255,255,255,.14) 0 110px,transparent 111px),
+             radial-gradient(circle at 78% 82%,rgba(255,255,255,.12) 0 90px,transparent 91px),
+             radial-gradient(circle at 20% 88%,rgba(255,255,255,.10) 0 130px,transparent 131px),
+             linear-gradient(135deg,#ff6f91 0%,#ff9671 55%,#ffc75f 100%);background-attachment:fixed}
+body.theme-bio .btn:not(.green):not(.orange):not(.ghost):not(.blue):not(.pink):not(.red){background:#e2456b;box-shadow:0 4px 0 #a82d4d}
+body.theme-bio .btn.ghost{background:#fff0f3;color:#c2305a;box-shadow:0 4px 0 #ffd0da}
+body.theme-bio .brand b{background:linear-gradient(90deg,#e2456b,#ff9671);-webkit-background-clip:text;background-clip:text}
+body.theme-bio .brand .logo{background:linear-gradient(135deg,#ff6f91,#ffc75f);box-shadow:0 4px 0 #c2305a}
+body.theme-bio .bar i{background:linear-gradient(90deg,#ff6f91,#ffc75f)}
+body.theme-bio .qtype,body.theme-bio h1,body.theme-bio h2{color:#7a1f3d}
+body.theme-bio .card{border-top:6px solid #ff6f91}
+body.theme-bio .goal{background:linear-gradient(135deg,#7a1f3d,#c2305a)}
+body.theme-bio .slot .num{background:#e2456b}
+
+/* Physics — speed: race track, asphalt and orange */
+body.theme-speed{--purple:#ff6b00;--line:#ffe0c7;--soft:#fff6ee;
+  background:repeating-linear-gradient(115deg,rgba(255,255,255,.035) 0 2px,transparent 2px 60px),
+             linear-gradient(160deg,#0f172a 0%,#1e293b 55%,#334155 100%);background-attachment:fixed}
+body.theme-speed::before{content:"";position:fixed;left:0;right:0;top:0;height:10px;z-index:30;
+  background:repeating-linear-gradient(90deg,#111 0 20px,#fff 20px 40px)}
+body.theme-speed .btn:not(.green):not(.orange):not(.ghost):not(.blue):not(.pink):not(.red){background:#ff6b00;box-shadow:0 4px 0 #b34a00}
+body.theme-speed .btn.ghost{background:#fff3e6;color:#c25200;box-shadow:0 4px 0 #ffd3a8}
+body.theme-speed .brand b{background:linear-gradient(90deg,#ff6b00,#ffb300);-webkit-background-clip:text;background-clip:text}
+body.theme-speed .brand .logo{background:linear-gradient(135deg,#111827,#374151);box-shadow:0 4px 0 #ff6b00}
+body.theme-speed .bar i{background:linear-gradient(90deg,#ff6b00,#ffd23f)}
+body.theme-speed .qtype,body.theme-speed h1,body.theme-speed h2{color:#1e293b}
+body.theme-speed .card{border-top:6px solid #ff6b00}
+body.theme-speed .goal{background:linear-gradient(135deg,#111827,#374151);border-left:8px solid #ffd23f}
+body.theme-speed footer{color:#cbd5e1}
+body.theme-speed .hero,body.theme-speed .topbar{position:relative}
+
+/* Chemistry — atom: deep space, neon */
+body.theme-chem{--purple:#6d4aff;--line:#e0dcff;--soft:#f4f2ff;
+  background:radial-gradient(1px 1px at 10% 20%,#fff 50%,transparent 51%),radial-gradient(1px 1px at 30% 70%,#fff 50%,transparent 51%),
+             radial-gradient(1.5px 1.5px at 55% 35%,#bdf 50%,transparent 51%),radial-gradient(1px 1px at 75% 80%,#fff 50%,transparent 51%),
+             radial-gradient(1.5px 1.5px at 90% 15%,#fff 50%,transparent 51%),radial-gradient(1px 1px at 45% 90%,#cdf 50%,transparent 51%),
+             radial-gradient(circle at 80% 20%,rgba(0,229,255,.18) 0,transparent 35%),radial-gradient(circle at 15% 85%,rgba(170,0,255,.22) 0,transparent 40%),
+             linear-gradient(160deg,#07071f 0%,#14114a 60%,#24145e 100%);background-attachment:fixed;background-size:300px 300px,420px 420px,360px 360px,500px 500px,280px 280px,460px 460px,100% 100%,100% 100%,100% 100%}
+body.theme-chem .btn:not(.green):not(.orange):not(.ghost):not(.blue):not(.pink):not(.red){background:linear-gradient(135deg,#6d4aff,#00b8d9);box-shadow:0 4px 0 #3a23a8}
+body.theme-chem .btn.ghost{background:#efeaff;color:#5534e0;box-shadow:0 4px 0 #d8d0ff}
+body.theme-chem .brand b{background:linear-gradient(90deg,#6d4aff,#00b8d9);-webkit-background-clip:text;background-clip:text}
+body.theme-chem .brand .logo{background:radial-gradient(circle at 35% 30%,#3b2fa0,#0b0b2b);box-shadow:0 0 0 3px #00e5ff55,0 4px 0 #00b8d9}
+body.theme-chem .bar i{background:linear-gradient(90deg,#00e5ff,#aa00ff)}
+body.theme-chem .qtype,body.theme-chem h1,body.theme-chem h2{color:#24145e}
+body.theme-chem .card{border-top:6px solid #00b8d9;box-shadow:0 10px 40px rgba(0,229,255,.12)}
+body.theme-chem .goal{background:linear-gradient(135deg,#07071f,#3b2fa0);border-left:8px solid #00e5ff}
+body.theme-chem footer{color:#b9c4ff}

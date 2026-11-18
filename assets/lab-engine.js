@@ -51,7 +51,7 @@
       <p class="prompt">${esc(L.intro)}</p>
       <div class="grid" style="grid-template-columns:repeat(auto-fit,minmax(170px,1fr));text-align:left;margin:16px 0">
         ${E.C.explore ? `<div class="notice">🔍 <b>Step 1:</b> explore the model.</div>` : ""}
-        <div class="notice">🧩 <b>Step ${E.C.explore ? 2 : 1}:</b> ${E.TOTAL} hands-on tasks${E.C.taskNote ? " — " + esc(E.C.taskNote) : ""}.</div>
+        <div class="notice">🧩 <b>Step ${E.C.explore ? 2 : 1}:</b> ${E.TOTAL} tasks${E.C.plan ? `: <b>${E.C.plan.sim} lab challenges</b> (change the simulation until you reach the goal) + <b>${E.C.plan.dia} diagram tasks</b>` : ""}.</div>
         <div class="notice">📈 Answer correctly and the tasks get <b>harder</b> ⭐⭐⭐</div>
         <div class="notice">🔓 Score <b>${PASS}%</b> to ${S1971Lab.nextLevel ? "unlock <b>" + esc(S1971Lab.nextLevel.name) + "</b>" : "finish as an Expert"}!</div>
       </div>
@@ -64,11 +64,13 @@
 
   function newGame() {
     const pool = E.C.levels[S1971Lab.level].pool().map(t => Object.assign(t, { used: 0, uses: t.uses || 1 }));
-    E.G = { pool, diff: 1, qn: 0, score: 0, answers: [], lastType: null, typesSeen: new Set(), q: null };
+    E.G = { pool, diff: 1, qn: 0, score: 0, answers: [], lastType: null, typesSeen: new Set(), q: null, catCount: {} };
   }
 
-  function nextTemplate() {
-    const G = E.G, avail = G.pool.filter(t => t.used < t.uses);
+  function nextTemplate(cat) {
+    const G = E.G;
+    let avail = G.pool.filter(t => t.used < t.uses);
+    if (cat) { const c = avail.filter(t => (t.cat || "dia") === cat); if (c.length) avail = c; }
     if (!avail.length) return null;
     for (let d = 0; d <= 2; d++) {
       let c = avail.filter(t => Math.abs(t.diff - G.diff) === d);
@@ -84,10 +86,16 @@
   function next() {
     const G = E.G;
     if (G.qn >= E.TOTAL) return finish();
-    const t = nextTemplate();
+    let cat = null;
+    if (E.C.plan) {
+      const want = G.qn % 2 === 0 ? "sim" : "dia", other = want === "sim" ? "dia" : "sim";
+      cat = (G.catCount[want] || 0) < E.C.plan[want] ? want : other;
+    }
+    const t = nextTemplate(cat);
     if (!t) return finish();
+    const tc = t.cat || "dia"; G.catCount[tc] = (G.catCount[tc] || 0) + 1;
     t.used++;
-    G.q = Object.assign(t.build(), { diff: t.diff, type: t.type });
+    G.q = Object.assign(t.build(), { diff: t.diff, type: t.type, cat: t.cat || "dia" });
     G.qn++;
     G.lastType = G.q.type; G.typesSeen.add(G.q.type);
     if (G.typesSeen.size >= (E.C.typeCycle || 4)) G.typesSeen = new Set([G.q.type]);
@@ -97,7 +105,8 @@
 
   E.header = function () {
     const G = E.G, q = G.q, ti = (E.C.typeInfo || {})[q.type] || "🧩 Task";
-    return `<div class="lab-head"><b>Task ${G.qn} of ${E.TOTAL}</b><span class="diff">${DIFF_NAME[q.diff]}</span><b class="score-now">Score: ${fmt(G.score)}</b></div>
+    const badge = E.C.plan ? (q.cat === "sim" ? `<span class="catb sim">🧪 Lab challenge</span>` : `<span class="catb dia">🖼️ Diagram task</span>`) : "";
+    return `<div class="lab-head"><b>Task ${G.qn} of ${E.TOTAL}</b>${badge}<span class="diff">${DIFF_NAME[q.diff]}</span><b class="score-now">Score: ${fmt(G.score)}</b></div>
       <div class="bar"><i style="width:${100 * (G.qn - 1) / E.TOTAL}%"></i></div>
       <div class="qtype">${ti}</div>${q.prompt ? `<div class="prompt">${q.prompt}</div>` : ""}`;
   };
@@ -114,7 +123,7 @@
     const G = E.G, q = G.q;
     points = Math.max(0, Math.min(1, points));
     G.score += points;
-    G.answers.push({ task: q.summary || q.type, type: q.type, difficulty: q.diff, points: Math.round(points * 100) / 100 });
+    G.answers.push({ task: (q.cat === "sim" ? "🧪 " : "🖼️ ") + (q.summary || q.type), type: q.type, difficulty: q.diff, points: Math.round(points * 100) / 100 });
     const old = G.diff;
     if (points >= 0.999) G.diff = Math.min(3, G.diff + 1);
     else if (points < 0.5) G.diff = Math.max(1, G.diff - 1);
@@ -214,6 +223,31 @@
     return `<button class="opt ${cls}" data-i="${i}" ${checked ? "disabled" : ""}>${String.fromCharCode(65 + i)}. ${esc(o.text)}</button>`;
   }).join("")}</div>`;
   E.mkOptions = (correct, wrong) => shuffle([{ text: correct, correct: true }].concat(wrong.map(w => ({ text: w, correct: false }))));
+
+  // ---------- drag & drop (mouse, touch, or tap-then-tap) ----------
+  // tokens: elements with data-id ; zone: element to drop on ; onDrop(id, clientX, clientY)
+  E.dragDrop = function (tokens, zone, onDrop) {
+    let sel = null;
+    tokens.forEach(el => {
+      el.style.touchAction = "none";
+      el.onpointerdown = ev => {
+        ev.preventDefault();
+        const x0 = ev.clientX, y0 = ev.clientY; let moved = false;
+        const g = document.createElement("div"); g.className = "drag-ghost"; g.innerHTML = el.dataset.ghost || el.innerHTML;
+        const mv = e => { if (Math.hypot(e.clientX - x0, e.clientY - y0) > 6) { moved = true; if (!g.parentNode) document.body.appendChild(g); } g.style.left = e.clientX + "px"; g.style.top = e.clientY + "px"; };
+        const up = e => {
+          window.removeEventListener("pointermove", mv); window.removeEventListener("pointerup", up); g.remove();
+          if (moved) { const r = zone.getBoundingClientRect(); if (e.clientX >= r.left && e.clientX <= r.right && e.clientY >= r.top && e.clientY <= r.bottom) onDrop(el.dataset.id, e.clientX, e.clientY); }
+          else { sel = sel === el.dataset.id ? null : el.dataset.id; tokens.forEach(t => t.classList.toggle("sel", t.dataset.id === sel)); }
+        };
+        window.addEventListener("pointermove", mv); window.addEventListener("pointerup", up);
+      };
+    });
+    zone.addEventListener("click", ev => { if (sel) { const id = sel; sel = null; onDrop(id, ev.clientX, ev.clientY); } });
+  };
+  E.svgPoint = (svg, cx, cy) => { const pt = svg.createSVGPoint(); pt.x = cx; pt.y = cy; return pt.matrixTransform(svg.getScreenCTM().inverse()); };
+  E.slider = (id, label, min, max, step, val, unit) => `<label class="sl" style="margin:0">${label}: <b><span id="${id}-v">${val}</span> ${unit}</b>
+    <input type="range" id="${id}" min="${min}" max="${max}" step="${step}" value="${val}"></label>`;
 
   // ---------- calculator ----------
   function addCalculator() {
