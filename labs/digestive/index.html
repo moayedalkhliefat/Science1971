@@ -1,0 +1,541 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Digestive System Lab · Science1971</title>
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🍎</text></svg>">
+<link rel="stylesheet" href="../../assets/style.css">
+<style>
+  .lab-head{display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap}
+  .bar{height:14px;background:#eee9ff;border-radius:99px;overflow:hidden;margin:10px 0 4px}
+  .bar i{display:block;height:100%;width:0;background:linear-gradient(90deg,#16c172,#00b4d8);border-radius:99px;transition:width .4s}
+  .qtype{font-family:'Baloo 2','Nunito',system-ui,sans-serif;font-size:1.5rem;margin:6px 0 2px}
+  .prompt{font-size:1.15rem;font-weight:700;margin:6px 0 14px}
+  .diff{font-weight:800;padding:3px 12px;border-radius:999px;background:#fff4cc;color:#8a6100}
+  .banner{border-radius:16px;padding:10px 14px;margin-bottom:14px;font-weight:700}
+  .banner.preview{background:#e8f1ff;color:#1b56b8}.banner.guest{background:#fff0f0;color:#b52f2f}
+  .split{display:grid;grid-template-columns:minmax(260px,360px) 1fr;gap:20px;align-items:start}
+  @media(max-width:760px){.split{grid-template-columns:1fr}}
+  .diagram{background:#f7f5ff;border-radius:18px;padding:8px}
+  .diagram svg{width:100%;height:auto;display:block}
+  .chips{display:flex;flex-wrap:wrap;gap:8px;min-height:46px;padding:10px;border-radius:16px;background:#f7f5ff;margin-bottom:12px}
+  .chip{background:#fff;border:2px solid #d8d2ff;border-radius:12px;padding:8px 12px;font-weight:700;cursor:grab;user-select:none;box-shadow:0 3px 0 #d8d2ff;font-size:.95rem}
+  .chip.sel{border-color:#7b4dff;background:#efe9ff;box-shadow:0 3px 0 #7b4dff}
+  .slots{display:flex;flex-direction:column;gap:9px}
+  .slot{display:grid;grid-template-columns:minmax(120px,38%) 1fr;gap:10px;align-items:center}
+  .slot .left{font-weight:800;background:#fff7e6;border-radius:12px;padding:9px 12px}
+  .slot .num{display:inline-grid;place-items:center;width:28px;height:28px;border-radius:50%;background:#7b4dff;color:#fff;margin-right:6px}
+  .target{min-height:44px;border:2.5px dashed #cfc6ff;border-radius:12px;padding:8px 12px;display:flex;align-items:center;cursor:pointer;font-weight:700;background:#fff}
+  .target.filled{border-style:solid;border-color:#7b4dff;background:#f3efff}
+  .target.over{background:#ece7ff}
+  .target.ok{border-color:#16c172;background:#e6fbf0}.target.no{border-color:#ff4d4d;background:#ffeded}
+  .fix{display:block;font-size:.85rem;color:#0c8a50;font-weight:800}
+  .opts{display:grid;gap:10px}
+  .opt{text-align:left;font:inherit;font-weight:700;font-size:1.05rem;padding:13px 16px;border-radius:14px;border:2.5px solid #e2ddff;background:#fff;cursor:pointer}
+  .opt:hover{border-color:#a993ff}.opt.sel{border-color:#7b4dff;background:#f3efff}
+  .opt.ok{border-color:#16c172;background:#e6fbf0}.opt.no{border-color:#ff4d4d;background:#ffeded}
+  .seq{display:flex;flex-direction:column;gap:8px;margin-bottom:12px;min-height:50px;padding:10px;border-radius:16px;background:#f0fff7;border:2px dashed #a8e9c8}
+  .step{display:flex;gap:10px;align-items:center;background:#fff;border:2px solid #d8d2ff;border-radius:12px;padding:9px 12px;font-weight:700;cursor:pointer}
+  .step .n{display:inline-grid;place-items:center;min-width:28px;height:28px;border-radius:50%;background:#16c172;color:#fff}
+  .step.ok{border-color:#16c172;background:#e6fbf0}.step.no{border-color:#ff4d4d;background:#ffeded}
+  .sortrow{display:grid;grid-template-columns:1fr auto;gap:10px;align-items:center;background:#fff;border:2px solid #eee9ff;border-radius:12px;padding:8px 12px}
+  .sortrow.ok{border-color:#16c172;background:#e6fbf0}.sortrow.no{border-color:#ff4d4d;background:#ffeded}
+  .seg{display:flex;gap:6px}.seg button{font:inherit;font-weight:800;border:2px solid #d8d2ff;background:#fff;border-radius:10px;padding:6px 10px;cursor:pointer}
+  .seg button.sel{background:#7b4dff;color:#fff;border-color:#7b4dff}
+  .feedback{margin-top:14px;padding:12px 16px;border-radius:14px;font-weight:700}
+  .feedback.good{background:#e6fbf0;color:#0c6b3e}.feedback.mid{background:#fff4dc;color:#8a5a00}.feedback.bad{background:#ffeded;color:#a12828}
+  .actions{display:flex;justify-content:flex-end;gap:10px;margin-top:16px;flex-wrap:wrap}
+  .hint{color:var(--muted);font-size:.9rem}
+  .big-score{font-family:'Baloo 2','Nunito',system-ui,sans-serif;font-size:4rem;line-height:1;margin:10px 0}
+  .center{text-align:center}
+  .burst{position:fixed;inset:0;pointer-events:none;overflow:hidden;z-index:60}
+  .burst span{position:absolute;top:-40px;font-size:28px;animation:fall 2.6s linear forwards}
+  @keyframes fall{to{transform:translateY(110vh) rotate(540deg)}}
+  .marker{cursor:default}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="topbar">
+    <a class="brand" id="home-link" href="../../index.html"><span class="logo">🍎</span><b>Science1971</b></a>
+    <div class="row gap"><span class="pill" id="lvl-pill" style="background:#ff4d9d"></span><a class="btn sm ghost" id="back-btn" href="../../index.html">⬅ Back</a></div>
+  </div>
+  <div id="banner"></div>
+  <div class="card" id="stage"><div class="empty">Loading the lab… 🔬</div></div>
+  <footer>Built by Mr. Moayed Alkhliefat · Science Teacher · ATS-AQB</footer>
+</div>
+
+<script src="../../assets/config.js"></script>
+<script src="../../assets/app.js"></script>
+<script src="../catalog.js"></script>
+<script src="../../assets/lab-sdk.js"></script>
+<script>
+"use strict";
+const PASS = S1971_CONFIG.PASS_MARK, TOTAL = 12;
+const esc = S1971.esc;
+const shuffle = a => { a = a.slice(); for (let i = a.length - 1; i > 0; i--) { const j = Math.floor(Math.random() * (i + 1)); [a[i], a[j]] = [a[j], a[i]]; } return a; };
+const pick = (a, n) => shuffle(a).slice(0, Math.min(n, a.length));
+
+/* ===================== ORGANS & DIAGRAM ===================== */
+// a = point on the organ (body coords), side = which side the number sits, y = number height
+const O = {
+  mouth:       { name: "Mouth",           fn: "Teeth chew food into small pieces; saliva starts digestion",           a: [150, 84],  side: "R", y: 78 },
+  salivary:    { name: "Salivary glands", fn: "Make saliva that moistens food and starts breaking down starch",        a: [116, 94],  side: "L", y: 94 },
+  esophagus:   { name: "Esophagus",       fn: "Muscular tube that pushes food down to the stomach",                    a: [156, 150], side: "R", y: 146 },
+  liver:       { name: "Liver",           fn: "Makes bile, which breaks fat into small droplets",                      a: [92, 214],  side: "L", y: 200 },
+  stomach:     { name: "Stomach",         fn: "Churns food and mixes it with acid and digestive juices",               a: [214, 240], side: "R", y: 234 },
+  gallbladder: { name: "Gallbladder",     fn: "Stores bile and releases it into the small intestine",                  a: [124, 254], side: "L", y: 256 },
+  pancreas:    { name: "Pancreas",        fn: "Makes digestive juices (enzymes) that flow into the small intestine",   a: [128, 288], side: "L", y: 304 },
+  small:       { name: "Small intestine", fn: "Finishes digestion and absorbs nutrients into the blood",               a: [132, 378], side: "L", y: 378 },
+  large:       { name: "Large intestine", fn: "Absorbs water from leftover food and forms feces",                      a: [216, 372], side: "R", y: 368 },
+  rectum:      { name: "Rectum",          fn: "Stores feces until they leave the body",                                a: [158, 460], side: "R", y: 444 },
+  anus:        { name: "Anus",            fn: "Opening where feces leave the body",                                    a: [158, 488], side: "R", y: 488 }
+};
+const L1 = ["mouth", "esophagus", "stomach", "small", "large", "rectum", "anus"];
+const ALL = Object.keys(O);
+
+function diagram(markers, states) {
+  // markers: [{organ, num}] ; states: {organ: "ok"|"no"}
+  const X = 30; // body shift
+  let m = "";
+  (markers || []).forEach(k => {
+    const o = O[k.organ], ax = o.a[0] + X, ay = o.a[1], mx = o.side === "L" ? 16 : 344, my = o.y;
+    const st = states && states[k.organ], fill = st === "ok" ? "#16c172" : st === "no" ? "#ff4d4d" : "#7b4dff";
+    m += `<g class="marker"><line x1="${ax}" y1="${ay}" x2="${mx}" y2="${my}" stroke="#2d2a5a" stroke-width="1.6"/>
+          <circle cx="${ax}" cy="${ay}" r="3.2" fill="#2d2a5a"/>
+          <circle cx="${mx}" cy="${my}" r="13" fill="${fill}" stroke="#fff" stroke-width="2.5"/>
+          <text x="${mx}" y="${my + 5}" text-anchor="middle" font-family="Baloo 2, sans-serif" font-weight="800" font-size="15" fill="#fff">${k.num}</text></g>`;
+  });
+  return `<svg viewBox="0 0 360 510" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Diagram of the human digestive system">
+  <g transform="translate(${X},0)">
+    <path d="M128,96 L128,118 Q70,122 52,152 L52,470 Q52,500 90,500 L210,500 Q248,500 248,470 L248,152 Q230,122 172,118 L172,96 Z" fill="#ffe9da" stroke="#e9b99a" stroke-width="3"/>
+    <circle cx="150" cy="58" r="44" fill="#ffe1cc" stroke="#e9b99a" stroke-width="3"/>
+    <circle cx="134" cy="48" r="4" fill="#2d2a5a"/><circle cx="166" cy="48" r="4" fill="#2d2a5a"/>
+    <path d="M136,78 Q150,92 164,78 Q150,85 136,78Z" fill="#d6455d"/>
+    <ellipse cx="116" cy="92" rx="9" ry="6.5" fill="#9b8cff"/><ellipse cx="184" cy="92" rx="9" ry="6.5" fill="#9b8cff"/>
+    <path d="M150,88 C150,120 152,150 158,176 C162,196 166,206 170,214" stroke="#f08080" stroke-width="11" fill="none" stroke-linecap="round"/>
+    <path d="M92,430 L92,320 Q92,308 104,308 L204,308 Q216,308 216,320 L216,418 Q216,438 196,442 L166,446" stroke="#e59866" stroke-width="22" fill="none" stroke-linecap="round" stroke-linejoin="round"/>
+    <path d="M92,430 Q90,446 84,452" stroke="#e59866" stroke-width="7" fill="none" stroke-linecap="round"/>
+    <path d="M114,334 C130,324 178,326 194,336 C206,346 180,354 150,351 C118,348 106,360 122,369 C140,377 190,368 196,383 C200,398 160,397 136,395 C110,393 106,408 124,415 C146,423 186,411 194,425" stroke="#ff9fb2" stroke-width="10" fill="none" stroke-linecap="round"/>
+    <path d="M166,446 Q158,450 158,462 L158,480" stroke="#d35400" stroke-width="15" fill="none" stroke-linecap="round"/>
+    <ellipse cx="158" cy="489" rx="6" ry="4" fill="#7a2e00"/>
+    <path d="M118,281 C135,271 165,275 198,279 C207,281 207,293 198,294 C170,296 140,295 122,294 C111,293 109,286 118,281Z" fill="#ffd166" stroke="#e0a800" stroke-width="1.5"/>
+    <path d="M62,206 C68,178 122,170 180,186 C193,190 192,206 178,213 C152,227 120,239 96,241 C73,242 60,229 62,206Z" fill="#b5651d"/>
+    <ellipse cx="124" cy="252" rx="9" ry="13" fill="#59c96b" transform="rotate(-20 124 252)"/>
+    <path d="M168,212 C190,196 230,204 232,238 C234,274 206,296 177,293 C160,291 150,283 156,273 C162,265 179,267 191,258 C203,248 199,232 187,228 C179,225 173,226 166,224Z" fill="#ff7b9c" stroke="#d95479" stroke-width="2"/>
+  </g>${m}</svg>`;
+}
+
+/* ===================== QUESTION TEMPLATES ===================== */
+let UID = 0;
+const T = {
+  label: (diff, from, n, uses = 1) => ({ id: ++UID, type: "label", diff, uses, build() {
+    const keys = pick(from, n).sort((a, b) => O[a].a[1] - O[b].a[1]);
+    return { type: "label", prompt: "Put each organ name on the correct number of the diagram.",
+      slots: keys.map((k, i) => ({ organ: k, num: i + 1, left: `<span class="num">${i + 1}</span>`, answer: O[k].name })),
+      summary: `Label the diagram (${keys.length} organs)`,
+      explain: "Tip: follow the path of food from the mouth down to the anus." };
+  }}),
+  labelCustom: (diff, pairs, prompt, explain, summary) => ({ id: ++UID, type: "label", diff, uses: 1, build() {
+    const ps = pairs.slice().sort((a, b) => O[a[0]].a[1] - O[b[0]].a[1]);
+    return { type: "label", prompt, explain, summary,
+      slots: ps.map((p, i) => ({ organ: p[0], num: i + 1, left: `<span class="num">${i + 1}</span>`, answer: p[1] })) };
+  }}),
+  match: (diff, from, n, uses = 1) => ({ id: ++UID, type: "match", diff, uses, build() {
+    const keys = pick(from, n);
+    return { type: "match", prompt: "Match each organ with its job.",
+      slots: keys.map(k => ({ left: esc(O[k].name), answer: O[k].fn })),
+      summary: `Match organs to functions (${keys.length})`,
+      explain: "Each organ has a special job — together they turn food into nutrients your body can use." };
+  }}),
+  matchCustom: (diff, pairs, prompt, explain, summary) => ({ id: ++UID, type: "match", diff, uses: 1, build() {
+    return { type: "match", prompt, explain, summary, slots: shuffle(pairs).map(p => ({ left: esc(p[0]), answer: p[1] })) };
+  }}),
+  order: (diff, steps, prompt, explain, summary) => ({ id: ++UID, type: "order", diff, uses: 1, build() {
+    return { type: "order", prompt, explain, summary, steps };
+  }}),
+  sort: (diff, items, cats, n, prompt, explain, summary, uses = 1) => ({ id: ++UID, type: "sort", diff, uses, build() {
+    return { type: "sort", prompt, explain, summary, cats, items: pick(items, n) };
+  }}),
+  mcq: (diff, prompt, options, explain, kind) => ({ id: ++UID, type: kind || "mcq", diff, uses: 1, build() {
+    return { type: kind || "mcq", prompt, explain, summary: prompt.length > 90 ? prompt.slice(0, 87) + "…" : prompt,
+      options: shuffle(options.map((o, i) => ({ text: o, correct: i === 0 }))) };
+  }}),
+  tf: (diff, statement, isTrue, explain) => ({ id: ++UID, type: "mcq", diff, uses: 1, build() {
+    return { type: "mcq", prompt: "True or false? " + statement, explain, summary: "T/F: " + statement,
+      options: [{ text: "✅ True", correct: isTrue }, { text: "❌ False", correct: !isTrue }] };
+  }})
+};
+const S = (d, p, o, e) => T.mcq(d, p, o, e, "scenario");
+
+/* ===================== LEVEL CONTENT ===================== */
+const LEVELS = {
+  1: {
+    name: "Explorer", intro: "The main organs of the digestive tract and the job of each one.",
+    pool: () => [
+      // ⭐ easy
+      T.label(1, ["mouth", "esophagus", "stomach", "small", "large"], 3, 2),
+      T.match(1, L1, 3, 2),
+      T.mcq(1, "Where does digestion begin?", ["Mouth", "Stomach", "Small intestine", "Esophagus"], "Digestion starts in the mouth: teeth chew the food and saliva begins breaking it down."),
+      T.tf(1, "Most nutrients are absorbed into the blood in the small intestine.", true, "True — the small intestine is where most nutrients pass into the blood."),
+      T.mcq(1, "Which organ is the muscular tube that carries food from the mouth to the stomach?", ["Esophagus", "Rectum", "Small intestine", "Large intestine"], "The esophagus connects the mouth (throat) to the stomach."),
+      T.mcq(1, "Which part uses teeth to break food into smaller pieces?", ["Mouth", "Stomach", "Rectum", "Large intestine"], "Teeth in the mouth cut and grind food."),
+      T.order(1, ["Mouth", "Esophagus", "Stomach", "Small intestine"], "Tap the organs in the order food passes through them.", "Food goes mouth → esophagus → stomach → small intestine.", "Food journey (4 organs)"),
+      // ⭐⭐ medium
+      T.label(2, L1, 5, 2),
+      T.match(2, L1, 5, 2),
+      T.order(2, ["Mouth", "Esophagus", "Stomach", "Small intestine", "Large intestine", "Rectum", "Anus"], "Tap the organs in the order food passes through the whole digestive tract.", "The full path: mouth → esophagus → stomach → small intestine → large intestine → rectum → anus.", "Food journey (7 organs)"),
+      T.mcq(2, "Which organ absorbs water from leftover (undigested) food?", ["Large intestine", "Stomach", "Esophagus", "Mouth"], "The large intestine takes water back into the body, making the waste more solid."),
+      T.mcq(2, "The wave-like squeezing of muscles that pushes food along the digestive tract is called…", ["Peristalsis", "Respiration", "Photosynthesis", "Circulation"], "Peristalsis = waves of muscle squeezing that move food along."),
+      T.mcq(2, "Where are feces stored before they leave the body?", ["Rectum", "Stomach", "Small intestine", "Esophagus"], "The rectum stores feces until they leave through the anus."),
+      T.mcq(2, "Why is the small intestine so long?", ["It gives more time and space to absorb nutrients", "It stores feces", "It makes saliva", "It pushes food back to the mouth"], "A long small intestine = more surface and time for absorbing nutrients."),
+      // ⭐⭐⭐ hard
+      T.label(3, L1, 7, 1),
+      T.match(3, L1, 7, 1),
+      T.order(3, ["Teeth chew the sandwich and saliva wets it", "The swallowed food is pushed down the esophagus", "The stomach churns the food with acid and juices", "Nutrients are absorbed into the blood in the small intestine", "Water is absorbed from leftovers in the large intestine", "Feces are stored in the rectum", "Feces leave the body through the anus"], "Follow the sandwich! Tap the steps in the correct order.", "Each organ does its job one after another — like stations on a factory line.", "Sandwich journey (7 steps)"),
+      S(3, "Omar has a stomach problem and his stomach muscles are very weak. Which job will be affected most?", ["Churning and mixing food with digestive juices", "Absorbing water from leftovers", "Storing feces", "Chewing food"], "The stomach's thick muscles churn food — weak muscles mean poor mixing."),
+      S(3, "A disease damages the inner lining of the small intestine. What problem is most likely?", ["The body cannot absorb enough nutrients", "Food cannot be swallowed", "Feces cannot be stored", "Teeth cannot chew"], "The lining of the small intestine is where nutrients are absorbed."),
+      S(3, "A child has diarrhea — the feces are very watery. Which organ is NOT doing its job well?", ["Large intestine", "Esophagus", "Mouth", "Stomach"], "The large intestine should absorb water; if it doesn't, feces stay watery."),
+      S(3, "An astronaut swallows food while floating upside down — and it still reaches the stomach. Why?", ["Muscles of the esophagus squeeze the food along (peristalsis)", "Gravity pulls the food up", "The stomach sucks the food in", "Saliva pushes the food"], "Peristalsis works in any direction — it doesn't need gravity!"),
+      S(3, "Someone swallows big pieces of food without chewing. What is the most likely result?", ["Digestion is slower because big pieces are harder to break down", "The food is absorbed faster", "The food skips the stomach", "Nothing changes at all"], "Chewing makes small pieces, giving digestive juices more surface to work on.")
+    ]
+  },
+  2: {
+    name: "Investigator", intro: "Helper organs (salivary glands, liver, gallbladder, pancreas) and mechanical vs chemical digestion.",
+    pool: () => {
+      const MC = ["⚙️ Mechanical", "🧪 Chemical"];
+      const sortItems = [
+        ["Teeth grinding food", 0], ["Tongue rolling food into a ball", 0], ["Stomach muscles churning food", 0],
+        ["Bile breaking fat into tiny droplets", 0], ["Saliva breaking starch into sugar", 1],
+        ["Stomach acid and juices breaking down proteins", 1], ["Pancreatic juice breaking down fats, proteins and starch", 1],
+        ["Enzymes in the small intestine finishing digestion", 1]
+      ];
+      return [
+        // ⭐
+        T.label(1, ["salivary", "liver", "gallbladder", "pancreas", "stomach"], 4, 2),
+        T.match(1, ["salivary", "liver", "gallbladder", "pancreas"], 4, 1),
+        T.mcq(1, "Which organ stores bile?", ["Gallbladder", "Liver", "Pancreas", "Stomach"], "The liver MAKES bile; the gallbladder STORES it."),
+        T.mcq(1, "Food does NOT pass through which of these organs?", ["Liver", "Stomach", "Esophagus", "Small intestine"], "The liver, gallbladder and pancreas are helper organs — they send juices, but food never passes through them."),
+        T.mcq(1, "Grinding food with your teeth is an example of…", ["Mechanical digestion", "Chemical digestion", "Absorption", "Excretion"], "Mechanical digestion breaks food into smaller pieces without changing what it is made of."),
+        T.tf(1, "Chemical digestion uses enzymes and juices to change food into simpler substances.", true, "True — chemical digestion changes big molecules into smaller, simpler ones."),
+        // ⭐⭐
+        T.sort(2, sortItems, MC, 5, "Is each process mechanical or chemical digestion?", "Mechanical = smaller pieces, same substance. Chemical = new, simpler substances made by enzymes/juices.", "Sort: mechanical vs chemical (5)", 2),
+        T.label(2, ALL, 7, 2),
+        T.match(2, ALL, 6, 1),
+        T.mcq(2, "Bile and pancreatic juice both flow into the…", ["Small intestine", "Stomach", "Large intestine", "Esophagus"], "Both enter the first part of the small intestine, where most digestion is finished."),
+        T.mcq(2, "Which organ MAKES bile?", ["Liver", "Gallbladder", "Pancreas", "Salivary glands"], "The liver makes bile; the gallbladder only stores it."),
+        T.order(2, ["The liver makes bile", "Bile is stored in the gallbladder", "Bile flows into the small intestine", "Bile breaks fat into tiny droplets"], "Tap the steps of bile's journey in order.", "Liver (makes) → gallbladder (stores) → small intestine (used on fat).", "Bile journey (4 steps)"),
+        // ⭐⭐⭐
+        T.label(3, ALL, 11, 1),
+        T.match(3, ALL, 8, 1),
+        T.sort(3, sortItems, MC, 7, "Sort each process: mechanical or chemical digestion?", "Remember: bile only breaks fat into droplets (mechanical); enzymes change the substance (chemical).", "Sort: mechanical vs chemical (7)"),
+        T.order(3, ["Teeth cut and grind the pizza; saliva moistens it", "The esophagus pushes it to the stomach", "The stomach churns it with acid and juices", "Bile and pancreatic juice enter the small intestine", "Nutrients are absorbed in the small intestine", "The large intestine absorbs water"], "Digesting a slice of cheese pizza — tap the steps in order.", "Helper organs join in at the small intestine, adding bile and pancreatic juice.", "Pizza journey (6 steps)"),
+        S(3, "A patient had their gallbladder removed. Which meal may be harder to digest in large amounts?", ["A very fatty meal (like fried food)", "A glass of water", "Plain rice", "An apple"], "Without a gallbladder, there's no stored bile to release when a big fatty meal arrives."),
+        S(3, "If you chew plain bread for a long time, it starts to taste a little sweet. Why?", ["Saliva breaks starch into sugar", "Teeth add sugar", "The stomach sends sugar to the mouth", "Bread turns into fat"], "Saliva contains an enzyme that changes starch into sugar — chemical digestion in your mouth!"),
+        S(3, "The tube from the pancreas to the small intestine is blocked. What is the most likely effect?", ["Digestive enzymes can't reach the small intestine, so food is not fully digested", "Food can't be swallowed", "Bile can't be made", "Water can't be absorbed in the mouth"], "Pancreatic juice is a major source of enzymes for the small intestine."),
+        S(3, "Why is bile breaking fat into droplets called MECHANICAL digestion?", ["The fat is only split into smaller pieces — it is not changed into a new substance", "It changes fat into sugar", "It uses teeth", "It happens in the mouth"], "Bile emulsifies fat: smaller droplets, same substance."),
+        S(3, "Why does chewing (mechanical digestion) help chemical digestion?", ["Smaller pieces have more surface area, so enzymes work faster", "Chewing makes enzymes", "Chewing removes all the water", "It stops the stomach from working"], "More surface area = more places for enzymes to act.")
+      ];
+    }
+  },
+  3: {
+    name: "Expert", intro: "Enzymes, villi, and where each nutrient is absorbed.",
+    pool: () => [
+      // ⭐
+      T.matchCustom(1, [["Amylase", "Starch"], ["Pepsin", "Protein"], ["Lipase", "Fat"]], "Match each enzyme with the food it breaks down.", "Amylase → starch, pepsin (a protease) → protein, lipase → fat.", "Enzyme → food (3)"),
+      T.mcq(1, "Enzymes are…", ["Proteins that speed up chemical reactions, like breaking down food", "Types of food", "Organs of the body", "Waste products"], "Enzymes are biological catalysts — they speed up reactions without being used up."),
+      T.mcq(1, "Which enzyme works best in the acid of the stomach?", ["Pepsin", "Amylase", "Lipase", "Bile"], "Pepsin works best in the strong acid of the stomach."),
+      T.mcq(1, "The tiny finger-like folds lining the small intestine are called…", ["Villi", "Alveoli", "Enzymes", "Neurons"], "Villi cover the inner wall of the small intestine."),
+      T.tf(1, "Starch is broken down into simple sugars like glucose.", true, "True — amylase starts breaking starch into sugars that end up as glucose."),
+      T.label(1, ALL, 5, 1),
+      // ⭐⭐
+      T.matchCustom(2, [["Starch", "Glucose (simple sugar)"], ["Protein", "Amino acids"], ["Fat", "Fatty acids and glycerol"]], "Match each food with the small molecules it is broken into.", "Big molecules are broken into small ones that can pass through the villi into the blood.", "Food → products (3)"),
+      T.labelCustom(2, [["salivary", "Amylase (in saliva)"], ["stomach", "Pepsin"], ["pancreas", "Lipase"]], "Put each enzyme on the organ that makes it.", "Saliva has amylase, the stomach makes pepsin, and the pancreas makes lipase (and also amylase and protein-digesting enzymes).", "Label where enzymes are made (3)"),
+      T.sort(2, [["Glucose", 0], ["Amino acids", 0], ["Fatty acids and glycerol", 0], ["Most vitamins and minerals", 0], ["Remaining water from leftover food", 1], ["Vitamin K made by gut bacteria", 1]], ["Small intestine", "Large intestine"], 6, "Where is each one mainly absorbed?", "Almost all nutrients are absorbed in the small intestine; the large intestine absorbs remaining water and some vitamins made by bacteria.", "Sort: where nutrients are absorbed (6)"),
+      T.order(2, ["Protein is eaten (e.g. chicken)", "Pepsin in the stomach breaks protein into smaller pieces", "Pancreatic enzymes in the small intestine break it into amino acids", "Amino acids pass through the villi into the blood", "Blood carries amino acids to body cells"], "Tap the steps of a protein's journey in order.", "Protein → smaller pieces (stomach) → amino acids (small intestine) → blood → cells.", "Protein journey (5 steps)"),
+      T.mcq(2, "How do villi help absorption?", ["They greatly increase the surface area of the small intestine", "They chew food", "They make bile", "They store feces"], "Millions of villi make a huge surface area for absorbing nutrients."),
+      T.mcq(2, "After nutrients pass through the villi, where do they go?", ["Into the blood, which carries them to body cells", "Into the large intestine", "Back into the stomach", "Out through the anus"], "Each villus has tiny blood vessels that pick up nutrients."),
+      // ⭐⭐⭐
+      T.matchCustom(3, [["Amylase", "Mouth and small intestine"], ["Pepsin", "Stomach"], ["Lipase", "Small intestine"]], "Match each enzyme with WHERE it works.", "Amylase works in the mouth and again in the small intestine; pepsin in the stomach; lipase in the small intestine.", "Enzyme → where it works (3)"),
+      T.order(3, ["Bread is chewed; salivary amylase starts breaking down starch", "In the stomach, the acid stops amylase working", "Pancreatic amylase continues breaking starch in the small intestine", "Starch is broken down into glucose", "Glucose is absorbed through the villi into the blood"], "Tap the steps of starch digestion in order.", "Amylase works in two places — and stomach acid pauses it in between.", "Starch journey (5 steps)"),
+      T.label(3, ALL, 11, 1),
+      S(3, "Pepsin is added to egg white in two test tubes: one at pH 2 (acidic) and one at pH 7 (neutral). Which digests the egg white faster?", ["pH 2 — pepsin works best in acid, like in the stomach", "pH 7 — enzymes always prefer neutral", "Both the same", "Neither — pepsin digests fat"], "Each enzyme has an optimum pH; pepsin's is very acidic."),
+      S(3, "Amylase is boiled, cooled, then added to starch. After 10 minutes the starch is still there. Why?", ["Boiling denatured (destroyed the shape of) the enzyme", "Boiling turned amylase into starch", "Starch can never be digested", "Cooling made the enzyme stronger"], "High temperature changes an enzyme's shape, so it can no longer work."),
+      S(3, "In a disease called celiac disease, the villi become flattened. Why might the person lose weight?", ["Less surface area means fewer nutrients are absorbed", "The person can't swallow", "The stomach stops making acid", "The liver stops working"], "Flat villi = much smaller surface area for absorption."),
+      S(3, "Pancreatic juice contains a base (bicarbonate). What is its job?", ["To neutralize stomach acid so small-intestine enzymes can work", "To make food taste better", "To kill all bacteria", "To absorb water"], "Small-intestine enzymes work best near neutral pH, so the acid must be neutralized."),
+      S(3, "Starch + amylase is tested with iodine. At first it turns blue-black; after 10 minutes it stays brown. What does this show?", ["The starch has been broken down by amylase", "More starch was made", "The amylase was used up as food", "Iodine stopped working"], "Iodine turns blue-black only when starch is present."),
+      S(3, "A student says: “Fat is digested in the stomach by pepsin.” What is the mistake?", ["Pepsin digests protein; fat is digested mainly by lipase in the small intestine", "There is no mistake", "Fat is digested by amylase in the mouth", "Fat is not digested at all"], "Each enzyme is specific to one type of food.")
+    ]
+  }
+};
+
+/* ===================== ENGINE ===================== */
+const TYPE_INFO = {
+  label: "🏷️ Label the diagram", match: "🔗 Match it", order: "🚶 Food journey",
+  sort: "🗂️ Sort it", mcq: "❓ Quick check", scenario: "🧠 Problem scenario"
+};
+const DIFF_NAME = { 1: "⭐ Easy", 2: "⭐⭐ Medium", 3: "⭐⭐⭐ Hard" };
+const stage = document.getElementById("stage");
+let G = null; // game state
+
+function newGame() {
+  const pool = LEVELS[S1971Lab.level].pool().map(t => Object.assign(t, { used: 0 }));
+  G = { pool, diff: 1, qn: 0, score: 0, answers: [], lastType: null, typesSeen: new Set(), q: null };
+}
+
+function nextTemplate() {
+  const avail = G.pool.filter(t => t.used < t.uses);
+  if (!avail.length) return null;
+  for (let d = 0; d <= 2; d++) {
+    const c = avail.filter(t => Math.abs(t.diff - G.diff) === d);
+    if (!c.length) continue;
+    const exact = d === 0 ? c : (c.filter(t => t.diff < G.diff).length ? c.filter(t => t.diff < G.diff) : c);
+    const fresh = exact.filter(t => !G.typesSeen.has(t.type) && t.type !== G.lastType);
+    const diffType = exact.filter(t => t.type !== G.lastType);
+    return shuffle(fresh.length ? fresh : diffType.length ? diffType : exact)[0];
+  }
+  return null;
+}
+
+function showIntro() {
+  const L = LEVELS[S1971Lab.level], info = S1971Lab.levelInfo;
+  if (S1971Lab.locked) {
+    stage.innerHTML = `<div class="center"><div style="font-size:4rem">🔒</div><h1>${esc(info.name)} is locked</h1>
+      <p class="prompt">Score <b>${PASS}%</b> or more in <b>${esc(S1971Lab.locked.name)}</b> to unlock it.</p>
+      <div class="actions" style="justify-content:center"><a class="btn green" href="${S1971Lab.levelUrl(S1971Lab.level - 1)}">Go to ${esc(S1971Lab.locked.name)}</a></div></div>`;
+    return;
+  }
+  stage.innerHTML = `<div class="center">
+    <div style="font-size:4rem">🍎➡️🧪</div>
+    <h1>${esc(S1971Lab.lab.title)}</h1>
+    <p><span class="pill" style="background:#ff4d9d;font-size:1rem">${esc(info.name)}</span></p>
+    <p class="prompt">${esc(L.intro)}</p>
+    <div class="grid" style="grid-template-columns:repeat(auto-fit,minmax(170px,1fr));text-align:left;margin:16px 0">
+      <div class="notice">🧩 <b>${TOTAL} tasks</b>: label, match, food journey, sorting and problem scenarios.</div>
+      <div class="notice">📈 Answer correctly and the tasks get <b>harder</b> ⭐⭐⭐</div>
+      <div class="notice">🔓 Score <b>${PASS}%</b> to ${S1971Lab.nextLevel ? "unlock <b>" + esc(S1971Lab.nextLevel.name) + "</b>" : "become a Digestive Expert"}!</div>
+    </div>
+    <button class="btn green" id="start" style="font-size:1.4rem;padding:14px 34px">Start the lab 🚀</button></div>`;
+  document.getElementById("start").onclick = () => { newGame(); nextQuestion(); };
+}
+
+function nextQuestion() {
+  if (G.qn >= TOTAL) return finish();
+  const t = nextTemplate();
+  if (!t) return finish();
+  t.used++;
+  G.q = Object.assign(t.build(), { diff: t.diff });
+  G.qn++;
+  G.lastType = G.q.type; G.typesSeen.add(G.q.type);
+  if (G.typesSeen.size >= 5) G.typesSeen = new Set([G.q.type]);
+  renderQuestion();
+}
+
+function header() {
+  const q = G.q;
+  return `<div class="lab-head"><b>Task ${G.qn} of ${TOTAL}</b><span class="diff">${DIFF_NAME[q.diff]}</span><b>Score: ${fmt(G.score)}</b></div>
+    <div class="bar"><i style="width:${100 * (G.qn - 1) / TOTAL}%"></i></div>
+    <div class="qtype">${TYPE_INFO[q.type]}</div><div class="prompt">${esc(q.prompt)}</div>`;
+}
+const fmt = n => (Math.round(n * 10) / 10).toString();
+
+function renderQuestion() {
+  const q = G.q;
+  if (q.type === "label" || q.type === "match") return renderChips(q);
+  if (q.type === "order") return renderOrder(q);
+  if (q.type === "sort") return renderSort(q);
+  return renderMCQ(q);
+}
+
+function actions(ready) {
+  return `<div class="actions"><span class="hint" id="hint">${ready ? "" : "Finish the task to check it."}</span><button class="btn" id="check" ${ready ? "" : "disabled"}>Check ✔</button></div>`;
+}
+
+/* ---- chips (label + match) ---- */
+function renderChips(q) {
+  const chips = shuffle(q.slots.map((s, i) => ({ id: i, text: s.answer })));
+  const placed = {}; // slotIndex -> chipId
+  let selected = null, checked = false;
+  function draw(states) {
+    const free = chips.filter(c => !Object.values(placed).includes(c.id));
+    const ready = Object.keys(placed).length === q.slots.length;
+    const slotsHtml = q.slots.map((s, i) => {
+      const c = placed[i] != null ? chips.find(x => x.id === placed[i]) : null;
+      const st = states ? (states[i] ? "ok" : "no") : "";
+      return `<div class="slot"><div class="left">${s.left}${q.type === "label" ? "" : ""}</div>
+        <div class="target ${c ? "filled" : ""} ${st}" data-slot="${i}">${c ? esc(c.text) : `<span class="hint">${q.type === "label" ? "drop the name here" : "drop the job here"}</span>`}
+        ${states && !states[i] ? `<span class="fix">✔ ${esc(s.answer)}</span>` : ""}</div></div>`;
+    }).join("");
+    const chipsHtml = `<div class="chips">${free.map(c => `<span class="chip ${selected === c.id ? "sel" : ""}" draggable="true" data-chip="${c.id}">${esc(c.text)}</span>`).join("") || `<span class="hint">All placed ✔</span>`}</div>`;
+    let body;
+    if (q.type === "label") {
+      const ost = states ? Object.fromEntries(q.slots.map((s, i) => [s.organ, states[i] ? "ok" : "no"])) : null;
+      body = `<div class="split"><div class="diagram">${diagram(q.slots.map(s => ({ organ: s.organ, num: s.num })), ost)}</div><div>${checked ? "" : chipsHtml}<div class="slots">${slotsHtml}</div></div></div>`;
+    } else {
+      body = `${checked ? "" : chipsHtml}<div class="slots">${slotsHtml}</div>`;
+    }
+    stage.innerHTML = header() + `<p class="hint">Tap a card, then tap a box — or drag it. Tap a filled box to take the card back.</p>` + body + (checked ? "" : actions(ready));
+    if (checked) return;
+    stage.querySelectorAll(".chip").forEach(el => {
+      el.onclick = () => { selected = selected === +el.dataset.chip ? null : +el.dataset.chip; draw(); };
+      el.ondragstart = e => { e.dataTransfer.setData("text/plain", el.dataset.chip); selected = +el.dataset.chip; };
+    });
+    stage.querySelectorAll(".target").forEach(el => {
+      const i = +el.dataset.slot;
+      el.onclick = () => {
+        if (selected != null) { placed[i] = selected; selected = null; }
+        else if (placed[i] != null) { delete placed[i]; }
+        draw();
+      };
+      el.ondragover = e => { e.preventDefault(); el.classList.add("over"); };
+      el.ondragleave = () => el.classList.remove("over");
+      el.ondrop = e => { e.preventDefault(); const id = +e.dataTransfer.getData("text/plain"); for (const k in placed) if (placed[k] === id) delete placed[k]; placed[i] = id; selected = null; draw(); };
+    });
+    const btn = document.getElementById("check");
+    if (btn) btn.onclick = () => {
+      const states = q.slots.map((s, i) => chips.find(c => c.id === placed[i]).text === s.answer);
+      checked = true; draw(states);
+      grade(states.filter(Boolean).length / states.length);
+    };
+  }
+  draw();
+}
+
+/* ---- order ---- */
+function renderOrder(q) {
+  const pool = shuffle(q.steps.map((s, i) => ({ i, text: s })));
+  if (pool.every((p, k) => p.i === k)) pool.reverse();
+  const seq = [];
+  let checked = false;
+  function draw(states) {
+    const free = pool.filter(p => !seq.includes(p));
+    const ready = seq.length === q.steps.length;
+    stage.innerHTML = header() + `<p class="hint">Tap the steps in order. Tap a step in the green box to remove it.</p>
+      <div class="seq">${seq.map((p, k) => `<div class="step ${states ? (states[k] ? "ok" : "no") : ""}" data-k="${k}"><span class="n">${k + 1}</span>${esc(p.text)}</div>`).join("") || `<span class="hint">Your order will appear here…</span>`}</div>
+      ${checked ? `<div class="notice"><b>Correct order:</b><ol>${q.steps.map(s => `<li>${esc(s)}</li>`).join("")}</ol></div>` :
+        `<div class="slots">${free.map(p => `<div class="step" data-i="${p.i}">➕ ${esc(p.text)}</div>`).join("")}</div>` + actions(ready)}`;
+    if (checked) return;
+    stage.querySelectorAll(".step[data-i]").forEach(el => el.onclick = () => { seq.push(pool.find(p => p.i === +el.dataset.i)); draw(); });
+    stage.querySelectorAll(".step[data-k]").forEach(el => el.onclick = () => { seq.splice(+el.dataset.k, 1); draw(); });
+    const btn = document.getElementById("check");
+    if (btn) btn.onclick = () => {
+      const states = seq.map((p, k) => p.i === k);
+      checked = true; draw(states);
+      grade(states.filter(Boolean).length / states.length);
+    };
+  }
+  draw();
+}
+
+/* ---- sort ---- */
+function renderSort(q) {
+  const choice = {};
+  let checked = false;
+  function draw(states) {
+    const ready = Object.keys(choice).length === q.items.length;
+    stage.innerHTML = header() + `<div class="slots">${q.items.map((it, i) => `
+      <div class="sortrow ${states ? (states[i] ? "ok" : "no") : ""}"><div>${esc(it[0])}${states && !states[i] ? `<span class="fix">✔ ${esc(q.cats[it[1]])}</span>` : ""}</div>
+      <div class="seg">${q.cats.map((c, ci) => `<button data-i="${i}" data-c="${ci}" class="${choice[i] === ci ? "sel" : ""}" ${checked ? "disabled" : ""}>${esc(c)}</button>`).join("")}</div></div>`).join("")}</div>` + (checked ? "" : actions(ready));
+    if (checked) return;
+    stage.querySelectorAll(".seg button").forEach(b => b.onclick = () => { choice[b.dataset.i] = +b.dataset.c; draw(); });
+    const btn = document.getElementById("check");
+    if (btn) btn.onclick = () => {
+      const states = q.items.map((it, i) => choice[i] === it[1]);
+      checked = true; draw(states);
+      grade(states.filter(Boolean).length / states.length);
+    };
+  }
+  draw();
+}
+
+/* ---- multiple choice / scenario ---- */
+function renderMCQ(q) {
+  let sel = null, checked = false;
+  function draw() {
+    stage.innerHTML = header() + `<div class="opts">${q.options.map((o, i) => {
+      let cls = sel === i ? "sel" : "";
+      if (checked) cls = o.correct ? "ok" : sel === i ? "no" : "";
+      return `<button class="opt ${cls}" data-i="${i}" ${checked ? "disabled" : ""}>${String.fromCharCode(65 + i)}. ${esc(o.text)}</button>`;
+    }).join("")}</div>` + (checked ? "" : actions(sel != null));
+    if (checked) return;
+    stage.querySelectorAll(".opt").forEach(b => b.onclick = () => { sel = +b.dataset.i; draw(); });
+    const btn = document.getElementById("check");
+    if (btn) btn.onclick = () => { checked = true; draw(); grade(q.options[sel].correct ? 1 : 0); };
+  }
+  draw();
+}
+
+/* ---- grading + adaptive difficulty ---- */
+function grade(points) {
+  const q = G.q;
+  G.score += points;
+  G.answers.push({ task: q.summary, type: q.type, difficulty: q.diff, points: Math.round(points * 100) / 100 });
+  const old = G.diff;
+  if (points >= 0.999) G.diff = Math.min(3, G.diff + 1);
+  else if (points < 0.5) G.diff = Math.max(1, G.diff - 1);
+  const cls = points >= 0.999 ? "good" : points >= 0.5 ? "mid" : "bad";
+  const title = points >= 0.999 ? "🎉 Excellent! All correct." : points > 0 ? `👍 ${Math.round(points * 100)}% correct.` : "❌ Not this time.";
+  const move = G.diff > old ? " Next task will be harder ⬆️" : G.diff < old ? " Next task will be a bit easier ⬇️" : "";
+  const box = document.createElement("div");
+  box.innerHTML = `<div class="feedback ${cls}">${title}${move}<br><span style="font-weight:600">💡 ${esc(q.explain || "")}</span></div>
+    <div class="actions"><button class="btn green" id="next">${G.qn >= TOTAL ? "See my result 🏁" : "Next task ➜"}</button></div>`;
+  stage.appendChild(box);
+  const head = stage.querySelector(".lab-head b:last-child"); if (head) head.textContent = "Score: " + fmt(G.score);
+  stage.querySelector(".bar i").style.width = (100 * G.qn / TOTAL) + "%";
+  document.getElementById("next").onclick = () => { nextQuestion(); window.scrollTo({ top: 0, behavior: "smooth" }); };
+  box.scrollIntoView({ behavior: "smooth", block: "nearest" });
+}
+
+async function finish() {
+  const max = Math.max(1, G.answers.length);
+  const score = Math.round(G.score * 10) / 10;
+  const pct = Math.round(100 * score / max);
+  const passed = pct >= PASS;
+  const hard = G.answers.filter(a => a.difficulty === 3).length;
+  stage.innerHTML = `<div class="center">
+    <div style="font-size:4rem">${passed ? "🏆" : "💪"}</div>
+    <h1>${passed ? "Great job!" : "Keep going!"}</h1>
+    <div class="big-score" style="color:${passed ? "#16c172" : "#ff9f1c"}">${pct}%</div>
+    <p class="prompt">${fmt(score)} / ${max} points · ${hard} hard ⭐⭐⭐ tasks</p>
+    <p>${passed ? (S1971Lab.nextLevel ? `🔓 You unlocked <b>${esc(S1971Lab.nextLevel.name)}</b>!` : "🎓 You are a Digestive System Expert!") : `You need <b>${PASS}%</b> to pass. Read the tips and try again!`}</p>
+    <p id="save-msg" class="hint">Saving your result…</p>
+    <div class="actions" style="justify-content:center">
+      <button class="btn ghost" id="again">🔁 Try again</button>
+      ${passed && S1971Lab.nextLevel ? `<a class="btn green" href="${S1971Lab.levelUrl(S1971Lab.level + 1)}">Go to ${esc(S1971Lab.nextLevel.name)} ➜</a>` : ""}
+      <a class="btn orange" href="${S1971Lab.homeUrl()}">⬅ Back to my labs</a>
+    </div></div>`;
+  document.getElementById("again").onclick = () => { newGame(); nextQuestion(); };
+  if (passed) burst();
+  const r = await S1971Lab.submit(score, max, { level: S1971Lab.level, answers: G.answers });
+  const msg = document.getElementById("save-msg");
+  if (msg) { msg.textContent = r.message; msg.style.color = r.saved ? "#0c8a50" : "#b52f2f"; msg.style.fontWeight = "800"; }
+}
+
+function burst() {
+  const b = document.createElement("div"); b.className = "burst";
+  const em = ["🎉", "⭐", "🍎", "🧪", "✨", "🥕"];
+  for (let i = 0; i < 40; i++) {
+    const s = document.createElement("span");
+    s.textContent = em[i % em.length];
+    s.style.left = Math.random() * 100 + "vw"; s.style.animationDelay = Math.random() * 0.8 + "s";
+    b.appendChild(s);
+  }
+  document.body.appendChild(b); setTimeout(() => b.remove(), 3800);
+}
+
+/* ===================== START ===================== */
+(async function start() {
+  try { await S1971Lab.init("digestive"); }
+  catch (e) { stage.innerHTML = `<div class="empty">${esc(e.message)}</div>`; return; }
+  document.getElementById("lvl-pill").textContent = S1971Lab.levelInfo.name;
+  const home = S1971Lab.homeUrl();
+  document.getElementById("back-btn").href = home; document.getElementById("home-link").href = home;
+  const ban = document.getElementById("banner");
+  if (S1971Lab.mode === "preview") ban.innerHTML = `<div class="banner preview">👁️ Teacher preview — you can try every level. Results are not saved.</div>`;
+  if (S1971Lab.mode === "guest") ban.innerHTML = `<div class="banner guest">⚠️ You are not logged in — your score will NOT be saved. <a href="${S1971.root()}index.html">Log in here</a></div>`;
+  showIntro();
+})();
+</script>
+</body>
+</html>

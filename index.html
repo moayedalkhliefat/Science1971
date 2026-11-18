@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Science1971 · Virtual Science Lab</title>
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🧪</text></svg>">
+<link rel="stylesheet" href="assets/style.css">
+</head>
+<body>
+<div class="wrap">
+  <div class="hero">
+    <h1><span class="float">🔬</span> Science1971 <span class="float" style="animation-delay:.6s">🧪</span></h1>
+    <p>Your virtual science lab — explore, experiment and level up!</p>
+  </div>
+
+  <div class="login-grid">
+    <div class="card login-card">
+      <h2><span class="big">🎒</span> I'm a Student</h2>
+      <p class="muted small">Use your first name and your School ID.</p>
+      <form id="stu-form" autocomplete="off">
+        <label>First name<input id="stu-name" placeholder="e.g. Ahmed" required></label>
+        <label>School ID<input id="stu-id" inputmode="numeric" placeholder="e.g. 10045" required></label>
+        <button class="btn green" style="width:100%;margin-top:6px" type="submit">Enter the Lab 🚀</button>
+      </form>
+    </div>
+
+    <div class="card login-card">
+      <h2><span class="big">🧑‍🏫</span> Teacher / Admin</h2>
+      <p class="muted small">Log in with your username and password.</p>
+      <form id="staff-form">
+        <label>Username<input id="staff-user" autocomplete="username" required></label>
+        <label>Password<input id="staff-pass" type="password" autocomplete="current-password" required></label>
+        <button class="btn" style="width:100%;margin-top:6px" type="submit">Log in 🔐</button>
+      </form>
+    </div>
+  </div>
+
+  <footer>Built by Mr. Moayed Alkhliefat · Science Teacher · ATS-AQB</footer>
+</div>
+
+<script src="assets/config.js"></script>
+<script src="assets/app.js"></script>
+<script>
+(async function () {
+  const s = S1971.getSession();
+  if (s && s.token) {
+    try { const r = await S1971.rpc("session_check", { p_token: s.token }); if (r && r.ok) { location.href = S1971.homeFor(Object.assign(s, r)); return; } } catch (e) {}
+    S1971.clearSession();
+  }
+})();
+
+function busy(form, on) { form.querySelector("button").disabled = on; }
+
+document.getElementById("stu-form").addEventListener("submit", async e => {
+  e.preventDefault();
+  const f = e.target; busy(f, true);
+  try {
+    const r = await S1971.rpc("student_login", { p_first_name: document.getElementById("stu-name").value, p_school_id: document.getElementById("stu-id").value });
+    if (!r.ok) { S1971.toast(r.error, "bad"); return; }
+    S1971.setSession(r); location.href = S1971.homeFor(r);
+  } catch (err) { S1971.toast(err.message, "bad"); } finally { busy(f, false); }
+});
+
+document.getElementById("staff-form").addEventListener("submit", async e => {
+  e.preventDefault();
+  const f = e.target; busy(f, true);
+  try {
+    const r = await S1971.rpc("staff_login", { p_username: document.getElementById("staff-user").value, p_password: document.getElementById("staff-pass").value });
+    if (!r.ok) { S1971.toast(r.error, "bad"); return; }
+    S1971.setSession(r); location.href = S1971.homeFor(r);
+  } catch (err) { S1971.toast(err.message, "bad"); } finally { busy(f, false); }
+});
+</script>
+</body>
+</html>

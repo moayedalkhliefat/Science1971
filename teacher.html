@@ -1,0 +1,292 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Teacher Dashboard · Science1971</title>
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🧪</text></svg>">
+<link rel="stylesheet" href="assets/style.css">
+</head>
+<body>
+<div class="wrap">
+  <div class="topbar">
+    <a class="brand" href="teacher.html"><span class="logo">🧪</span><b>Science1971</b></a>
+    <div class="row gap">
+      <span class="who" id="who"></span><span class="pill" id="role-pill"></span>
+      <a class="btn sm pink hidden" id="admin-link" href="admin.html">👑 Admin panel</a>
+      <button class="btn sm ghost" onclick="S1971.changePasswordDialog()">🔑 Password</button>
+      <button class="btn sm orange" onclick="S1971.logout()">Log out</button>
+    </div>
+  </div>
+
+  <div class="tabs">
+    <button class="tab active" data-tab="students">👩‍🎓 My Students</button>
+    <button class="tab" data-tab="results">📊 Results</button>
+    <button class="tab" data-tab="labs">🔬 Labs</button>
+  </div>
+
+  <!-- STUDENTS -->
+  <section id="tab-students">
+    <div class="stats">
+      <div class="stat a"><b id="st-count">0</b><span id="st-count-label">students (max 30)</span></div>
+      <div class="stat c"><b id="st-classes">0</b>classes</div>
+      <div class="stat d"><b id="st-results">0</b>lab attempts</div>
+    </div>
+
+    <div class="card" style="margin-bottom:18px">
+      <div class="row between gap">
+        <h2>📥 Add students from Excel</h2>
+        <button class="btn sm ghost" id="tpl-btn">⬇️ Download Excel template</button>
+      </div>
+      <p class="muted">Your sheet needs 4 columns: <b>Name</b>, <b>School ID</b>, <b>Grade</b>, <b>Section</b>. Students log in with their <b>first name</b> + <b>School ID</b>. <span id="limit-note">Maximum 30 students per teacher.</span></p>
+      <div class="drop" id="drop">
+        <div style="font-size:2.4rem">📄</div>
+        <b>Click to choose an Excel file</b> or drag it here<br><span class="muted small">.xlsx, .xls or .csv</span>
+        <input type="file" id="file" accept=".xlsx,.xls,.csv" class="hidden">
+      </div>
+      <div id="preview" class="hidden" style="margin-top:14px">
+        <div class="row between gap"><b id="preview-title"></b>
+          <div class="row gap"><button class="btn sm ghost" id="cancel-upload">Cancel</button><button class="btn green" id="do-upload">✅ Upload students</button></div>
+        </div>
+        <div class="table-wrap" style="max-height:300px;margin-top:10px"><table id="preview-table"></table></div>
+      </div>
+      <div id="upload-result"></div>
+    </div>
+
+    <div class="card">
+      <div class="row between gap">
+        <h2>👩‍🎓 Student list</h2>
+        <div class="row gap">
+          <select class="inline" id="f-grade"></select>
+          <select class="inline" id="f-section"></select>
+          <input class="inline" id="f-search" placeholder="🔎 Search name or ID">
+        </div>
+      </div>
+      <div class="table-wrap" style="margin-top:12px;max-height:520px"><table id="students-table"></table></div>
+    </div>
+  </section>
+
+  <!-- RESULTS -->
+  <section id="tab-results" class="hidden">
+    <div class="card">
+      <div class="row between gap">
+        <h2>📊 Lab results</h2>
+        <div class="row gap">
+          <select class="inline" id="r-grade"></select>
+          <select class="inline" id="r-section"></select>
+          <select class="inline" id="r-lab"></select>
+          <input class="inline" id="r-search" placeholder="🔎 Student">
+          <button class="btn sm blue" id="r-export">⬇️ Export CSV</button>
+          <button class="btn sm ghost" id="r-refresh">🔄</button>
+        </div>
+      </div>
+      <p class="muted small">Click a row to see each question the student answered.</p>
+      <div class="table-wrap" style="margin-top:6px;max-height:620px"><table id="results-table"></table></div>
+    </div>
+  </section>
+
+  <!-- LABS -->
+  <section id="tab-labs" class="hidden">
+    <div class="card" style="margin-bottom:18px">
+      <h2>🔬 Virtual labs</h2>
+      <p class="muted">Open any level in <b>preview mode</b> to try it yourself (nothing is saved). Students must score <b id="pass-mark"></b> to unlock the next level.</p>
+    </div>
+    <div class="labs" id="labs"></div>
+  </section>
+
+  <footer>Built by Mr. Moayed Alkhliefat · Science Teacher · ATS-AQB</footer>
+</div>
+
+<script src="assets/config.js"></script>
+<script src="assets/app.js"></script>
+<script src="labs/catalog.js"></script>
+<script>
+const { rpc, esc, toast, fmtDate, gradeNum } = S1971;
+let ME = null, STUDENTS = [], RESULTS = [], PENDING = [];
+
+(async function init() {
+  ME = await S1971.requireRole(["teacher", "admin"]);
+  if (!ME) return;
+  document.getElementById("who").textContent = ME.name;
+  const pill = document.getElementById("role-pill");
+  pill.textContent = ME.role; pill.classList.add(ME.role);
+  if (ME.role === "admin") {
+    document.getElementById("admin-link").classList.remove("hidden");
+    document.getElementById("st-count-label").textContent = "students (all teachers)";
+    document.getElementById("limit-note").textContent = "As admin you can see every teacher's students.";
+  }
+  document.getElementById("pass-mark").textContent = S1971_CONFIG.PASS_MARK + "%";
+  renderLabs();
+  await Promise.all([loadStudents(), loadResults()]);
+})();
+
+// ---------- tabs ----------
+document.querySelectorAll(".tab").forEach(b => b.onclick = () => {
+  document.querySelectorAll(".tab").forEach(x => x.classList.toggle("active", x === b));
+  ["students", "results", "labs"].forEach(t => document.getElementById("tab-" + t).classList.toggle("hidden", t !== b.dataset.tab));
+});
+
+// ---------- students ----------
+async function loadStudents() {
+  try { STUDENTS = await rpc("teacher_list_students", { p_token: ME.token }); } catch (e) { return toast(e.message, "bad"); }
+  document.getElementById("st-count").textContent = ME.role === "admin" ? STUDENTS.length : `${STUDENTS.length}/30`;
+  const classes = new Set(STUDENTS.map(s => `${s.grade || ""}-${s.section || ""}`));
+  document.getElementById("st-classes").textContent = STUDENTS.length ? classes.size : 0;
+  fillSelect("f-grade", "All grades", STUDENTS.map(s => s.grade));
+  fillSelect("f-section", "All sections", STUDENTS.map(s => s.section));
+  renderStudents();
+}
+function fillSelect(id, label, values) {
+  const el = document.getElementById(id), cur = el.value;
+  const vals = [...new Set(values.filter(v => v != null && v !== ""))].sort((a, b) => String(a).localeCompare(String(b), undefined, { numeric: true }));
+  el.innerHTML = `<option value="">${label}</option>` + vals.map(v => `<option>${esc(v)}</option>`).join("");
+  if (vals.includes(cur)) el.value = cur;
+}
+["f-grade", "f-section", "f-search"].forEach(id => document.getElementById(id).addEventListener("input", renderStudents));
+function renderStudents() {
+  const g = document.getElementById("f-grade").value, s = document.getElementById("f-section").value, q = document.getElementById("f-search").value.trim().toLowerCase();
+  const list = STUDENTS.filter(x => (!g || x.grade === g) && (!s || x.section === s) && (!q || x.full_name.toLowerCase().includes(q) || x.school_id.toLowerCase().includes(q)));
+  const t = document.getElementById("students-table");
+  if (!STUDENTS.length) { t.innerHTML = `<tr><td class="empty">No students yet — upload your Excel sheet above 👆</td></tr>`; return; }
+  t.innerHTML = `<tr><th>#</th><th>Name</th><th>Logs in with</th><th>School ID</th><th>Grade</th><th>Section</th>${ME.role === "admin" ? "<th>Teacher</th>" : ""}<th></th></tr>` +
+    list.map((x, i) => `<tr><td>${i + 1}</td><td><b>${esc(x.full_name)}</b></td><td>${esc(x.first_name)}</td><td>${esc(x.school_id)}</td><td>${esc(x.grade)}</td><td>${esc(x.section)}</td>${ME.role === "admin" ? `<td>${esc(x.teacher_name)}</td>` : ""}
+      <td><button class="btn sm red" data-del="${esc(x.id)}" data-name="${esc(x.full_name)}">🗑️</button></td></tr>`).join("");
+  t.querySelectorAll("[data-del]").forEach(b => b.onclick = async () => {
+    if (!confirm(`Remove ${b.dataset.name}? Their lab results will also be deleted.`)) return;
+    try { await rpc("teacher_delete_student", { p_token: ME.token, p_student_id: b.dataset.del }); toast("Student removed", "good"); loadStudents(); loadResults(); }
+    catch (e) { toast(e.message, "bad"); }
+  });
+}
+
+// ---------- Excel upload ----------
+let xlsxReady = null;
+function loadXLSX() {
+  if (window.XLSX) return Promise.resolve();
+  if (!xlsxReady) xlsxReady = new Promise((ok, bad) => {
+    const s = document.createElement("script");
+    s.src = "https://cdn.sheetjs.com/xlsx-0.20.3/package/dist/xlsx.full.min.js";
+    s.onload = ok; s.onerror = () => { xlsxReady = null; bad(new Error("Could not load the Excel reader. Check your internet.")); };
+    document.head.appendChild(s);
+  });
+  return xlsxReady;
+}
+const drop = document.getElementById("drop"), fileIn = document.getElementById("file");
+drop.onclick = () => fileIn.click();
+drop.ondragover = e => { e.preventDefault(); drop.classList.add("over"); };
+drop.ondragleave = () => drop.classList.remove("over");
+drop.ondrop = e => { e.preventDefault(); drop.classList.remove("over"); if (e.dataTransfer.files[0]) readFile(e.dataTransfer.files[0]); };
+fileIn.onchange = () => { if (fileIn.files[0]) readFile(fileIn.files[0]); fileIn.value = ""; };
+
+document.getElementById("tpl-btn").onclick = async () => {
+  try {
+    await loadXLSX();
+    const ws = XLSX.utils.aoa_to_sheet([["Name", "School ID", "Grade", "Section"], ["Ahmed Khalid Saeed", "10045", "7", "A"], ["Mariam Ali Hassan", "10046", "7", "A"]]);
+    ws["!cols"] = [{ wch: 28 }, { wch: 12 }, { wch: 8 }, { wch: 9 }];
+    const wb = XLSX.utils.book_new(); XLSX.utils.book_append_sheet(wb, ws, "Students");
+    XLSX.writeFile(wb, "Science1971_students_template.xlsx");
+  } catch (e) { toast(e.message, "bad"); }
+};
+
+function findCol(headers, re, exclude) {
+  return headers.findIndex((h, i) => !exclude.includes(i) && re.test(h));
+}
+async function readFile(file) {
+  document.getElementById("upload-result").innerHTML = "";
+  try {
+    await loadXLSX();
+    const wb = XLSX.read(await file.arrayBuffer());
+    const rows = XLSX.utils.sheet_to_json(wb.Sheets[wb.SheetNames[0]], { header: 1, raw: false, defval: "" });
+    // find the header row (first row that has a "name" column) within the first 10 rows
+    let hr = rows.slice(0, 10).findIndex(r => r.some(c => /name|الاسم|اسم/i.test(String(c))));
+    if (hr < 0) throw new Error('Could not find a "Name" column. Use the template (Name, School ID, Grade, Section).');
+    const headers = rows[hr].map(h => String(h).trim().toLowerCase());
+    const ni = findCol(headers, /name|اسم/, []);
+    const ii = findCol(headers, /(^|\W)id($|\W)|school\s*id|student\s*id|id\s*(no|number)|number|رقم|الهوية/, [ni]);
+    const gi = findCol(headers, /grade|الصف/, [ni, ii]);
+    const si = findCol(headers, /section|class|الشعبة/, [ni, ii, gi]);
+    if (ii < 0) throw new Error('Could not find a "School ID" column. Use the template (Name, School ID, Grade, Section).');
+    PENDING = rows.slice(hr + 1).map(r => ({
+      name: String(r[ni] || "").trim(), school_id: String(r[ii] || "").trim(),
+      grade: gi >= 0 ? String(r[gi] || "").trim() : "", section: si >= 0 ? String(r[si] || "").trim() : ""
+    })).filter(r => r.name || r.school_id);
+    if (!PENDING.length) throw new Error("The sheet has no student rows.");
+    if (ME.role === "teacher" && PENDING.length > 30) throw new Error(`This file has ${PENDING.length} students. The maximum is 30 per teacher.`);
+    const ids = PENDING.map(r => r.school_id), dup = ids.filter((v, i) => v && ids.indexOf(v) !== i);
+    document.getElementById("preview-title").textContent = `${PENDING.length} students found in "${file.name}"` + (dup.length ? ` ⚠️ repeated IDs: ${[...new Set(dup)].join(", ")}` : "");
+    document.getElementById("preview-table").innerHTML = `<tr><th>#</th><th>Name</th><th>First name (login)</th><th>School ID</th><th>Grade</th><th>Section</th></tr>` +
+      PENDING.map((r, i) => `<tr><td>${i + 1}</td><td>${esc(r.name) || "⚠️ missing"}</td><td>${esc(r.name.split(/\s+/)[0])}</td><td>${esc(r.school_id) || "⚠️ missing"}</td><td>${esc(r.grade)}</td><td>${esc(r.section)}</td></tr>`).join("");
+    document.getElementById("preview").classList.remove("hidden");
+  } catch (e) { toast(e.message, "bad"); }
+}
+document.getElementById("cancel-upload").onclick = () => { PENDING = []; document.getElementById("preview").classList.add("hidden"); };
+document.getElementById("do-upload").onclick = async () => {
+  const btn = document.getElementById("do-upload"); btn.disabled = true;
+  try {
+    const r = await rpc("teacher_upload_students", { p_token: ME.token, p_rows: PENDING });
+    if (!r.ok) { toast(r.error, "bad"); document.getElementById("upload-result").innerHTML = `<div class="notice">❌ ${esc(r.error)}</div>`; return; }
+    document.getElementById("preview").classList.add("hidden"); PENDING = [];
+    let html = `<div class="notice">✅ <b>${r.added}</b> new students added, <b>${r.updated}</b> updated.`;
+    if (r.skipped && r.skipped.length) html += `<br>⚠️ ${r.skipped.length} skipped:<ul>` + r.skipped.map(s => `<li>${esc(s.name || "(no name)")} — ${esc(s.school_id || "(no ID)")}: ${esc(s.reason)}</li>`).join("") + "</ul>";
+    document.getElementById("upload-result").innerHTML = html + "</div>";
+    toast("Students uploaded ✔", "good");
+    loadStudents();
+  } catch (e) { toast(e.message, "bad"); } finally { btn.disabled = false; }
+};
+
+// ---------- results ----------
+function labTitle(id) {
+  for (const l of window.S1971_LABS) for (const lv of l.levels) if (lv.id === id) return `${l.title} — ${lv.name}`;
+  return id;
+}
+async function loadResults() {
+  try { RESULTS = await rpc("teacher_results", { p_token: ME.token }); } catch (e) { return toast(e.message, "bad"); }
+  document.getElementById("st-results").textContent = RESULTS.length;
+  fillSelect("r-grade", "All grades", RESULTS.map(r => r.grade));
+  fillSelect("r-section", "All sections", RESULTS.map(r => r.section));
+  const el = document.getElementById("r-lab"), cur = el.value;
+  const labs = [...new Set(RESULTS.map(r => r.lab_id))];
+  el.innerHTML = `<option value="">All labs</option>` + labs.map(id => `<option value="${esc(id)}">${esc(labTitle(id))}</option>`).join("");
+  if (labs.includes(cur)) el.value = cur;
+  renderResults();
+}
+["r-grade", "r-section", "r-lab", "r-search"].forEach(id => document.getElementById(id).addEventListener("input", renderResults));
+document.getElementById("r-refresh").onclick = loadResults;
+function filteredResults() {
+  const g = document.getElementById("r-grade").value, s = document.getElementById("r-section").value, l = document.getElementById("r-lab").value, q = document.getElementById("r-search").value.trim().toLowerCase();
+  return RESULTS.filter(r => (!g || r.grade === g) && (!s || r.section === s) && (!l || r.lab_id === l) && (!q || r.full_name.toLowerCase().includes(q) || r.school_id.toLowerCase().includes(q)));
+}
+function pct(r) { return Math.round(100 * r.score / r.max_score); }
+function renderResults() {
+  const list = filteredResults(), t = document.getElementById("results-table");
+  if (!RESULTS.length) { t.innerHTML = `<tr><td class="empty">No results yet. They appear here when students finish a lab.</td></tr>`; return; }
+  t.innerHTML = `<tr><th>Student</th><th>School ID</th><th>Grade</th><th>Section</th><th>Lab</th><th>Score</th><th>%</th><th>Finished</th></tr>` +
+    list.map(r => { const p = pct(r); return `<tr style="cursor:pointer" data-id="${r.id}"><td><b>${esc(r.full_name)}</b></td><td>${esc(r.school_id)}</td><td>${esc(r.grade)}</td><td>${esc(r.section)}</td>
+      <td>${esc(labTitle(r.lab_id))}</td><td>${+r.score}/${+r.max_score}</td><td><span class="score ${p >= S1971_CONFIG.PASS_MARK ? "hi" : p >= 50 ? "mid" : "lo"}">${p}%</span></td><td>${fmtDate(r.completed_at)}</td></tr>`; }).join("");
+  t.querySelectorAll("tr[data-id]").forEach(tr => tr.onclick = () => showDetails(RESULTS.find(r => String(r.id) === tr.dataset.id)));
+}
+function showDetails(r) {
+  const d = (r.details && r.details.answers) || [];
+  const m = S1971.modal(`<h3>${esc(r.full_name)}</h3><p class="muted">${esc(labTitle(r.lab_id))} · ${pct(r)}% · ${fmtDate(r.completed_at)}</p>
+    ${d.length ? `<div class="table-wrap" style="max-height:50vh"><table><tr><th>#</th><th>Task</th><th>Difficulty</th><th>Result</th></tr>` +
+      d.map((a, i) => `<tr><td>${i + 1}</td><td style="white-space:normal">${esc(a.task)}</td><td>${"⭐".repeat(a.difficulty || 1)}</td><td>${a.points >= 1 ? "✅" : a.points > 0 ? "🟡 " + Math.round(a.points * 100) + "%" : "❌"}</td></tr>`).join("") + `</table></div>` : `<p class="muted">No question details saved.</p>`}
+    <div class="row end" style="margin-top:12px"><button class="btn" id="close-d">Close</button></div>`);
+  m.querySelector("#close-d").onclick = () => m.remove();
+}
+document.getElementById("r-export").onclick = () => {
+  const rows = [["Student", "School ID", "Grade", "Section", "Lab", "Score", "Max", "Percent", "Finished"]].concat(
+    filteredResults().map(r => [r.full_name, r.school_id, r.grade, r.section, labTitle(r.lab_id), +r.score, +r.max_score, pct(r) + "%", fmtDate(r.completed_at)]));
+  S1971.downloadCSV("Science1971_results.csv", rows);
+};
+
+// ---------- labs ----------
+function renderLabs() {
+  document.getElementById("labs").innerHTML = window.S1971_LABS.map(l => `
+    <div class="lab" style="background:${l.color}">
+      <div class="icon">${l.icon}</div><h3>${esc(l.title)}</h3>
+      <p>${esc(l.description)}<br><span class="small">For grades: ${l.grades.join(", ")}</span></p>
+      <div class="levels">${l.levels.map(v => `<a class="lvl" href="${l.path}?level=${v.n}&preview=1" target="_blank">${esc(v.name)} <span class="best">👁️ Preview</span></a>`).join("")}</div>
+    </div>`).join("");
+}
+</script>
+</body>
+</html>

@@ -1,0 +1,104 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Admin · Science1971</title>
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🧪</text></svg>">
+<link rel="stylesheet" href="assets/style.css">
+</head>
+<body>
+<div class="wrap">
+  <div class="topbar">
+    <a class="brand" href="admin.html"><span class="logo">🧪</span><b>Science1971</b></a>
+    <div class="row gap">
+      <span class="who" id="who"></span><span class="pill admin">admin</span>
+      <a class="btn sm blue" href="teacher.html">📊 Students &amp; Results</a>
+      <button class="btn sm ghost" onclick="S1971.changePasswordDialog()">🔑 Password</button>
+      <button class="btn sm orange" onclick="S1971.logout()">Log out</button>
+    </div>
+  </div>
+
+  <div class="stats">
+    <div class="stat b"><b id="s-teachers">0</b>teachers</div>
+    <div class="stat a"><b id="s-students">0</b>students in total</div>
+  </div>
+
+  <div class="grid" style="grid-template-columns:repeat(auto-fit,minmax(320px,1fr))">
+    <div class="card">
+      <h2>➕ Add a teacher</h2>
+      <p class="muted small">The teacher logs in with this username and password, then uploads their students (max 30).</p>
+      <form id="add-form" autocomplete="off">
+        <label>Teacher's full name<input id="t-name" placeholder="e.g. Ms. Sara Ali" required></label>
+        <label>Username (no spaces)<input id="t-user" placeholder="e.g. Sara" required></label>
+        <label>Password (6+ characters)<input id="t-pass" required></label>
+        <button class="btn green" type="submit" style="width:100%">Create teacher account</button>
+      </form>
+    </div>
+
+    <div class="card">
+      <h2>🧑‍🏫 Teachers</h2>
+      <div class="table-wrap" style="max-height:480px"><table id="t-table"></table></div>
+    </div>
+  </div>
+
+  <footer>Built by Mr. Moayed Alkhliefat · Science Teacher · ATS-AQB</footer>
+</div>
+
+<script src="assets/config.js"></script>
+<script src="assets/app.js"></script>
+<script>
+const { rpc, esc, toast, fmtDate } = S1971;
+let ME = null;
+
+(async function init() {
+  ME = await S1971.requireRole(["admin"]);
+  if (!ME) return;
+  document.getElementById("who").textContent = ME.name;
+  load();
+})();
+
+async function load() {
+  try {
+    const [teachers, students] = await Promise.all([
+      rpc("admin_list_teachers", { p_token: ME.token }),
+      rpc("teacher_list_students", { p_token: ME.token })
+    ]);
+    document.getElementById("s-teachers").textContent = teachers.length;
+    document.getElementById("s-students").textContent = students.length;
+    const t = document.getElementById("t-table");
+    if (!teachers.length) { t.innerHTML = `<tr><td class="empty">No teachers yet — add the first one 👈</td></tr>`; return; }
+    t.innerHTML = `<tr><th>Name</th><th>Username</th><th>Students</th><th>Added</th><th></th></tr>` + teachers.map(x => `
+      <tr><td><b>${esc(x.display_name)}</b></td><td>${esc(x.username)}</td><td>${x.student_count}/30</td><td>${fmtDate(x.created_at)}</td>
+      <td class="row gap"><button class="btn sm ghost" data-reset="${esc(x.id)}" data-name="${esc(x.display_name)}">🔑 Reset</button>
+          <button class="btn sm red" data-del="${esc(x.id)}" data-name="${esc(x.display_name)}" data-n="${x.student_count}">🗑️</button></td></tr>`).join("");
+    t.querySelectorAll("[data-reset]").forEach(b => b.onclick = async () => {
+      const p = prompt(`New password for ${b.dataset.name} (6+ characters):`);
+      if (!p) return;
+      try { const r = await rpc("admin_reset_password", { p_token: ME.token, p_teacher_id: b.dataset.reset, p_new: p }); r.ok ? toast("Password changed ✔", "good") : toast(r.error, "bad"); }
+      catch (e) { toast(e.message, "bad"); }
+    });
+    t.querySelectorAll("[data-del]").forEach(b => b.onclick = async () => {
+      if (!confirm(`Delete ${b.dataset.name}?\n\nThis also deletes their ${b.dataset.n} students and all of their lab results. This cannot be undone.`)) return;
+      try { await rpc("admin_delete_teacher", { p_token: ME.token, p_teacher_id: b.dataset.del }); toast("Teacher deleted", "good"); load(); }
+      catch (e) { toast(e.message, "bad"); }
+    });
+  } catch (e) { toast(e.message, "bad"); }
+}
+
+document.getElementById("add-form").addEventListener("submit", async e => {
+  e.preventDefault();
+  const btn = e.target.querySelector("button"); btn.disabled = true;
+  try {
+    const r = await rpc("admin_create_teacher", {
+      p_token: ME.token, p_username: document.getElementById("t-user").value,
+      p_display_name: document.getElementById("t-name").value, p_password: document.getElementById("t-pass").value
+    });
+    if (!r.ok) return toast(r.error, "bad");
+    toast("Teacher account created ✔", "good");
+    e.target.reset(); load();
+  } catch (err) { toast(err.message, "bad"); } finally { btn.disabled = false; }
+});
+</script>
+</body>
+</html>

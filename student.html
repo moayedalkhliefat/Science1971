@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>My Lab · Science1971</title>
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🧪</text></svg>">
+<link rel="stylesheet" href="assets/style.css">
+</head>
+<body>
+<div class="wrap">
+  <div class="topbar">
+    <a class="brand" href="student.html"><span class="logo">🧪</span><b>Science1971</b></a>
+    <div class="row gap">
+      <span class="who" id="who"></span><span class="pill student" id="cls"></span>
+      <button class="btn sm orange" onclick="S1971.logout()">Log out</button>
+    </div>
+  </div>
+
+  <div class="card" style="margin-bottom:18px">
+    <h1 id="hello">Welcome! 👋</h1>
+    <p class="muted">Pick a lab. Start with <b>Level 1</b> — score <b id="pm"></b> or more to unlock the next level. 🔓</p>
+  </div>
+
+  <div class="labs" id="labs"></div>
+
+  <div class="card" style="margin-top:18px">
+    <h2>🏆 My results</h2>
+    <div class="table-wrap"><table id="my"></table></div>
+  </div>
+
+  <footer>Built by Mr. Moayed Alkhliefat · Science Teacher · ATS-AQB</footer>
+</div>
+
+<script src="assets/config.js"></script>
+<script src="assets/app.js"></script>
+<script src="labs/catalog.js"></script>
+<script>
+const { rpc, esc, toast, fmtDate, gradeNum } = S1971;
+const PASS = S1971_CONFIG.PASS_MARK;
+
+(async function init() {
+  const ME = await S1971.requireRole(["student"]);
+  if (!ME) return;
+  document.getElementById("who").textContent = ME.name;
+  document.getElementById("cls").textContent = [ME.grade && "Grade " + ME.grade, ME.section].filter(Boolean).join(" · ") || "student";
+  document.getElementById("hello").textContent = `Welcome, ${ME.first_name}! 👋`;
+  document.getElementById("pm").textContent = PASS + "%";
+
+  let mine = [];
+  try { mine = await rpc("student_my_results", { p_token: ME.token }); } catch (e) { toast(e.message, "bad"); }
+  const best = {};
+  mine.forEach(r => { const p = Math.round(100 * r.score / r.max_score); best[r.lab_id] = Math.max(best[r.lab_id] || 0, p); });
+
+  const g = gradeNum(ME.grade);
+  const labs = window.S1971_LABS.filter(l => l.grades.includes("all") || !g || l.grades.includes(g));
+  const box = document.getElementById("labs");
+  if (!labs.length) box.innerHTML = `<div class="card empty">No labs for your grade yet. Check back soon! 🚀</div>`;
+  else box.innerHTML = labs.map(l => `
+    <div class="lab" style="background:${l.color}">
+      <div class="icon">${l.icon}</div><h3>${esc(l.title)}</h3><p>${esc(l.description)}</p>
+      <div class="levels">${l.levels.map((v, i) => {
+        const prev = i === 0 ? null : l.levels[i - 1];
+        const open = !prev || (best[prev.id] || 0) >= PASS;
+        const b = best[v.id];
+        const badge = b != null ? (b >= PASS ? `⭐ ${b}%` : `${b}%`) : open ? "▶ Start" : "🔒";
+        return open ? `<a class="lvl" href="${l.path}?level=${v.n}">${esc(v.name)} <span class="best">${badge}</span></a>`
+                    : `<span class="lvl locked" title="Score ${PASS}% in ${esc(prev.name)} to unlock">${esc(v.name)} <span class="best">🔒</span></span>`;
+      }).join("")}</div>
+    </div>`).join("");
+
+  const titles = {};
+  window.S1971_LABS.forEach(l => l.levels.forEach(v => titles[v.id] = `${l.title} — ${v.name}`));
+  const t = document.getElementById("my");
+  t.innerHTML = mine.length ? `<tr><th>Lab</th><th>Score</th><th>Date</th></tr>` + mine.map(r => {
+    const p = Math.round(100 * r.score / r.max_score);
+    return `<tr><td>${esc(titles[r.lab_id] || r.lab_title || r.lab_id)}</td><td><span class="score ${p >= PASS ? "hi" : p >= 50 ? "mid" : "lo"}">${p}%</span></td><td>${fmtDate(r.completed_at)}</td></tr>`;
+  }).join("") : `<tr><td class="empty">No results yet — start your first lab! 🧪</td></tr>`;
+})();
+</script>
+</body>
+</html>
