@@ -53,6 +53,14 @@
   .burst span{position:absolute;top:-40px;font-size:28px;animation:fall 2.6s linear forwards}
   @keyframes fall{to{transform:translateY(110vh) rotate(540deg)}}
   .marker{cursor:default}
+  .marker.hot{cursor:pointer}
+  .marker.hot:hover circle:nth-of-type(2){stroke:#ffd23f;stroke-width:4}
+  .explore-info{background:#fff7e6;border-radius:18px;padding:16px 18px;min-height:150px}
+  .empty-info{text-align:center;display:flex;flex-direction:column;align-items:center;justify-content:center}
+  .organ-dot{width:16px;height:16px;border-radius:50%;background:#ff9f1c;display:inline-block}
+  .tag{display:inline-block;margin:8px 0 4px;padding:4px 12px;border-radius:999px;font-weight:800;font-size:.88rem}
+  .tag.helper{background:#efe9ff;color:#5a36d6}.tag.tract{background:#e6fbf0;color:#0c6b3e}
+  .fn{font-size:1.1rem;margin:10px 0}.fact{background:#fff;border-radius:12px;padding:10px 12px;margin:6px 0 0;font-weight:600}
 </style>
 </head>
 <body>
@@ -93,19 +101,39 @@ const O = {
   anus:        { name: "Anus",            fn: "Opening where feces leave the body",                                    a: [158, 488], side: "R", y: 488 }
 };
 const L1 = ["mouth", "esophagus", "stomach", "small", "large", "rectum", "anus"];
+const HELPERS = ["salivary", "liver", "gallbladder", "pancreas"];
+const FACT = {
+  mouth: "Teeth do mechanical digestion; saliva contains amylase, which starts breaking starch into sugar.",
+  salivary: "They make about 1–1.5 litres of saliva every day. Saliva contains the enzyme amylase.",
+  esophagus: "About 25 cm long. No digestion happens here — it only moves food by peristalsis.",
+  liver: "The largest internal organ. Bile has no enzymes — it emulsifies fat into tiny droplets.",
+  stomach: "Makes hydrochloric acid (about pH 2) and pepsin, which starts digesting protein.",
+  gallbladder: "Squeezes stored bile into the small intestine when fatty food arrives.",
+  pancreas: "Pancreatic juice contains amylase, lipase and protease, plus bicarbonate to neutralise stomach acid.",
+  small: "About 6 m long. Millions of villi absorb glucose, amino acids, fatty acids and glycerol into the blood.",
+  large: "Absorbs the remaining water. Helpful bacteria here make vitamin K.",
+  rectum: "Stretches as it fills, sending a signal to the brain that it is time to go to the toilet.",
+  anus: "Ring-shaped muscles (sphincters) control when feces leave the body."
+};
+const LEVEL_ORGANS = { 1: L1, 2: Object.keys(O), 3: Object.keys(O) };
 const ALL = Object.keys(O);
 
-function diagram(markers, states) {
-  // markers: [{organ, num}] ; states: {organ: "ok"|"no"}
+const FOOD_PATH = "M150,84 C150,120 152,150 158,176 C162,196 166,206 172,214 C200,214 222,236 212,262 C202,284 175,292 165,300 L150,318 L114,334 C130,324 178,326 194,336 C206,346 180,354 150,351 C118,348 106,360 122,369 C140,377 190,368 196,383 C200,398 160,397 136,395 C110,393 106,408 124,415 C146,423 186,411 194,425 L100,432 L92,430 L92,320 Q92,308 104,308 L204,308 Q216,308 216,320 L216,418 Q216,438 196,442 L166,446 Q158,450 158,462 L158,489";
+function diagram(markers, states, opts) {
+  // markers: [{organ, num, text?}] ; states: {organ: "ok"|"no"|"seen"|"cur"}
   const X = 30; // body shift
+  opts = opts || {};
   let m = "";
   (markers || []).forEach(k => {
     const o = O[k.organ], ax = o.a[0] + X, ay = o.a[1], mx = o.side === "L" ? 16 : 344, my = o.y;
-    const st = states && states[k.organ], fill = st === "ok" ? "#16c172" : st === "no" ? "#ff4d4d" : "#7b4dff";
-    m += `<g class="marker"><line x1="${ax}" y1="${ay}" x2="${mx}" y2="${my}" stroke="#2d2a5a" stroke-width="1.6"/>
+    const st = states && states[k.organ];
+    const fill = st === "ok" || st === "seen" ? "#16c172" : st === "no" ? "#ff4d4d" : st === "cur" ? "#ff9f1c" : "#7b4dff";
+    const label = k.text != null ? k.text : k.num;
+    m += `<g class="marker ${opts.clickable ? "hot" : ""}" data-organ="${k.organ}"><line x1="${ax}" y1="${ay}" x2="${mx}" y2="${my}" stroke="#2d2a5a" stroke-width="1.6"/>
           <circle cx="${ax}" cy="${ay}" r="3.2" fill="#2d2a5a"/>
           <circle cx="${mx}" cy="${my}" r="13" fill="${fill}" stroke="#fff" stroke-width="2.5"/>
-          <text x="${mx}" y="${my + 5}" text-anchor="middle" font-family="Baloo 2, sans-serif" font-weight="800" font-size="15" fill="#fff">${k.num}</text></g>`;
+          <text x="${mx}" y="${my + 5}" text-anchor="middle" font-family="Baloo 2, sans-serif" font-weight="800" font-size="15" fill="#fff">${label}</text>
+          ${opts.clickable ? `<circle cx="${mx}" cy="${my}" r="18" fill="transparent"/><circle cx="${ax}" cy="${ay}" r="16" fill="transparent"/>` : ""}</g>`;
   });
   return `<svg viewBox="0 0 360 510" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Diagram of the human digestive system">
   <g transform="translate(${X},0)">
@@ -124,6 +152,7 @@ function diagram(markers, states) {
     <path d="M62,206 C68,178 122,170 180,186 C193,190 192,206 178,213 C152,227 120,239 96,241 C73,242 60,229 62,206Z" fill="#b5651d"/>
     <ellipse cx="124" cy="252" rx="9" ry="13" fill="#59c96b" transform="rotate(-20 124 252)"/>
     <path d="M168,212 C190,196 230,204 232,238 C234,274 206,296 177,293 C160,291 150,283 156,273 C162,265 179,267 191,258 C203,248 199,232 187,228 C179,225 173,226 166,224Z" fill="#ff7b9c" stroke="#d95479" stroke-width="2"/>
+    ${opts.animate ? `<circle r="7" fill="#ffd23f" stroke="#c47400" stroke-width="2"><animateMotion dur="9s" fill="freeze" path="${FOOD_PATH}"/></circle>` : ""}
   </g>${m}</svg>`;
 }
 
@@ -312,12 +341,51 @@ function showIntro() {
     <p><span class="pill" style="background:#ff4d9d;font-size:1rem">${esc(info.name)}</span></p>
     <p class="prompt">${esc(L.intro)}</p>
     <div class="grid" style="grid-template-columns:repeat(auto-fit,minmax(170px,1fr));text-align:left;margin:16px 0">
-      <div class="notice">🧩 <b>${TOTAL} tasks</b>: label, match, food journey, sorting and problem scenarios.</div>
+      <div class="notice">🔍 First <b>explore the model</b>, then do <b>${TOTAL} tasks</b>: label, match, food journey, sorting and problem scenarios.</div>
       <div class="notice">📈 Answer correctly and the tasks get <b>harder</b> ⭐⭐⭐</div>
       <div class="notice">🔓 Score <b>${PASS}%</b> to ${S1971Lab.nextLevel ? "unlock <b>" + esc(S1971Lab.nextLevel.name) + "</b>" : "become a Digestive Expert"}!</div>
     </div>
-    <button class="btn green" id="start" style="font-size:1.4rem;padding:14px 34px">Start the lab 🚀</button></div>`;
-  document.getElementById("start").onclick = () => { newGame(); nextQuestion(); };
+    <button class="btn green" id="start" style="font-size:1.4rem;padding:14px 34px">Step 1: Explore the model 🔍</button></div>`;
+  document.getElementById("start").onclick = showExplore;
+}
+
+/* ---- Explore the model (required before the tasks) ---- */
+function showExplore() {
+  const lvl = S1971Lab.level, organs = LEVEL_ORGANS[lvl];
+  const seen = new Set();
+  let cur = null, anim = false;
+  function infoHtml() {
+    if (!cur) return `<div class="explore-info empty-info"><div style="font-size:3rem">👆</div><b>Click a number on the model</b><p class="hint">Explore every organ to unlock the tasks.</p></div>`;
+    const o = O[cur], helper = HELPERS.includes(cur);
+    return `<div class="explore-info">
+      <div class="row gap"><span class="organ-dot"></span><h2 style="margin:0">${esc(o.name)}</h2></div>
+      ${lvl >= 2 ? `<span class="tag ${helper ? "helper" : "tract"}">${helper ? "🧩 Helper organ — food does NOT pass through it" : "🍽️ Food passes through here"}</span>` : ""}
+      <p class="fn"><b>Job:</b> ${esc(o.fn)}.</p>
+      ${lvl >= 3 || (lvl === 2 && helper) ? `<p class="fact">🔬 ${esc(FACT[cur])}</p>` : ""}
+    </div>`;
+  }
+  function draw() {
+    const states = {};
+    organs.forEach(k => { if (seen.has(k)) states[k] = "seen"; });
+    if (cur) states[cur] = "cur";
+    const markers = organs.map((k, i) => ({ organ: k, num: i + 1, text: seen.has(k) ? "✓" : "?" }));
+    const done = seen.size === organs.length;
+    stage.innerHTML = `<div class="lab-head"><b>🔍 Step 1: Explore the model</b><b>Explored: ${seen.size} / ${organs.length}</b></div>
+      <div class="bar"><i style="width:${100 * seen.size / organs.length}%"></i></div>
+      <p class="prompt">Click each <span style="color:#7b4dff">?</span> to learn what that organ does. ${lvl === 1 ? "" : "Watch out for the helper organs!"}</p>
+      <div class="split"><div class="diagram">${diagram(markers, states, { clickable: true, animate: anim })}
+        <div class="row gap" style="justify-content:center;margin:8px 0 4px"><button class="btn sm orange" id="play">▶ Watch the food's journey</button></div></div>
+        <div>${infoHtml()}
+          <div class="chips" style="margin-top:12px">${organs.map(k => `<span class="chip ${seen.has(k) ? "sel" : ""}" data-o="${k}">${seen.has(k) ? "✅ " + esc(O[k].name) : "❔ ???"}</span>`).join("")}</div>
+          <div class="actions"><span class="hint">${done ? "Great — you explored everything!" : "Explore all organs to continue."}</span>
+            <button class="btn green" id="go" ${done ? "" : "disabled"}>Step 2: Start the ${TOTAL} tasks 🚀</button></div>
+        </div></div>`;
+    stage.querySelectorAll(".marker.hot").forEach(g => g.onclick = () => { cur = g.dataset.organ; seen.add(cur); anim = false; draw(); });
+    stage.querySelectorAll(".chip[data-o]").forEach(c => c.onclick = () => { if (seen.has(c.dataset.o)) { cur = c.dataset.o; anim = false; draw(); } });
+    document.getElementById("play").onclick = () => { anim = true; draw(); anim = false; };
+    document.getElementById("go").onclick = () => { newGame(); nextQuestion(); window.scrollTo({ top: 0, behavior: "smooth" }); };
+  }
+  draw();
 }
 
 function nextQuestion() {

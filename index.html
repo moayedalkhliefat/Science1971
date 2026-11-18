@@ -6,6 +6,19 @@
 <title>Science1971 · Virtual Science Lab</title>
 <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🧪</text></svg>">
 <link rel="stylesheet" href="assets/style.css">
+<style>
+  .login-box{max-width:480px;margin:0 auto}
+  .roles{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin:6px 0 18px}
+  .role{font-family:'Baloo 2','Nunito',system-ui,sans-serif;font-weight:800;font-size:1.05rem;border:3px solid var(--line);background:#fbfaff;
+    border-radius:18px;padding:12px 6px;cursor:pointer;color:var(--ink);display:flex;flex-direction:column;align-items:center;gap:2px;transition:.15s}
+  .role .ic{font-size:2rem;line-height:1.1}
+  .role:hover{border-color:#bfb2ff}
+  .role.active{color:#fff;border-color:transparent;transform:translateY(-2px);box-shadow:0 6px 0 rgba(0,0,0,.12)}
+  .role[data-role="student"].active{background:linear-gradient(135deg,#16c172,#5fe0a3)}
+  .role[data-role="teacher"].active{background:linear-gradient(135deg,#2f80ff,#7bb0ff)}
+  .role[data-role="admin"].active{background:linear-gradient(135deg,#ff4d9d,#ff9f1c)}
+  #login-btn{width:100%;margin-top:8px;font-size:1.2rem;padding:12px}
+</style>
 </head>
 <body>
 <div class="wrap">
@@ -14,26 +27,19 @@
     <p>Your virtual science lab — explore, experiment and level up!</p>
   </div>
 
-  <div class="login-grid">
-    <div class="card login-card">
-      <h2><span class="big">🎒</span> I'm a Student</h2>
-      <p class="muted small">Use your first name and your School ID.</p>
-      <form id="stu-form" autocomplete="off">
-        <label>First name<input id="stu-name" placeholder="e.g. Ahmed" required></label>
-        <label>School ID<input id="stu-id" inputmode="numeric" placeholder="e.g. 10045" required></label>
-        <button class="btn green" style="width:100%;margin-top:6px" type="submit">Enter the Lab 🚀</button>
-      </form>
+  <div class="card login-box">
+    <h2 style="text-align:center">Who are you?</h2>
+    <div class="roles">
+      <button type="button" class="role active" data-role="student"><span class="ic">🎒</span>Student</button>
+      <button type="button" class="role" data-role="teacher"><span class="ic">🧑‍🏫</span>Teacher</button>
+      <button type="button" class="role" data-role="admin"><span class="ic">👑</span>Admin</button>
     </div>
-
-    <div class="card login-card">
-      <h2><span class="big">🧑‍🏫</span> Teacher / Admin</h2>
-      <p class="muted small">Log in with your username and password.</p>
-      <form id="staff-form">
-        <label>Username<input id="staff-user" autocomplete="username" required></label>
-        <label>Password<input id="staff-pass" type="password" autocomplete="current-password" required></label>
-        <button class="btn" style="width:100%;margin-top:6px" type="submit">Log in 🔐</button>
-      </form>
-    </div>
+    <form id="login-form" autocomplete="off">
+      <label><span id="l1">First name</span><input id="f1" required></label>
+      <label><span id="l2">School ID</span><input id="f2" required></label>
+      <p class="muted small" id="hint"></p>
+      <button class="btn green" id="login-btn" type="submit">Enter the Lab 🚀</button>
+    </form>
   </div>
 
   <footer>Built by Mr. Moayed Alkhliefat · Science Teacher · ATS-AQB</footer>
@@ -50,26 +56,42 @@
   }
 })();
 
-function busy(form, on) { form.querySelector("button").disabled = on; }
+const ROLES = {
+  student: { l1: "First name", p1: "e.g. Ahmed", l2: "School ID", p2: "e.g. 10045", t2: "text", mode: "numeric",
+             hint: "Write your first name exactly as your teacher has it, and your School ID.", btn: "Enter the Lab 🚀", cls: "green" },
+  teacher: { l1: "Username", p1: "Your teacher username", l2: "Password", p2: "••••••", t2: "password", mode: "text",
+             hint: "Your username and password come from the admin.", btn: "Log in 🔐", cls: "blue" },
+  admin:   { l1: "Username", p1: "Admin username", l2: "Password", p2: "••••••", t2: "password", mode: "text",
+             hint: "Admin access only.", btn: "Log in 👑", cls: "pink" }
+};
+let role = "student";
+const f1 = document.getElementById("f1"), f2 = document.getElementById("f2"), btn = document.getElementById("login-btn");
 
-document.getElementById("stu-form").addEventListener("submit", async e => {
-  e.preventDefault();
-  const f = e.target; busy(f, true);
-  try {
-    const r = await S1971.rpc("student_login", { p_first_name: document.getElementById("stu-name").value, p_school_id: document.getElementById("stu-id").value });
-    if (!r.ok) { S1971.toast(r.error, "bad"); return; }
-    S1971.setSession(r); location.href = S1971.homeFor(r);
-  } catch (err) { S1971.toast(err.message, "bad"); } finally { busy(f, false); }
-});
+function setRole(r) {
+  role = r; const c = ROLES[r];
+  document.querySelectorAll(".role").forEach(b => b.classList.toggle("active", b.dataset.role === r));
+  document.getElementById("l1").textContent = c.l1; document.getElementById("l2").textContent = c.l2;
+  f1.placeholder = c.p1; f2.placeholder = c.p2; f2.type = c.t2; f2.inputMode = c.mode;
+  f1.autocomplete = r === "student" ? "off" : "username"; f2.autocomplete = r === "student" ? "off" : "current-password";
+  f1.value = ""; f2.value = "";
+  document.getElementById("hint").textContent = c.hint;
+  btn.textContent = c.btn; btn.className = "btn " + c.cls;
+  f1.focus();
+}
+document.querySelectorAll(".role").forEach(b => b.onclick = () => setRole(b.dataset.role));
+setRole("student");
 
-document.getElementById("staff-form").addEventListener("submit", async e => {
+document.getElementById("login-form").addEventListener("submit", async e => {
   e.preventDefault();
-  const f = e.target; busy(f, true);
+  btn.disabled = true;
   try {
-    const r = await S1971.rpc("staff_login", { p_username: document.getElementById("staff-user").value, p_password: document.getElementById("staff-pass").value });
+    const r = role === "student"
+      ? await S1971.rpc("student_login", { p_first_name: f1.value, p_school_id: f2.value })
+      : await S1971.rpc("staff_login", { p_username: f1.value, p_password: f2.value });
     if (!r.ok) { S1971.toast(r.error, "bad"); return; }
+    if (role === "admin" && r.role !== "admin") { S1971.toast("This is a teacher account — opening the teacher dashboard.", "good"); }
     S1971.setSession(r); location.href = S1971.homeFor(r);
-  } catch (err) { S1971.toast(err.message, "bad"); } finally { busy(f, false); }
+  } catch (err) { S1971.toast(err.message, "bad"); } finally { btn.disabled = false; }
 });
 </script>
 </body>
