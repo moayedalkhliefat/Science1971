@@ -15,9 +15,9 @@
   .diff{font-weight:800;padding:3px 12px;border-radius:999px;background:#fff4cc;color:#8a6100}
   .banner{border-radius:16px;padding:10px 14px;margin-bottom:14px;font-weight:700}
   .banner.preview{background:#e8f1ff;color:#1b56b8}.banner.guest{background:#fff0f0;color:#b52f2f}
-  .split{display:grid;grid-template-columns:minmax(260px,360px) 1fr;gap:20px;align-items:start}
+  .split{display:grid;grid-template-columns:minmax(280px,420px) 1fr;gap:20px;align-items:start}
   @media(max-width:760px){.split{grid-template-columns:1fr}}
-  .diagram{background:#f7f5ff;border-radius:18px;padding:8px}
+  .diagram{background:#fff;border:2px solid #eee9ff;border-radius:18px;padding:6px;overflow:hidden}
   .diagram svg{width:100%;height:auto;display:block}
   .chips{display:flex;flex-wrap:wrap;gap:8px;min-height:46px;padding:10px;border-radius:16px;background:#f7f5ff;margin-bottom:12px}
   .chip{background:#fff;border:2px solid #d8d2ff;border-radius:12px;padding:8px 12px;font-weight:700;cursor:grab;user-select:none;box-shadow:0 3px 0 #d8d2ff;font-size:.95rem}
@@ -88,17 +88,17 @@ const pick = (a, n) => shuffle(a).slice(0, Math.min(n, a.length));
 /* ===================== ORGANS & DIAGRAM ===================== */
 // a = point on the organ (body coords), side = which side the number sits, y = number height
 const O = {
-  mouth:       { name: "Mouth",           fn: "Teeth chew food into small pieces; saliva starts digestion",           a: [150, 84],  side: "R", y: 78 },
-  salivary:    { name: "Salivary glands", fn: "Make saliva that moistens food and starts breaking down starch",        a: [116, 94],  side: "L", y: 94 },
-  esophagus:   { name: "Esophagus",       fn: "Muscular tube that pushes food down to the stomach",                    a: [156, 150], side: "R", y: 146 },
-  liver:       { name: "Liver",           fn: "Makes bile, which breaks fat into small droplets",                      a: [92, 214],  side: "L", y: 200 },
-  stomach:     { name: "Stomach",         fn: "Churns food and mixes it with acid and digestive juices",               a: [214, 240], side: "R", y: 234 },
-  gallbladder: { name: "Gallbladder",     fn: "Stores bile and releases it into the small intestine",                  a: [124, 254], side: "L", y: 256 },
-  pancreas:    { name: "Pancreas",        fn: "Makes digestive juices (enzymes) that flow into the small intestine",   a: [128, 288], side: "L", y: 304 },
-  small:       { name: "Small intestine", fn: "Finishes digestion and absorbs nutrients into the blood",               a: [132, 378], side: "L", y: 378 },
-  large:       { name: "Large intestine", fn: "Absorbs water from leftover food and forms feces",                      a: [216, 372], side: "R", y: 368 },
-  rectum:      { name: "Rectum",          fn: "Stores feces until they leave the body",                                a: [158, 460], side: "R", y: 444 },
-  anus:        { name: "Anus",            fn: "Opening where feces leave the body",                                    a: [158, 488], side: "R", y: 488 }
+  mouth:       { name: "Mouth",           fn: "Teeth chew food into small pieces; saliva starts digestion",           a: [322, 88],   side: "R", y: 88 },
+  salivary:    { name: "Salivary glands", fn: "Make saliva that moistens food and starts breaking down starch",        noMark: true },
+  esophagus:   { name: "Esophagus",       fn: "Muscular tube that pushes food down to the stomach",                    a: [328, 420],  side: "R", y: 420 },
+  liver:       { name: "Liver",           fn: "Makes bile, which breaks fat into small droplets",                      a: [150, 728],  side: "L", y: 700 },
+  stomach:     { name: "Stomach",         fn: "Churns food and mixes it with acid and digestive juices",               a: [465, 790],  side: "R", y: 780 },
+  gallbladder: { name: "Gallbladder",     fn: "Stores bile and releases it into the small intestine",                  a: [160, 815],  side: "L", y: 850 },
+  pancreas:    { name: "Pancreas",        fn: "Makes digestive juices (enzymes) that flow into the small intestine",   a: [350, 905],  side: "R", y: 910 },
+  small:       { name: "Small intestine", fn: "Finishes digestion and absorbs nutrients into the blood",               a: [300, 1150], side: "R", y: 1150 },
+  large:       { name: "Large intestine", fn: "Absorbs water from leftover food and forms feces",                      a: [95, 1100],  side: "L", y: 1100 },
+  rectum:      { name: "Rectum",          fn: "Stores feces until they leave the body",                                a: [305, 1392], side: "R", y: 1385 },
+  anus:        { name: "Anus",            fn: "Opening where feces leave the body",                                    a: [305, 1478], side: "R", y: 1478 }
 };
 const L1 = ["mouth", "esophagus", "stomach", "small", "large", "rectum", "anus"];
 const HELPERS = ["salivary", "liver", "gallbladder", "pancreas"];
@@ -117,43 +117,35 @@ const FACT = {
 };
 const LEVEL_ORGANS = { 1: L1, 2: Object.keys(O), 3: Object.keys(O) };
 const ALL = Object.keys(O);
+const MARK = ALL.filter(k => !O[k].noMark); // organs that can be pointed to on the picture
 
-const FOOD_PATH = "M150,84 C150,120 152,150 158,176 C162,196 166,206 172,214 C200,214 222,236 212,262 C202,284 175,292 165,300 L150,318 L114,334 C130,324 178,326 194,336 C206,346 180,354 150,351 C118,348 106,360 122,369 C140,377 190,368 196,383 C200,398 160,397 136,395 C110,393 106,408 124,415 C146,423 186,411 194,425 L100,432 L92,430 L92,320 Q92,308 104,308 L204,308 Q216,308 216,320 L216,418 Q216,438 196,442 L166,446 Q158,450 158,462 L158,489";
+const IMG = { src: "digestive-system.jpg", w: 652, h: 1536, pad: 150 }; // picture + white margin for numbers
+const FOOD_PATH = "M322,96 L318,170 C322,300 326,420 334,560 C342,620 380,650 420,690 C470,730 490,790 440,840 C380,880 300,840 245,815 C215,830 212,870 232,930 C200,1000 250,1040 330,1050 C380,1070 260,1100 190,1120 C230,1150 330,1140 370,1165 C330,1200 230,1190 200,1225 C260,1250 360,1240 380,1255 C300,1275 200,1260 135,1240 C100,1210 92,1150 94,1060 C95,1000 100,950 140,925 C220,960 330,985 420,950 C470,930 515,925 530,960 C536,1050 532,1180 522,1270 C480,1310 400,1300 340,1295 C300,1305 296,1340 305,1400 L305,1480";
 function diagram(markers, states, opts) {
   // markers: [{organ, num, text?}] ; states: {organ: "ok"|"no"|"seen"|"cur"}
-  const X = 30; // body shift
   opts = opts || {};
+  const X = IMG.pad, W = IMG.w + 2 * IMG.pad, H = IMG.h;
   let m = "";
   (markers || []).forEach(k => {
-    const o = O[k.organ], ax = o.a[0] + X, ay = o.a[1], mx = o.side === "L" ? 16 : 344, my = o.y;
+    const o = O[k.organ]; if (o.noMark) return;
+    const ax = o.a[0] + X, ay = o.a[1], mx = o.side === "L" ? 62 : W - 62, my = o.y;
     const st = states && states[k.organ];
     const fill = st === "ok" || st === "seen" ? "#16c172" : st === "no" ? "#ff4d4d" : st === "cur" ? "#ff9f1c" : "#7b4dff";
     const label = k.text != null ? k.text : k.num;
-    m += `<g class="marker ${opts.clickable ? "hot" : ""}" data-organ="${k.organ}"><line x1="${ax}" y1="${ay}" x2="${mx}" y2="${my}" stroke="#2d2a5a" stroke-width="1.6"/>
-          <circle cx="${ax}" cy="${ay}" r="3.2" fill="#2d2a5a"/>
-          <circle cx="${mx}" cy="${my}" r="13" fill="${fill}" stroke="#fff" stroke-width="2.5"/>
-          <text x="${mx}" y="${my + 5}" text-anchor="middle" font-family="Baloo 2, sans-serif" font-weight="800" font-size="15" fill="#fff">${label}</text>
-          ${opts.clickable ? `<circle cx="${mx}" cy="${my}" r="18" fill="transparent"/><circle cx="${ax}" cy="${ay}" r="16" fill="transparent"/>` : ""}</g>`;
+    m += `<g class="marker ${opts.clickable ? "hot" : ""}" data-organ="${k.organ}">
+          <line x1="${ax}" y1="${ay}" x2="${mx}" y2="${my}" stroke="#fff" stroke-width="9" stroke-linecap="round" opacity=".85"/>
+          <line x1="${ax}" y1="${ay}" x2="${mx}" y2="${my}" stroke="#1d1b4b" stroke-width="4" stroke-linecap="round"/>
+          <circle cx="${ax}" cy="${ay}" r="10" fill="#1d1b4b" stroke="#fff" stroke-width="4"/>
+          <circle cx="${mx}" cy="${my}" r="38" fill="${fill}" stroke="#fff" stroke-width="7"/>
+          <text x="${mx}" y="${my + 15}" text-anchor="middle" font-family="Baloo 2, Nunito, sans-serif" font-weight="800" font-size="44" fill="#fff">${label}</text>
+          ${opts.clickable ? `<circle cx="${mx}" cy="${my}" r="52" fill="transparent"/><circle cx="${ax}" cy="${ay}" r="45" fill="transparent"/>` : ""}</g>`;
   });
-  return `<svg viewBox="0 0 360 510" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Diagram of the human digestive system">
-  <g transform="translate(${X},0)">
-    <path d="M128,96 L128,118 Q70,122 52,152 L52,470 Q52,500 90,500 L210,500 Q248,500 248,470 L248,152 Q230,122 172,118 L172,96 Z" fill="#ffe9da" stroke="#e9b99a" stroke-width="3"/>
-    <circle cx="150" cy="58" r="44" fill="#ffe1cc" stroke="#e9b99a" stroke-width="3"/>
-    <circle cx="134" cy="48" r="4" fill="#2d2a5a"/><circle cx="166" cy="48" r="4" fill="#2d2a5a"/>
-    <path d="M136,78 Q150,92 164,78 Q150,85 136,78Z" fill="#d6455d"/>
-    <ellipse cx="116" cy="92" rx="9" ry="6.5" fill="#9b8cff"/><ellipse cx="184" cy="92" rx="9" ry="6.5" fill="#9b8cff"/>
-    <path d="M150,88 C150,120 152,150 158,176 C162,196 166,206 170,214" stroke="#f08080" stroke-width="11" fill="none" stroke-linecap="round"/>
-    <path d="M92,430 L92,320 Q92,308 104,308 L204,308 Q216,308 216,320 L216,418 Q216,438 196,442 L166,446" stroke="#e59866" stroke-width="22" fill="none" stroke-linecap="round" stroke-linejoin="round"/>
-    <path d="M92,430 Q90,446 84,452" stroke="#e59866" stroke-width="7" fill="none" stroke-linecap="round"/>
-    <path d="M114,334 C130,324 178,326 194,336 C206,346 180,354 150,351 C118,348 106,360 122,369 C140,377 190,368 196,383 C200,398 160,397 136,395 C110,393 106,408 124,415 C146,423 186,411 194,425" stroke="#ff9fb2" stroke-width="10" fill="none" stroke-linecap="round"/>
-    <path d="M166,446 Q158,450 158,462 L158,480" stroke="#d35400" stroke-width="15" fill="none" stroke-linecap="round"/>
-    <ellipse cx="158" cy="489" rx="6" ry="4" fill="#7a2e00"/>
-    <path d="M118,281 C135,271 165,275 198,279 C207,281 207,293 198,294 C170,296 140,295 122,294 C111,293 109,286 118,281Z" fill="#ffd166" stroke="#e0a800" stroke-width="1.5"/>
-    <path d="M62,206 C68,178 122,170 180,186 C193,190 192,206 178,213 C152,227 120,239 96,241 C73,242 60,229 62,206Z" fill="#b5651d"/>
-    <ellipse cx="124" cy="252" rx="9" ry="13" fill="#59c96b" transform="rotate(-20 124 252)"/>
-    <path d="M168,212 C190,196 230,204 232,238 C234,274 206,296 177,293 C160,291 150,283 156,273 C162,265 179,267 191,258 C203,248 199,232 187,228 C179,225 173,226 166,224Z" fill="#ff7b9c" stroke="#d95479" stroke-width="2"/>
-    ${opts.animate ? `<circle r="7" fill="#ffd23f" stroke="#c47400" stroke-width="2"><animateMotion dur="9s" fill="freeze" path="${FOOD_PATH}"/></circle>` : ""}
-  </g>${m}</svg>`;
+  const img = new URL(IMG.src, location.href).href;
+  return `<svg viewBox="0 0 ${W} ${H}" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Diagram of the human digestive system">
+    <rect width="${W}" height="${H}" fill="#fff"/>
+    <image href="${img}" x="${X}" y="0" width="${IMG.w}" height="${IMG.h}"/>
+    ${opts.animate ? `<g transform="translate(${X},0)"><circle r="20" fill="#ffd23f" stroke="#8a5a00" stroke-width="6"><animateMotion dur="12s" fill="freeze" path="${FOOD_PATH}"/></circle></g>` : ""}
+    ${m}</svg>`;
 }
 
 /* ===================== QUESTION TEMPLATES ===================== */
@@ -242,7 +234,7 @@ const LEVELS = {
       ];
       return [
         // ⭐
-        T.label(1, ["salivary", "liver", "gallbladder", "pancreas", "stomach"], 4, 2),
+        T.label(1, ["liver", "gallbladder", "pancreas", "stomach", "small"], 4, 2),
         T.match(1, ["salivary", "liver", "gallbladder", "pancreas"], 4, 1),
         T.mcq(1, "Which organ stores bile?", ["Gallbladder", "Liver", "Pancreas", "Stomach"], "The liver MAKES bile; the gallbladder STORES it."),
         T.mcq(1, "Food does NOT pass through which of these organs?", ["Liver", "Stomach", "Esophagus", "Small intestine"], "The liver, gallbladder and pancreas are helper organs — they send juices, but food never passes through them."),
@@ -250,13 +242,13 @@ const LEVELS = {
         T.tf(1, "Chemical digestion uses enzymes and juices to change food into simpler substances.", true, "True — chemical digestion changes big molecules into smaller, simpler ones."),
         // ⭐⭐
         T.sort(2, sortItems, MC, 5, "Is each process mechanical or chemical digestion?", "Mechanical = smaller pieces, same substance. Chemical = new, simpler substances made by enzymes/juices.", "Sort: mechanical vs chemical (5)", 2),
-        T.label(2, ALL, 7, 2),
+        T.label(2, MARK, 7, 2),
         T.match(2, ALL, 6, 1),
         T.mcq(2, "Bile and pancreatic juice both flow into the…", ["Small intestine", "Stomach", "Large intestine", "Esophagus"], "Both enter the first part of the small intestine, where most digestion is finished."),
         T.mcq(2, "Which organ MAKES bile?", ["Liver", "Gallbladder", "Pancreas", "Salivary glands"], "The liver makes bile; the gallbladder only stores it."),
         T.order(2, ["The liver makes bile", "Bile is stored in the gallbladder", "Bile flows into the small intestine", "Bile breaks fat into tiny droplets"], "Tap the steps of bile's journey in order.", "Liver (makes) → gallbladder (stores) → small intestine (used on fat).", "Bile journey (4 steps)"),
         // ⭐⭐⭐
-        T.label(3, ALL, 11, 1),
+        T.label(3, MARK, 10, 1),
         T.match(3, ALL, 8, 1),
         T.sort(3, sortItems, MC, 7, "Sort each process: mechanical or chemical digestion?", "Remember: bile only breaks fat into droplets (mechanical); enzymes change the substance (chemical).", "Sort: mechanical vs chemical (7)"),
         T.order(3, ["Teeth cut and grind the pizza; saliva moistens it", "The esophagus pushes it to the stomach", "The stomach churns it with acid and juices", "Bile and pancreatic juice enter the small intestine", "Nutrients are absorbed in the small intestine", "The large intestine absorbs water"], "Digesting a slice of cheese pizza — tap the steps in order.", "Helper organs join in at the small intestine, adding bile and pancreatic juice.", "Pizza journey (6 steps)"),
@@ -277,10 +269,10 @@ const LEVELS = {
       T.mcq(1, "Which enzyme works best in the acid of the stomach?", ["Pepsin", "Amylase", "Lipase", "Bile"], "Pepsin works best in the strong acid of the stomach."),
       T.mcq(1, "The tiny finger-like folds lining the small intestine are called…", ["Villi", "Alveoli", "Enzymes", "Neurons"], "Villi cover the inner wall of the small intestine."),
       T.tf(1, "Starch is broken down into simple sugars like glucose.", true, "True — amylase starts breaking starch into sugars that end up as glucose."),
-      T.label(1, ALL, 5, 1),
+      T.label(1, MARK, 5, 1),
       // ⭐⭐
       T.matchCustom(2, [["Starch", "Glucose (simple sugar)"], ["Protein", "Amino acids"], ["Fat", "Fatty acids and glycerol"]], "Match each food with the small molecules it is broken into.", "Big molecules are broken into small ones that can pass through the villi into the blood.", "Food → products (3)"),
-      T.labelCustom(2, [["salivary", "Amylase (in saliva)"], ["stomach", "Pepsin"], ["pancreas", "Lipase"]], "Put each enzyme on the organ that makes it.", "Saliva has amylase, the stomach makes pepsin, and the pancreas makes lipase (and also amylase and protein-digesting enzymes).", "Label where enzymes are made (3)"),
+      T.labelCustom(2, [["mouth", "Amylase (from saliva)"], ["stomach", "Pepsin"], ["pancreas", "Lipase"]], "Put each enzyme where it is first released into the food.", "Salivary glands release amylase into the mouth, the stomach makes pepsin, and the pancreas makes lipase (and also amylase and protein-digesting enzymes).", "Label where enzymes are released (3)"),
       T.sort(2, [["Glucose", 0], ["Amino acids", 0], ["Fatty acids and glycerol", 0], ["Most vitamins and minerals", 0], ["Remaining water from leftover food", 1], ["Vitamin K made by gut bacteria", 1]], ["Small intestine", "Large intestine"], 6, "Where is each one mainly absorbed?", "Almost all nutrients are absorbed in the small intestine; the large intestine absorbs remaining water and some vitamins made by bacteria.", "Sort: where nutrients are absorbed (6)"),
       T.order(2, ["Protein is eaten (e.g. chicken)", "Pepsin in the stomach breaks protein into smaller pieces", "Pancreatic enzymes in the small intestine break it into amino acids", "Amino acids pass through the villi into the blood", "Blood carries amino acids to body cells"], "Tap the steps of a protein's journey in order.", "Protein → smaller pieces (stomach) → amino acids (small intestine) → blood → cells.", "Protein journey (5 steps)"),
       T.mcq(2, "How do villi help absorption?", ["They greatly increase the surface area of the small intestine", "They chew food", "They make bile", "They store feces"], "Millions of villi make a huge surface area for absorbing nutrients."),
@@ -288,7 +280,7 @@ const LEVELS = {
       // ⭐⭐⭐
       T.matchCustom(3, [["Amylase", "Mouth and small intestine"], ["Pepsin", "Stomach"], ["Lipase", "Small intestine"]], "Match each enzyme with WHERE it works.", "Amylase works in the mouth and again in the small intestine; pepsin in the stomach; lipase in the small intestine.", "Enzyme → where it works (3)"),
       T.order(3, ["Bread is chewed; salivary amylase starts breaking down starch", "In the stomach, the acid stops amylase working", "Pancreatic amylase continues breaking starch in the small intestine", "Starch is broken down into glucose", "Glucose is absorbed through the villi into the blood"], "Tap the steps of starch digestion in order.", "Amylase works in two places — and stomach acid pauses it in between.", "Starch journey (5 steps)"),
-      T.label(3, ALL, 11, 1),
+      T.label(3, MARK, 10, 1),
       S(3, "Pepsin is added to egg white in two test tubes: one at pH 2 (acidic) and one at pH 7 (neutral). Which digests the egg white faster?", ["pH 2 — pepsin works best in acid, like in the stomach", "pH 7 — enzymes always prefer neutral", "Both the same", "Neither — pepsin digests fat"], "Each enzyme has an optimum pH; pepsin's is very acidic."),
       S(3, "Amylase is boiled, cooled, then added to starch. After 10 minutes the starch is still there. Why?", ["Boiling denatured (destroyed the shape of) the enzyme", "Boiling turned amylase into starch", "Starch can never be digested", "Cooling made the enzyme stronger"], "High temperature changes an enzyme's shape, so it can no longer work."),
       S(3, "In a disease called celiac disease, the villi become flattened. Why might the person lose weight?", ["Less surface area means fewer nutrients are absorbed", "The person can't swallow", "The stomach stops making acid", "The liver stops working"], "Flat villi = much smaller surface area for absorption."),
@@ -360,6 +352,7 @@ function showExplore() {
     return `<div class="explore-info">
       <div class="row gap"><span class="organ-dot"></span><h2 style="margin:0">${esc(o.name)}</h2></div>
       ${lvl >= 2 ? `<span class="tag ${helper ? "helper" : "tract"}">${helper ? "🧩 Helper organ — food does NOT pass through it" : "🍽️ Food passes through here"}</span>` : ""}
+      ${o.noMark ? `<p class="hint" style="margin:6px 0 0">📍 Not shown in the picture: they sit under the tongue, under the jaw and in front of the ears, and send saliva into the mouth.</p>` : ""}
       <p class="fn"><b>Job:</b> ${esc(o.fn)}.</p>
       ${lvl >= 3 || (lvl === 2 && helper) ? `<p class="fact">🔬 ${esc(FACT[cur])}</p>` : ""}
     </div>`;
@@ -376,12 +369,12 @@ function showExplore() {
       <div class="split"><div class="diagram">${diagram(markers, states, { clickable: true, animate: anim })}
         <div class="row gap" style="justify-content:center;margin:8px 0 4px"><button class="btn sm orange" id="play">▶ Watch the food's journey</button></div></div>
         <div>${infoHtml()}
-          <div class="chips" style="margin-top:12px">${organs.map(k => `<span class="chip ${seen.has(k) ? "sel" : ""}" data-o="${k}">${seen.has(k) ? "✅ " + esc(O[k].name) : "❔ ???"}</span>`).join("")}</div>
+          <div class="chips" style="margin-top:12px">${organs.map(k => `<span class="chip ${seen.has(k) ? "sel" : ""}" data-o="${k}">${seen.has(k) ? "✅ " + esc(O[k].name) : O[k].noMark ? "🔍 Hidden organ — tap me!" : "❔ ???"}</span>`).join("")}</div>
           <div class="actions"><span class="hint">${done ? "Great — you explored everything!" : "Explore all organs to continue."}</span>
             <button class="btn green" id="go" ${done ? "" : "disabled"}>Step 2: Start the ${TOTAL} tasks 🚀</button></div>
         </div></div>`;
     stage.querySelectorAll(".marker.hot").forEach(g => g.onclick = () => { cur = g.dataset.organ; seen.add(cur); anim = false; draw(); });
-    stage.querySelectorAll(".chip[data-o]").forEach(c => c.onclick = () => { if (seen.has(c.dataset.o)) { cur = c.dataset.o; anim = false; draw(); } });
+    stage.querySelectorAll(".chip[data-o]").forEach(c => c.onclick = () => { const o = c.dataset.o; if (seen.has(o) || O[o].noMark) { cur = o; seen.add(o); anim = false; draw(); } });
     document.getElementById("play").onclick = () => { anim = true; draw(); anim = false; };
     document.getElementById("go").onclick = () => { newGame(); nextQuestion(); window.scrollTo({ top: 0, behavior: "smooth" }); };
   }
