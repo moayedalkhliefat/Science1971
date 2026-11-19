@@ -95,6 +95,11 @@ window.S1971_LABS = [
     id: "cells", title: "Cells & Microscope", subject: "Biology", icon: "🔬", color: "linear-gradient(135deg,#ec407a,#7cb342)", grades: ["all"],
     path: "labs/cells/index.html", description: "Use a virtual microscope: focus, stain and magnify onion, cheek, leaf and blood cells; compare plant and animal cells.",
     levels: [{ n: 1, id: "cells-l1", name: "Level 1 · Explorer" }, { n: 2, id: "cells-l2", name: "Level 2 · Investigator" }, { n: 3, id: "cells-l3", name: "Level 3 · Expert" }]
+  },
+  {
+    id: "foodweb", title: "Food Chains & Webs", subject: "Biology", icon: "🕸️", color: "linear-gradient(135deg,#7cb342,#8d6e63)", grades: ["all"],
+    path: "labs/foodweb/index.html", description: "Build food chains, remove species from a food web to see the effects, and follow energy through an energy pyramid.",
+    levels: [{ n: 1, id: "foodweb-l1", name: "Level 1 · Explorer" }, { n: 2, id: "foodweb-l2", name: "Level 2 · Investigator" }, { n: 3, id: "foodweb-l3", name: "Level 3 · Expert" }]
   }
 ];
 
