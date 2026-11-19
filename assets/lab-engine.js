@@ -144,7 +144,7 @@
   async function finish() {
     const G = E.G, max = Math.max(1, G.answers.length);
     E.tEnd = Date.now(); const timeS = Math.round((E.tEnd - E.t0) / 1000); updateBar();
-    const score = Math.round(G.score * 10) / 10, pct = Math.round(100 * score / max), passed = pct >= PASS;
+    const score = Math.round(G.score * 100) / 100, exact = 100 * score / max, pct = Math.floor(exact), passed = exact >= PASS - 1e-9;
     const hard = G.answers.filter(a => a.difficulty === 3).length;
     E.stage.innerHTML = `<div class="center">
       <div style="font-size:4rem">${passed ? "🏆" : "💪"}</div>
@@ -153,6 +153,7 @@
       <p class="prompt">${fmt(score)} / ${max} points · ${hard} hard ⭐⭐⭐ tasks · ⏱ ${mmss(timeS)}</p>
       <p>${passed ? (S1971Lab.nextLevel ? `🔓 You unlocked <b>${esc(S1971Lab.nextLevel.name)}</b>!` : "🎓 You finished the final level — Expert!") : `You need <b>${PASS}%</b> to pass. Read the tips and try again!`}</p>
       <p id="save-msg" class="hint">Saving your result…</p>
+      <div id="cert-btns" class="actions" style="justify-content:center"></div>
       <div class="actions" style="justify-content:center">
         <button class="btn ghost" id="again">🔁 Try again</button>
         ${passed && S1971Lab.nextLevel ? `<a class="btn green" href="${S1971Lab.levelUrl(S1971Lab.level + 1)}">Go to ${esc(S1971Lab.nextLevel.name)} ➜</a>` : ""}
@@ -163,6 +164,23 @@
     const r = await S1971Lab.submit(score, max, { level: S1971Lab.level, answers: G.answers, time_s: timeS });
     const msg = document.getElementById("save-msg");
     if (msg) { msg.textContent = r.message; msg.style.color = r.saved ? "#0c8a50" : "#b52f2f"; msg.style.fontWeight = "800"; }
+    // certificates
+    const cb = document.getElementById("cert-btns"), root = S1971.root(), lab = S1971Lab.lab;
+    if (cb && passed) {
+      const url = lvl => `${root}certificate.html?lab=${lab.id}&level=${lvl}`;
+      if (r.saved) {
+        cb.innerHTML = `<a class="btn green" href="${url(S1971Lab.level)}" target="_blank">🎓 Open my Level ${S1971Lab.level} certificate</a>`;
+        try {
+          const mine = await S1971.rpc("student_my_results", { p_token: S1971Lab.session.token });
+          const all = lab.levels.every(lv => mine.some(x => x.lab_id === lv.id && 100 * x.score / x.max_score >= PASS - 1e-9));
+          if (all) cb.innerHTML += `<a class="btn blue" href="${url("all")}" target="_blank">🏆 Open my Lab Completion certificate</a>`;
+        } catch (e) {}
+      } else if (S1971Lab.mode === "preview") {
+        cb.innerHTML = `<a class="btn ghost" href="${url(S1971Lab.level)}" target="_blank">👁️ Preview the certificate</a>`;
+      } else {
+        cb.innerHTML = `<span class="hint">🎓 Log in as a student to get a certificate.</span>`;
+      }
+    }
   }
 
   function burst() {

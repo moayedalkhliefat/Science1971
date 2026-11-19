@@ -47,3 +47,10 @@ window.S1971_LABS = [
     ]
   }
 ];
+
+// Subjects used to group the labs on every page
+window.S1971_SUBJECTS = [
+  { key: "Biology", icon: "🧬", color: "#be185d" },
+  { key: "Chemistry", icon: "⚗️", color: "#6d28d9" },
+  { key: "Physics", icon: "🚀", color: "#0369a1" }
+];

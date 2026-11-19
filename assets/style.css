@@ -156,3 +156,12 @@ footer{color:var(--muted)}
 .lvl:hover{background:#e2e8f0}
 .lvl .best{background:#fff;color:var(--navy);border:1px solid var(--line)}
 .labs{grid-template-columns:repeat(auto-fill,minmax(320px,1fr))}
+/* subject groups + certificates list */
+.subj-tabs{display:flex;gap:8px;flex-wrap:wrap;margin:0 0 6px}
+.subj-head{display:flex;align-items:center;gap:8px;margin:18px 0 10px;padding-left:12px;border-left:6px solid var(--sc,#1e3a8a);color:var(--ink)}
+.cert-list{display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:10px}
+.cert-item{display:flex;align-items:center;gap:12px;border:1px solid var(--line);border-radius:14px;padding:12px 14px;background:#fff;text-decoration:none;color:var(--ink)}
+.cert-item:hover{border-color:var(--navy);background:#f8fafc}
+.cert-item .ci{font-size:1.8rem}.cert-item small{color:var(--muted)}
+.cert-item .open{margin-left:auto;font-weight:800;color:var(--navy);white-space:nowrap}
+.cert-item.big{border:2px solid #b45309;background:#fffbeb}

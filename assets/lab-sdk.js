@@ -35,8 +35,8 @@
         const prev = lab.levels[this.level - 2];
         try {
           const mine = await S1971.rpc("student_my_results", { p_token: s.token });
-          const best = Math.max(0, ...mine.filter(x => x.lab_id === prev.id).map(x => Math.round(100 * x.score / x.max_score)));
-          if (best < S1971_CONFIG.PASS_MARK) this.locked = prev;
+          const best = Math.max(0, ...mine.filter(x => x.lab_id === prev.id).map(x => 100 * x.score / x.max_score));
+          if (best < S1971_CONFIG.PASS_MARK - 1e-9) this.locked = prev;
         } catch (e) { this.locked = prev; }
       }
       return this;

@@ -1,0 +1,122 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Certificate · Science Lab 1971</title>
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🎓</text></svg>">
+<link rel="stylesheet" href="assets/style.css">
+<style>
+  .toolbar{display:flex;justify-content:center;gap:10px;margin:10px 0 18px;flex-wrap:wrap}
+  .cert{max-width:1000px;margin:0 auto;aspect-ratio:297/210;background:#fff;border:3px solid #1e3a8a;padding:14px;box-shadow:0 10px 30px rgba(15,23,42,.12);position:relative}
+  .c-inner{height:100%;border:1.5px solid #1e3a8a;outline:6px solid #fff;padding:4% 6%;display:flex;flex-direction:column;align-items:center;text-align:center;justify-content:space-between;box-sizing:border-box;
+    background:radial-gradient(circle at 50% 0,#f1f5ff 0,#fff 55%)}
+  .c-top{font-weight:900;color:#1e3a8a;letter-spacing:.12em;font-size:clamp(.7rem,1.3vw,.95rem);text-transform:uppercase}
+  .c-title{font-family:Georgia,'Times New Roman',serif;font-size:clamp(1.6rem,4.2vw,3rem);color:#1f2a44;margin:2px 0;font-weight:700}
+  .c-sub{color:#64748b;font-size:clamp(.8rem,1.5vw,1.05rem);margin:0}
+  .c-name{font-family:Georgia,'Times New Roman',serif;font-size:clamp(1.8rem,4.6vw,3.3rem);color:#1e3a8a;border-bottom:2px solid #cbd5e1;padding:0 30px 4px;font-style:italic}
+  .c-cls{color:#334155;font-weight:700;margin:4px 0 0}
+  .c-lab{font-size:clamp(1.1rem,2.4vw,1.7rem);font-weight:900;color:#1f2a44}
+  .c-level{color:#0f766e;font-weight:800}
+  .c-score{display:inline-block;background:#ecfdf5;color:#15803d;border:1px solid #bbf7d0;border-radius:999px;padding:4px 16px;font-weight:900;margin-top:4px}
+  .c-levels{display:flex;gap:10px;justify-content:center;flex-wrap:wrap;margin-top:6px}
+  .c-levels span{border:1px solid #cbd5e1;border-radius:10px;padding:4px 12px;font-weight:800;color:#334155;background:#fff}
+  .c-foot{display:grid;grid-template-columns:repeat(3,1fr);gap:20px;width:100%}
+  .c-foot div{border-top:1.5px solid #94a3b8;padding-top:6px}
+  .c-foot b{display:block;color:#1f2a44;font-size:clamp(.8rem,1.4vw,1rem)}
+  .c-foot span{color:#64748b;font-size:.78rem;font-weight:700;letter-spacing:.06em;text-transform:uppercase}
+  .seal{position:absolute;right:7%;top:9%;font-size:clamp(2rem,5vw,3.6rem)}
+  .watermark{position:absolute;inset:0;display:grid;place-items:center;font-size:clamp(3rem,10vw,7rem);font-weight:900;color:rgba(220,38,38,.12);transform:rotate(-18deg);pointer-events:none}
+  @media print{
+    @page{size:A4 landscape;margin:8mm}
+    body{background:#fff!important}
+    .topbar,.toolbar,footer,#msg{display:none!important}
+    .wrap{padding:0}
+    .cert{box-shadow:none;max-width:none;width:100%;height:190mm;aspect-ratio:auto}
+  }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="topbar">
+    <a class="brand" id="home" href="student.html"><span class="logo">🧪</span><b>Science Lab 1971</b></a>
+    <div class="row gap"><a class="btn sm ghost" id="back" href="student.html">⬅ Back</a></div>
+  </div>
+  <div class="toolbar"><button class="btn" onclick="window.print()">🖨️ Print / Save as PDF</button></div>
+  <div id="msg"></div>
+  <div id="cert-box"></div>
+  <footer>Built by Mr. Moayed Alkhliefat · Science Teacher · ATS-AQB</footer>
+</div>
+
+<script src="assets/config.js"></script>
+<script src="assets/app.js"></script>
+<script src="labs/catalog.js"></script>
+<script>
+const { rpc, esc } = S1971;
+const PASS = S1971_CONFIG.PASS_MARK;
+const q = new URLSearchParams(location.search);
+const fmtDay = d => new Date(d).toLocaleDateString("en-GB", { day: "numeric", month: "long", year: "numeric" });
+
+(async function () {
+  const ME = await S1971.requireRole(["student", "teacher", "admin"]);
+  if (!ME) return;
+  const home = S1971.homeFor(ME); document.getElementById("home").href = home; document.getElementById("back").href = home;
+  const lab = window.S1971_LABS.find(l => l.id === q.get("lab"));
+  const lvlParam = q.get("level");
+  if (!lab) { document.getElementById("msg").innerHTML = `<div class="card empty">Certificate not found.</div>`; return; }
+  const all = lvlParam === "all";
+  const level = all ? null : lab.levels.find(v => String(v.n) === lvlParam);
+  if (!all && !level) { document.getElementById("msg").innerHTML = `<div class="card empty">Certificate not found.</div>`; return; }
+
+  let data;
+  if (ME.kind === "staff") {
+    data = { name: "Student Name", cls: "Grade 7 · Section A", teacher: ME.name, school: ME.school || "Your school", date: new Date(), score: 86,
+             levels: lab.levels.map(v => ({ name: v.name, pct: 86 })), preview: true };
+  } else {
+    let mine = [];
+    try { mine = await rpc("student_my_results", { p_token: ME.token }); } catch (e) { document.getElementById("msg").innerHTML = `<div class="card empty">${esc(e.message)}</div>`; return; }
+    const bestOf = v => {
+      const rs = mine.filter(r => r.lab_id === v.id).map(r => ({ pct: 100 * r.score / r.max_score, date: r.completed_at }));
+      return rs.sort((a, b) => b.pct - a.pct)[0] || null;
+    };
+    const need = all ? lab.levels : [level];
+    const bests = need.map(v => ({ v, b: bestOf(v) }));
+    if (bests.some(x => !x.b || x.b.pct < PASS - 1e-9)) {
+      document.getElementById("msg").innerHTML = `<div class="card empty">🔒 This certificate is not earned yet. Score <b>${PASS}%</b> or more in ${all ? "every level of this lab" : esc(level.name)} to get it.</div>`;
+      document.querySelector(".toolbar").style.display = "none"; return;
+    }
+    data = { name: ME.name, cls: [ME.grade && "Grade " + ME.grade, ME.section && "Section " + ME.section].filter(Boolean).join(" · "),
+             teacher: ME.teacher_name || "—", school: ME.school || "—",
+             date: new Date(Math.max(...bests.map(x => new Date(x.b.date).getTime()))),
+             score: all ? null : Math.floor(bests[0].b.pct), levels: bests.map(x => ({ name: x.v.name, pct: Math.floor(x.b.pct) })) };
+  }
+
+  document.getElementById("cert-box").innerHTML = `
+    <div class="cert">
+      ${data.preview ? `<div class="watermark">PREVIEW</div>` : ""}
+      <div class="seal">${all ? "🏆" : "🏅"}</div>
+      <div class="c-inner">
+        <div class="c-top">🧪 Science Lab 1971 · Virtual Science Labs</div>
+        <div>
+          <div class="c-title">${all ? "Lab Completion Certificate" : "Certificate of Achievement"}</div>
+          <p class="c-sub">This certificate is proudly presented to</p>
+        </div>
+        <div><div class="c-name">${esc(data.name)}</div>${data.cls ? `<p class="c-cls">${esc(data.cls)}</p>` : ""}</div>
+        <div>
+          <p class="c-sub">${all ? "for successfully completing all levels of the virtual lab" : "for successfully passing the virtual lab"}</p>
+          <div class="c-lab">${lab.icon} ${esc(lab.title)}</div>
+          <div class="c-level">${all ? esc(lab.subject) : `${esc(level.name)} · ${esc(lab.subject)}`}</div>
+          ${all ? `<div class="c-levels">${data.levels.map(l => `<span>${esc(l.name)}: ${l.pct}%</span>`).join("")}</div>` : `<div class="c-score">Score: ${data.score}%</div>`}
+        </div>
+        <div class="c-foot">
+          <div><b>${fmtDay(data.date)}</b><span>Date</span></div>
+          <div><b>${esc(data.school)}</b><span>School</span></div>
+          <div><b>${esc(data.teacher)}</b><span>Teacher</span></div>
+        </div>
+      </div>
+    </div>`;
+  document.title = `Certificate · ${data.name} · ${lab.title}`;
+})();
+</script>
+</body>
+</html>

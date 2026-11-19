@@ -32,6 +32,7 @@
         <label>Teacher's full name<input id="t-name" placeholder="e.g. Ms. Sara Ali" required></label>
         <label>Username (no spaces)<input id="t-user" placeholder="e.g. Sara" required></label>
         <label>Password (6+ characters)<input id="t-pass" required></label>
+        <label>School name (optional — the teacher can change it later)<input id="t-school" placeholder="e.g. Institute of Applied Technology — ATS Al Ain"></label>
         <button class="btn green" type="submit" style="width:100%">Create teacher account</button>
       </form>
     </div>
@@ -68,8 +69,8 @@ async function load() {
     document.getElementById("s-students").textContent = students.length;
     const t = document.getElementById("t-table");
     if (!teachers.length) { t.innerHTML = `<tr><td class="empty">No teachers yet — add the first one 👈</td></tr>`; return; }
-    t.innerHTML = `<tr><th>Name</th><th>Username</th><th>Students</th><th>Added</th><th>Actions</th></tr>` + teachers.map(x => `
-      <tr><td><b>${esc(x.display_name)}</b></td><td>${esc(x.username)}</td><td>${x.student_count}/30</td><td>${fmtDate(x.created_at)}</td>
+    t.innerHTML = `<tr><th>Name</th><th>Username</th><th>School</th><th>Students</th><th>Added</th><th>Actions</th></tr>` + teachers.map(x => `
+      <tr><td><b>${esc(x.display_name)}</b></td><td>${esc(x.username)}</td><td>${esc(x.school || "—")}</td><td>${x.student_count}/30</td><td>${fmtDate(x.created_at)}</td>
       <td><div class="row gap" style="flex-wrap:nowrap"><button class="btn sm ghost" title="Reset password" data-reset="${esc(x.id)}" data-name="${esc(x.display_name)}">🔑</button>
           <button class="btn sm red" title="Delete teacher" data-del="${esc(x.id)}" data-name="${esc(x.display_name)}" data-n="${x.student_count}">🗑️</button></div></td></tr>`).join("");
     t.querySelectorAll("[data-reset]").forEach(b => b.onclick = async () => {
@@ -92,7 +93,7 @@ document.getElementById("add-form").addEventListener("submit", async e => {
   try {
     const r = await rpc("admin_create_teacher", {
       p_token: ME.token, p_username: document.getElementById("t-user").value,
-      p_display_name: document.getElementById("t-name").value, p_password: document.getElementById("t-pass").value
+      p_display_name: document.getElementById("t-name").value, p_password: document.getElementById("t-pass").value, p_school: document.getElementById("t-school").value
     });
     if (!r.ok) return toast(r.error, "bad");
     toast("Teacher account created ✔", "good");

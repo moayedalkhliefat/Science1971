@@ -28,6 +28,12 @@
 
   <!-- STUDENTS -->
   <section id="tab-students">
+    <div class="card" style="margin-bottom:18px">
+      <div class="row between gap">
+        <div><h2 style="margin:0">🏫 My school</h2><p class="muted small" style="margin:4px 0 0">Shown on your students' certificates.</p></div>
+        <div class="row gap" style="flex:1;max-width:620px"><input id="school" placeholder="e.g. Institute of Applied Technology — ATS Al Ain" style="flex:1;margin:0"><button class="btn" id="save-school">Save</button></div>
+      </div>
+    </div>
     <div class="stats">
       <div class="stat a"><b id="st-count">0</b><span id="st-count-label">students (max 30)</span></div>
       <div class="stat c"><b id="st-classes">0</b>classes</div>
@@ -127,6 +133,11 @@ let ME = null, STUDENTS = [], RESULTS = [], PENDING = [];
   }
   document.getElementById("pass-mark").textContent = S1971_CONFIG.PASS_MARK + "%";
   renderLabs();
+  document.getElementById("school").value = ME.school || "";
+  document.getElementById("save-school").onclick = async () => {
+    try { const r = await rpc("staff_set_school", { p_token: ME.token, p_school: document.getElementById("school").value }); r.ok ? toast("School saved ✔", "good") : toast(r.error, "bad"); }
+    catch (e) { toast(e.message, "bad"); }
+  };
   await Promise.all([loadStudents(), loadResults(), loadClasses()]);
 })();
 
@@ -298,11 +309,13 @@ async function loadClasses() {
   box.innerHTML = classes.map(c => `
     <div class="card">
       <div class="row between"><h3 style="margin:0">🎓 ${c.grade ? "Grade " + esc(c.grade) : "No grade"}${c.section ? " · " + esc(c.section) : ""}</h3><span class="pill student">${c.students} students</span></div>
-      <div class="slots" style="margin-top:12px">${window.S1971_LABS.map(l => {
+      ${window.S1971_SUBJECTS.filter(sb => window.S1971_LABS.some(l => l.subject === sb.key)).map(sb => `
+      <h4 class="subj-head" style="--sc:${sb.color};margin:14px 0 8px">${sb.icon} ${sb.key}</h4>
+      <div class="slots">${window.S1971_LABS.filter(l => l.subject === sb.key).map(l => {
         const on = c.labs.includes(l.id);
-        return `<label class="switch-row"><span>${l.icon} <b>${esc(l.title)}</b><br><span class="muted small">${esc(l.subject)} · suggested for grade ${l.grades.join(", ")}</span></span>
+        return `<label class="switch-row"><span>${l.icon} <b>${esc(l.title)}</b><br><span class="muted small">Suggested for grade ${l.grades.join(", ")}</span></span>
           <input type="checkbox" class="sw" data-g="${esc(c.grade)}" data-s="${esc(c.section)}" data-l="${l.id}" ${on ? "checked" : ""}></label>`;
-      }).join("")}</div>
+      }).join("")}</div>`).join("")}
     </div>`).join("");
   box.querySelectorAll("input.sw").forEach(cb => cb.onchange = async () => {
     cb.disabled = true;
@@ -316,12 +329,12 @@ async function loadClasses() {
 
 // ---------- labs ----------
 function renderLabs() {
-  document.getElementById("labs").innerHTML = window.S1971_LABS.map(l => `
+  document.getElementById("labs").innerHTML = window.S1971_SUBJECTS.filter(sb => window.S1971_LABS.some(l => l.subject === sb.key)).map(sb => `<h2 class="subj-head" style="--sc:${sb.color};grid-column:1/-1">${sb.icon} ${sb.key}</h2>` + window.S1971_LABS.filter(l => l.subject === sb.key).map(l => `
     <div class="lab" style="--lab:${l.color}"><div class="band"></div>
       <div class="icon">${l.icon}</div><h3>${esc(l.title)}</h3>
       <p>${esc(l.description)}<br><span class="small">For grades: ${l.grades.join(", ")}</span></p>
       <div class="levels">${l.levels.map(v => `<a class="lvl" href="${l.path}?level=${v.n}&preview=1" target="_blank">${esc(v.name)} <span class="best">👁️ Preview</span></a>`).join("")}</div>
-    </div>`).join("");
+    </div>`).join("")).join("");
 }
 </script>
 </body>

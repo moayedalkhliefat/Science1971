@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>My Lab · Science Lab 1971</title>
+<title>My Labs · Science Lab 1971</title>
 <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🧪</text></svg>">
 <link rel="stylesheet" href="assets/style.css">
 </head>
@@ -19,10 +19,16 @@
 
   <div class="card" style="margin-bottom:18px">
     <h1 id="hello">Welcome! 👋</h1>
-    <p class="muted">Pick a lab. Start with <b>Level 1</b> — score <b id="pm"></b> or more to unlock the next level. 🔓</p>
+    <p class="muted">Pick a lab. Each level has <b>7 tasks</b>. Score <b id="pm"></b> or more to pass, unlock the next level and get a 🎓 certificate.</p>
   </div>
 
-  <div class="labs" id="labs"></div>
+  <div class="subj-tabs" id="subj-tabs"></div>
+  <div id="labs"></div>
+
+  <div class="card" style="margin-top:18px">
+    <h2>🎓 My certificates</h2>
+    <div id="certs" class="cert-list"></div>
+  </div>
 
   <div class="card" style="margin-top:18px">
     <h2>🏆 My results</h2>
@@ -36,8 +42,10 @@
 <script src="assets/app.js"></script>
 <script src="labs/catalog.js"></script>
 <script>
-const { rpc, esc, toast, fmtDate, gradeNum } = S1971;
+const { rpc, esc, toast, fmtDate } = S1971;
 const PASS = S1971_CONFIG.PASS_MARK;
+const pctOf = r => 100 * r.score / r.max_score;
+const passed = r => pctOf(r) >= PASS - 1e-9;
 
 (async function init() {
   const ME = await S1971.requireRole(["student"]);
@@ -50,30 +58,54 @@ const PASS = S1971_CONFIG.PASS_MARK;
   let mine = [], open = [];
   try { [mine, open] = await Promise.all([rpc("student_my_results", { p_token: ME.token }), rpc("student_assigned_labs", { p_token: ME.token })]); } catch (e) { toast(e.message, "bad"); }
   const best = {};
-  mine.forEach(r => { const p = Math.round(100 * r.score / r.max_score); best[r.lab_id] = Math.max(best[r.lab_id] || 0, p); });
+  mine.forEach(r => { best[r.lab_id] = Math.max(best[r.lab_id] || 0, pctOf(r)); });
+  const isPass = id => (best[id] || 0) >= PASS - 1e-9;
 
+  // ----- labs grouped by subject -----
   const labs = window.S1971_LABS.filter(l => open.includes(l.id));
-  const box = document.getElementById("labs");
-  if (!labs.length) box.innerHTML = `<div class="card empty">Your teacher has not opened any labs for your class yet. Check back soon! 🚀</div>`;
-  else box.innerHTML = labs.map(l => `
+  const subjects = window.S1971_SUBJECTS.filter(s => labs.some(l => l.subject === s.key));
+  const box = document.getElementById("labs"), tabs = document.getElementById("subj-tabs");
+  if (!labs.length) { box.innerHTML = `<div class="card empty">Your teacher has not opened any labs for your class yet. Check back soon! 🚀</div>`; }
+  let cur = "all";
+  const labCard = l => `
     <div class="lab" style="--lab:${l.color}"><div class="band"></div>
       <div class="icon">${l.icon}</div><h3>${esc(l.title)}</h3><p>${esc(l.description)}</p>
       <div class="levels">${l.levels.map((v, i) => {
         const prev = i === 0 ? null : l.levels[i - 1];
-        const open = !prev || (best[prev.id] || 0) >= PASS;
+        const unlocked = !prev || isPass(prev.id);
         const b = best[v.id];
-        const badge = b != null ? (b >= PASS ? `⭐ ${b}%` : `${b}%`) : open ? "▶ Start" : "🔒";
-        return open ? `<a class="lvl" href="${l.path}?level=${v.n}">${esc(v.name)} <span class="best">${badge}</span></a>`
-                    : `<span class="lvl locked" title="Score ${PASS}% in ${esc(prev.name)} to unlock">${esc(v.name)} <span class="best">🔒</span></span>`;
+        const badge = b != null ? (isPass(v.id) ? `⭐ ${Math.floor(b)}%` : `${Math.floor(b)}%`) : unlocked ? "▶ Start" : "🔒";
+        return unlocked ? `<a class="lvl" href="${l.path}?level=${v.n}">${esc(v.name)} <span class="best">${badge}</span></a>`
+                        : `<span class="lvl locked" title="Score ${PASS}% in ${esc(prev.name)} to unlock">${esc(v.name)} <span class="best">🔒</span></span>`;
       }).join("")}</div>
-    </div>`).join("");
+    </div>`;
+  const drawLabs = () => {
+    tabs.innerHTML = subjects.length > 1 ? [`<button class="tab ${cur === "all" ? "active" : ""}" data-s="all">📚 All</button>`]
+      .concat(subjects.map(s => `<button class="tab ${cur === s.key ? "active" : ""}" data-s="${s.key}">${s.icon} ${s.key}</button>`)).join("") : "";
+    box.innerHTML = subjects.filter(s => cur === "all" || cur === s.key).map(s => `
+      <h2 class="subj-head" style="--sc:${s.color}">${s.icon} ${s.key}</h2>
+      <div class="labs">${labs.filter(l => l.subject === s.key).map(labCard).join("")}</div>`).join("");
+    tabs.querySelectorAll(".tab").forEach(b => b.onclick = () => { cur = b.dataset.s; drawLabs(); });
+  };
+  if (labs.length) drawLabs();
 
+  // ----- certificates -----
+  const certs = [];
+  window.S1971_LABS.forEach(l => {
+    l.levels.forEach(v => { if (isPass(v.id)) certs.push({ title: `${l.title} — ${v.name}`, icon: l.icon, url: `certificate.html?lab=${l.id}&level=${v.n}`, score: Math.floor(best[v.id]), big: false }); });
+    if (l.levels.every(v => isPass(v.id))) certs.push({ title: `${l.title} — Lab completed (all levels)`, icon: "🏆", url: `certificate.html?lab=${l.id}&level=all`, big: true });
+  });
+  document.getElementById("certs").innerHTML = certs.length ? certs.map(c => `
+    <a class="cert-item ${c.big ? "big" : ""}" href="${c.url}" target="_blank"><span class="ci">${c.icon}</span><span><b>${esc(c.title)}</b>${c.score != null ? `<br><small>Score ${c.score}%</small>` : `<br><small>Completion certificate</small>`}</span><span class="open">Open 🎓</span></a>`).join("")
+    : `<p class="muted">Pass a level (${PASS}% or more) to earn your first certificate! 🎯</p>`;
+
+  // ----- results -----
   const titles = {};
   window.S1971_LABS.forEach(l => l.levels.forEach(v => titles[v.id] = `${l.title} — ${v.name}`));
   const t = document.getElementById("my");
-  t.innerHTML = mine.length ? `<tr><th>Lab</th><th>Score</th><th>Date</th></tr>` + mine.map(r => {
-    const p = Math.round(100 * r.score / r.max_score);
-    return `<tr><td>${esc(titles[r.lab_id] || r.lab_title || r.lab_id)}</td><td><span class="score ${p >= PASS ? "hi" : p >= 50 ? "mid" : "lo"}">${p}%</span></td><td>${fmtDate(r.completed_at)}</td></tr>`;
+  t.innerHTML = mine.length ? `<tr><th>Lab</th><th>Score</th><th>Time</th><th>Date</th></tr>` + mine.map(r => {
+    const p = pctOf(r), ts = r.time_s;
+    return `<tr><td>${esc(titles[r.lab_id] || r.lab_title || r.lab_id)}</td><td><span class="score ${p >= PASS - 1e-9 ? "hi" : p >= 50 ? "mid" : "lo"}">${Math.floor(p)}%</span></td><td>${ts ? `${String(Math.floor(ts / 60)).padStart(2, "0")}:${String(ts % 60).padStart(2, "0")}` : "—"}</td><td>${fmtDate(r.completed_at)}</td></tr>`;
   }).join("") : `<tr><td class="empty">No results yet — start your first lab! 🧪</td></tr>`;
 })();
 </script>
