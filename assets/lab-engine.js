@@ -231,7 +231,9 @@
       <div class="sb-stats"><div class="sb-diff"><small>DIFFICULTY</small><b>${[1, 2, 3].map(i => `<span class="${i <= G.diff ? "on" : ""}">★</span>`).join("")}</b></div>
       <div class="sb-streak"><small>STREAK</small><b>🔥 ${streak}</b></div></div>
       <div class="sb-time"><small>TIME</small><b id="sb-time">${mmss(secs)}</b></div>
-      <button class="sb-trk" type="button">📋 Tracker</button>
+      <div class="sb-cells">${Array.from({ length: E.TOTAL }, (_, i) => { const a = G.answers[i], c = a ? (a.points >= 0.999 ? "ok" : a.points > 0 ? "mid" : "no") : (i === cur - 1 && !E.tEnd ? "cur" : "");
+        return `<div class="cell ${c}" title="${a ? esc(a.task) : "Task " + (i + 1)}"><b>${i + 1}</b><i>${a ? (a.points >= 0.999 ? "✅" : a.points > 0 ? "🟡" : "❌") : c === "cur" ? "▶" : "·"}</i><small>${a ? fmt(a.points) + " pt" : ""}</small></div>`; }).join("")}</div>
+      <button class="sb-trk" type="button">📋 Details</button>
       <div class="sb-list ${open ? "" : "hidden"}">${done ? `<table><tr><th>#</th><th>Task</th><th>Level</th><th>Points</th><th></th></tr>${G.answers.map((a, i) => `<tr><td>${i + 1}</td><td>${esc(a.task)}</td><td>${"★".repeat(a.difficulty)}</td><td>${fmt(a.points)}</td><td>${a.points >= 0.999 ? "✅" : a.points > 0 ? "🟡" : "❌"}</td></tr>`).join("")}</table>` : `<p class="hint">Your finished tasks will appear here.</p>`}</div>`;
     bar.querySelector(".sb-trk").onclick = () => bar.querySelector(".sb-list").classList.toggle("hidden");
   }
@@ -265,7 +267,7 @@
   }
   E.layout = layout;
   // fit one task on the screen: if the task column is too tall, give it more width (the picture shrinks)
-  const RATIOS = ["", "minmax(0,1fr) minmax(0,1fr)", "minmax(0,2fr) minmax(0,3fr)", "minmax(0,1fr) minmax(0,2fr)"];
+  const RATIOS = ["", "minmax(0,2fr) minmax(0,3fr)", "minmax(0,1fr) minmax(0,2fr)"];
   function fitTask() {
     if (!document.body.classList.contains("lab-fit") || !matchMedia("(min-width:900px) and (min-height:560px)").matches) return;
     const g = E.stage && E.stage.querySelector(":scope > .task-grid"); if (!g) return;
