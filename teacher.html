@@ -100,6 +100,7 @@
       <h2>🏫 Choose the labs for each class</h2>
       <p class="muted">Switch a lab <b>ON</b> to open it for that class. Students only see the labs that are ON for their grade and section. Classes come from your uploaded student list.</p>
     </div>
+    <div class="subj-tabs" id="classes-subj"></div>
     <div id="classes" class="grid" style="grid-template-columns:1fr"></div>
   </section>
 
@@ -109,6 +110,7 @@
       <h2>🔬 Virtual labs</h2>
       <p class="muted">Open any level in <b>preview mode</b> to try it yourself (nothing is saved). Students must score <b id="pass-mark"></b> to unlock the next level.</p>
     </div>
+    <div class="subj-tabs" id="labs-subj"></div>
     <div class="labs" id="labs"></div>
   </section>
 
@@ -144,8 +146,8 @@ let ME = null, STUDENTS = [], RESULTS = [], PENDING = [];
 })();
 
 // ---------- tabs ----------
-document.querySelectorAll(".tab").forEach(b => b.onclick = () => {
-  document.querySelectorAll(".tab").forEach(x => x.classList.toggle("active", x === b));
+document.querySelectorAll(".tab[data-tab]").forEach(b => b.onclick = () => {
+  document.querySelectorAll(".tab[data-tab]").forEach(x => x.classList.toggle("active", x === b));
   ["students", "results", "classes", "labs"].forEach(t => document.getElementById("tab-" + t).classList.toggle("hidden", t !== b.dataset.tab));
 });
 
@@ -325,7 +327,7 @@ async function loadClasses() {
   box.innerHTML = classes.map(c => `
     <div class="card">
       <div class="row between"><h3 style="margin:0">🎓 ${c.grade ? "Grade " + esc(c.grade) : "No grade"}${c.section ? " · " + esc(c.section) : ""}</h3><span class="pill student">${c.students} students</span></div>
-      <div class="subj-cols">${window.S1971_SUBJECTS.filter(sb => window.S1971_LABS.some(l => l.subject === sb.key)).map(sb => `<div>
+      <div class="subj-cols">${window.S1971_SUBJECTS.filter(sb => window.S1971_LABS.some(l => l.subject === sb.key)).map(sb => `<div data-subj="${sb.key}">
       <h4 class="subj-head" style="--sc:${sb.color};margin:14px 0 8px">${sb.icon} ${sb.key}</h4>
       <div class="slots">${window.S1971_LABS.filter(l => l.subject === sb.key).map(l => {
         const on = c.labs.includes(l.id);
@@ -333,6 +335,7 @@ async function loadClasses() {
           <input type="checkbox" class="sw" data-g="${esc(c.grade)}" data-s="${esc(c.section)}" data-l="${l.id}" ${on ? "checked" : ""}></label>`;
       }).join("")}</div></div>`).join("")}</div>
     </div>`).join("");
+  subjectButtons("classes-subj", "classes");
   box.querySelectorAll("input.sw").forEach(cb => cb.onchange = async () => {
     cb.disabled = true;
     try {
@@ -345,14 +348,29 @@ async function loadClasses() {
 
 // ---------- labs ----------
 function renderLabs() {
-  document.getElementById("labs").innerHTML = window.S1971_SUBJECTS.filter(sb => window.S1971_LABS.some(l => l.subject === sb.key)).map(sb => `<h2 class="subj-head" style="--sc:${sb.color};grid-column:1/-1">${sb.icon} ${sb.key}</h2>` + window.S1971_LABS.filter(l => l.subject === sb.key).map(l => `
-    <div class="lab" data-lab="${l.id}" style="--lab:${l.color}"><div class="band"></div>
+  document.getElementById("labs").innerHTML = window.S1971_SUBJECTS.filter(sb => window.S1971_LABS.some(l => l.subject === sb.key)).map(sb => `<h2 class="subj-head" data-subj="${sb.key}" style="--sc:${sb.color};grid-column:1/-1">${sb.icon} ${sb.key}</h2>` + window.S1971_LABS.filter(l => l.subject === sb.key).map(l => `
+    <div class="lab" data-lab="${l.id}" data-subj="${l.subject}" style="--lab:${l.color}"><div class="band"></div>
       <div class="icon">${l.icon}</div><h3>${esc(l.title)}</h3>
       <p>${esc(l.description)}<br><span class="small">For grades: ${(l.grades.includes("all") ? "all" : l.grades.join(", "))}</span></p>
       <div class="levels">${l.levels.map(v => `<a class="lvl" data-back="${l.id}" href="${l.path}?level=${v.n}&preview=1">${esc(v.name)} <span class="best">👁️ Preview</span></a>`).join("")}</div>
     </div>`).join("")).join("");
+  subjectButtons("labs-subj", "labs");
   // remember where the teacher was, so ⬅ Back from the preview returns here
   document.querySelectorAll("#labs a[data-back]").forEach(a => a.onclick = () => { try { sessionStorage.setItem("s1971.back", JSON.stringify({ tab: "labs", lab: a.dataset.back, y: scrollY })); } catch (e) {} });
+}
+// subject buttons (📚 All · Biology · Chemistry · Physics): show only the chosen subject's labs
+// the last choice is remembered on this computer (separately for Class Labs and Preview Labs)
+const SUBJ_CUR = {}, subjKey = id => "s1971.subj." + id;
+const subjGet = id => { if (!(id in SUBJ_CUR)) { try { SUBJ_CUR[id] = localStorage.getItem(subjKey(id)) || "all"; } catch (e) { SUBJ_CUR[id] = "all"; } } return SUBJ_CUR[id]; };
+function subjectButtons(barId, boxId) {
+  const bar = document.getElementById(barId), box = document.getElementById(boxId);
+  const subjects = window.S1971_SUBJECTS.filter(sb => window.S1971_LABS.some(l => l.subject === sb.key));
+  let cur = subjGet(boxId); if (cur !== "all" && !subjects.some(sb => sb.key === cur)) cur = "all";
+  bar.innerHTML = [`<button type="button" class="tab ${cur === "all" ? "active" : ""}" data-s="all">📚 All</button>`]
+    .concat(subjects.map(sb => `<button type="button" class="tab ${cur === sb.key ? "active" : ""}" data-s="${sb.key}">${sb.icon} ${sb.key}</button>`)).join("");
+  box.querySelectorAll("[data-subj]").forEach(el => el.classList.toggle("hidden", cur !== "all" && el.dataset.subj !== cur));
+  box.querySelectorAll(".subj-cols").forEach(c => c.style.setProperty("--n", cur === "all" ? subjects.length : 1));
+  bar.querySelectorAll("button").forEach(b => b.onclick = () => { SUBJ_CUR[boxId] = b.dataset.s; try { localStorage.setItem(subjKey(boxId), b.dataset.s); } catch (e) {} subjectButtons(barId, boxId); });
 }
 addEventListener("pageshow", e => { if (e.persisted) try { sessionStorage.removeItem("s1971.back"); } catch (x) {} });
 function restoreBack() {
