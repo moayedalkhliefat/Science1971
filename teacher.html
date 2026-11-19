@@ -313,7 +313,7 @@ async function loadClasses() {
       <h4 class="subj-head" style="--sc:${sb.color};margin:14px 0 8px">${sb.icon} ${sb.key}</h4>
       <div class="slots">${window.S1971_LABS.filter(l => l.subject === sb.key).map(l => {
         const on = c.labs.includes(l.id);
-        return `<label class="switch-row"><span>${l.icon} <b>${esc(l.title)}</b><br><span class="muted small">Suggested for grade ${(l.grades.includes("all") ? "all" : l.grades.join(", "))}</span></span>
+        return `<label class="switch-row"><span>${l.icon} <b>${esc(l.title)}</b><br><span class="muted small">${l.grades.includes("all") ? "Suitable for all grades" : "Suggested for grade " + l.grades.join(", ")}</span></span>
           <input type="checkbox" class="sw" data-g="${esc(c.grade)}" data-s="${esc(c.section)}" data-l="${l.id}" ${on ? "checked" : ""}></label>`;
       }).join("")}</div>`).join("")}
     </div>`).join("");
