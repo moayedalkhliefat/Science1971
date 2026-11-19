@@ -100,6 +100,11 @@ window.S1971_LABS = [
     id: "foodweb", title: "Food Chains & Webs", subject: "Biology", icon: "🕸️", color: "linear-gradient(135deg,#7cb342,#8d6e63)", grades: ["all"],
     path: "labs/foodweb/index.html", description: "Build food chains, remove species from a food web to see the effects, and follow energy through an energy pyramid.",
     levels: [{ n: 1, id: "foodweb-l1", name: "Level 1 · Explorer" }, { n: 2, id: "foodweb-l2", name: "Level 2 · Investigator" }, { n: 3, id: "foodweb-l3", name: "Level 3 · Expert" }]
+  },
+  {
+    id: "photo", title: "Photosynthesis", subject: "Biology", icon: "🌱", color: "linear-gradient(135deg,#43a047,#fdd835)", grades: ["all"],
+    path: "labs/photo/index.html", description: "Count oxygen bubbles from pondweed while changing light, CO₂, temperature and light colour — discover limiting factors.",
+    levels: [{ n: 1, id: "photo-l1", name: "Level 1 · Explorer" }, { n: 2, id: "photo-l2", name: "Level 2 · Investigator" }, { n: 3, id: "photo-l3", name: "Level 3 · Expert" }]
   }
 ];
 
