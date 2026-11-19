@@ -98,7 +98,7 @@
       <h2>🏫 Choose the labs for each class</h2>
       <p class="muted">Switch a lab <b>ON</b> to open it for that class. Students only see the labs that are ON for their grade and section. Classes come from your uploaded student list.</p>
     </div>
-    <div id="classes" class="grid" style="grid-template-columns:repeat(auto-fill,minmax(320px,1fr))"></div>
+    <div id="classes" class="grid" style="grid-template-columns:1fr"></div>
   </section>
 
   <!-- LABS -->
@@ -309,13 +309,13 @@ async function loadClasses() {
   box.innerHTML = classes.map(c => `
     <div class="card">
       <div class="row between"><h3 style="margin:0">🎓 ${c.grade ? "Grade " + esc(c.grade) : "No grade"}${c.section ? " · " + esc(c.section) : ""}</h3><span class="pill student">${c.students} students</span></div>
-      ${window.S1971_SUBJECTS.filter(sb => window.S1971_LABS.some(l => l.subject === sb.key)).map(sb => `
+      <div class="subj-cols">${window.S1971_SUBJECTS.filter(sb => window.S1971_LABS.some(l => l.subject === sb.key)).map(sb => `<div>
       <h4 class="subj-head" style="--sc:${sb.color};margin:14px 0 8px">${sb.icon} ${sb.key}</h4>
       <div class="slots">${window.S1971_LABS.filter(l => l.subject === sb.key).map(l => {
         const on = c.labs.includes(l.id);
         return `<label class="switch-row"><span>${l.icon} <b>${esc(l.title)}</b><br><span class="muted small">${l.grades.includes("all") ? "Suitable for all grades" : "Suggested for grade " + l.grades.join(", ")}</span></span>
           <input type="checkbox" class="sw" data-g="${esc(c.grade)}" data-s="${esc(c.section)}" data-l="${l.id}" ${on ? "checked" : ""}></label>`;
-      }).join("")}</div>`).join("")}
+      }).join("")}</div></div>`).join("")}</div>
     </div>`).join("");
   box.querySelectorAll("input.sw").forEach(cb => cb.onchange = async () => {
     cb.disabled = true;
