@@ -165,6 +165,11 @@ window.S1971_LABS = [
     id: "pendulum", title: "Pendulum Lab", subject: "Physics", icon: "⏱️", color: "linear-gradient(135deg,#1e88e5,#8d6e63)", grades: ["all"],
     path: "labs/pendulum/index.html", description: "Swing pendulums of different lengths, masses and angles — even on other planets — and time their period.",
     levels: [{ n: 1, id: "pendulum-l1", name: "Level 1 · Explorer" }, { n: 2, id: "pendulum-l2", name: "Level 2 · Investigator" }, { n: 3, id: "pendulum-l3", name: "Level 3 · Expert" }]
+  },
+  {
+    id: "springs", title: "Masses & Springs", subject: "Physics", icon: "🔩", color: "linear-gradient(135deg,#546e7a,#1e88e5)", grades: ["all"],
+    path: "labs/springs/index.html", description: "Hang masses on springs, discover Hooke's law, find mystery spring constants, the elastic limit and stored energy.",
+    levels: [{ n: 1, id: "springs-l1", name: "Level 1 · Explorer" }, { n: 2, id: "springs-l2", name: "Level 2 · Investigator" }, { n: 3, id: "springs-l3", name: "Level 3 · Expert" }]
   }
 ];
 
