@@ -83,7 +83,10 @@
           <select class="inline hidden" id="r-teacher"></select>
           <select class="inline" id="r-grade"></select>
           <select class="inline" id="r-section"></select>
+          <select class="inline" id="r-subj"><option value="">All subjects</option></select>
           <select class="inline" id="r-lab"></select>
+          <select class="inline" id="r-level"><option value="">All levels</option><option value="1">Level 1</option><option value="2">Level 2</option><option value="3">Level 3</option></select>
+          <select class="inline" id="r-pass"><option value="">Pass &amp; fail</option><option value="pass">✅ Passed</option><option value="fail">❌ Not passed</option></select>
           <input class="inline" id="r-search" placeholder="🔎 Student">
           <button class="btn sm blue" id="r-export">⬇️ Export CSV</button>
           <button class="btn sm ghost" id="r-refresh">🔄</button>
@@ -275,12 +278,26 @@ async function loadResults() {
   document.getElementById("st-results").textContent = RESULTS.length;
   if (ME.role === "admin") { fillSelect("r-teacher", "All teachers", RESULTS.map(r => r.teacher_name)); document.getElementById("r-teacher").classList.remove("hidden"); }
   fillResultClasses();
-  const el = document.getElementById("r-lab"), cur = el.value;
-  const labs = [...new Set(RESULTS.map(r => r.lab_id))];
-  el.innerHTML = `<option value="">All labs</option>` + labs.map(id => `<option value="${esc(id)}">${esc(labTitle(id))}</option>`).join("");
-  if (labs.includes(cur)) el.value = cur;
+  const sj = document.getElementById("r-subj"), sjCur = sj.value, subjects = window.S1971_SUBJECTS.filter(sb => RESULTS.some(r => labInfo(r).subject === sb.key));
+  sj.innerHTML = `<option value="">All subjects</option>` + subjects.map(sb => `<option value="${sb.key}">${sb.icon} ${sb.key}</option>`).join("");
+  if (subjects.some(sb => sb.key === sjCur)) sj.value = sjCur;
+  fillResultLabs();
   renderResults();
 }
+// subject + level of a result (from the lab catalogue; falls back to the saved level)
+function labInfo(r) {
+  for (const l of window.S1971_LABS) { const i = l.levels.findIndex(lv => lv.id === r.lab_id); if (i >= 0) return { subject: l.subject, level: i + 1 }; }
+  return { subject: "", level: (r.details && r.details.level) || 0 };
+}
+// the Lab list only shows labs of the chosen subject and level
+function fillResultLabs() {
+  const el = document.getElementById("r-lab"), cur = el.value, sj = document.getElementById("r-subj").value, lv = +document.getElementById("r-level").value;
+  const labs = [...new Set(RESULTS.filter(r => { const i = labInfo(r); return (!sj || i.subject === sj) && (!lv || i.level === lv); }).map(r => r.lab_id))];
+  el.innerHTML = `<option value="">All labs</option>` + labs.map(id => `<option value="${esc(id)}">${esc(labTitle(id))}</option>`).join("");
+  if (labs.includes(cur)) el.value = cur;
+}
+["r-subj", "r-level"].forEach(id => document.getElementById(id).addEventListener("input", () => { fillResultLabs(); renderResults(); }));
+document.getElementById("r-pass").addEventListener("input", renderResults);
 ["r-grade", "r-section", "r-lab", "r-search"].forEach(id => document.getElementById(id).addEventListener("input", renderResults));
 // admin: the grade / section lists only show the chosen teacher's classes
 function fillResultClasses() {
@@ -292,7 +309,8 @@ document.getElementById("r-teacher").addEventListener("input", () => { fillResul
 document.getElementById("r-refresh").onclick = loadResults;
 function filteredResults() {
   const g = document.getElementById("r-grade").value, s = document.getElementById("r-section").value, l = document.getElementById("r-lab").value, q = document.getElementById("r-search").value.trim().toLowerCase(), tc = document.getElementById("r-teacher").value;
-  return RESULTS.filter(r => (!tc || r.teacher_name === tc) && (!g || r.grade === g) && (!s || r.section === s) && (!l || r.lab_id === l) && (!q || r.full_name.toLowerCase().includes(q) || r.school_id.toLowerCase().includes(q)));
+  const sj = document.getElementById("r-subj").value, lv = +document.getElementById("r-level").value, ps = document.getElementById("r-pass").value;
+  return RESULTS.filter(r => { const i = labInfo(r), ok = pct(r) >= S1971_CONFIG.PASS_MARK; return (!sj || i.subject === sj) && (!lv || i.level === lv) && (!ps || (ps === "pass") === ok); }).filter(r => (!tc || r.teacher_name === tc) && (!g || r.grade === g) && (!s || r.section === s) && (!l || r.lab_id === l) && (!q || r.full_name.toLowerCase().includes(q) || r.school_id.toLowerCase().includes(q)));
 }
 function pct(r) { return Math.round(100 * r.score / r.max_score); }
 function tTxt(r) { const t = r.details && r.details.time_s; return t ? `${String(Math.floor(t / 60)).padStart(2, "0")}:${String(t % 60).padStart(2, "0")}` : "—"; }
