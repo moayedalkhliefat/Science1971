@@ -85,6 +85,11 @@ window.S1971_LABS = [
     id: "molecule", title: "Build a Molecule", subject: "Chemistry", icon: "⚛️", color: "linear-gradient(135deg,#424242,#e53935,#1e88e5)", grades: ["all"],
     path: "labs/molecule/index.html", description: "Use an atom kit to build molecules — every atom must use all its bonds. Discover single, double and triple bonds.",
     levels: [{ n: 1, id: "molecule-l1", name: "Level 1 · Explorer" }, { n: 2, id: "molecule-l2", name: "Level 2 · Investigator" }, { n: 3, id: "molecule-l3", name: "Level 3 · Expert" }]
+  },
+  {
+    id: "selection", title: "Natural Selection", subject: "Biology", icon: "🐇", color: "linear-gradient(135deg,#689f38,#8d6e63)", grades: ["all"],
+    path: "labs/selection/index.html", description: "Add mutations, predators and food limits to a bunny population and watch natural selection change it over generations.",
+    levels: [{ n: 1, id: "selection-l1", name: "Level 1 · Explorer" }, { n: 2, id: "selection-l2", name: "Level 2 · Investigator" }, { n: 3, id: "selection-l3", name: "Level 3 · Expert" }]
   }
 ];
 
