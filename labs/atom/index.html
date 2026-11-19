@@ -93,7 +93,7 @@ function atomSVG(st, opts) {
   opts = opts || {};
   const N = st.p + st.n, nR = nucleusR(N);
   const shellsUsed = Math.max(st.sh.reduce((m, x, i) => x > 0 ? i + 1 : m, 0), opts.minShells || 0);
-  let s = `<svg viewBox="0 0 520 520" xmlns="http://www.w3.org/2000/svg">
+  let s = `<svg viewBox="12 12 496 496" xmlns="http://www.w3.org/2000/svg">
     <defs>
       <radialGradient id="gp" cx="35%" cy="30%"><stop offset="0" stop-color="#ff9a9a"/><stop offset=".6" stop-color="#e0262f"/><stop offset="1" stop-color="#8f0d14"/></radialGradient>
       <radialGradient id="gn" cx="35%" cy="30%"><stop offset="0" stop-color="#f1f1f8"/><stop offset=".6" stop-color="#9a9ab0"/><stop offset="1" stop-color="#5a5a70"/></radialGradient>

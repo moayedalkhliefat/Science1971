@@ -254,7 +254,10 @@
     if (grid) { [...st.children].forEach(c => { if (c !== grid) grid.querySelector(".tg-task").appendChild(c); }); placeBar(); return; }
     const flat = [];
     [...st.children].forEach(n => { if (n.classList.contains("split") || n.classList.contains("atom-wrap")) flat.push(...n.children); else flat.push(n); });
-    const isVis = n => n.matches(VIS) || (!!n.querySelector(".atom-box,.diagram") && !n.querySelector(".palette,.tray,.chips"));
+    // a picture box with a caption under it: the box and its caption both stay on the LEFT, and the box itself gets the fixed size
+    const keepLeft = new Set();
+    for (let i = flat.length - 1; i >= 0; i--) { const n = flat[i]; if (n.tagName === "DIV" && n.querySelector(":scope > .atom-box") && !n.querySelector(".palette,.tray,.chips")) { const kids = [...n.children]; kids.forEach(k => keepLeft.add(k)); flat.splice(i, 1, ...kids); } }
+    const isVis = n => keepLeft.has(n) || n.matches(VIS) || (!!n.querySelector(".atom-box,.diagram") && !n.querySelector(".palette,.tray,.chips"));
     if (!flat.some(isVis)) { placeBar(); return; }
     st._busy = true;
     const g = document.createElement("div"); g.className = "task-grid";
