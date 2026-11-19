@@ -150,6 +150,11 @@ window.S1971_LABS = [
     id: "isotopes", title: "Isotopes & Atomic Mass", subject: "Chemistry", icon: "⚛️", color: "linear-gradient(135deg,#e53935,#7e57c2)", grades: ["all"],
     path: "labs/isotopes/index.html", description: "Build isotopes by adding neutrons, check if they are stable, and mix isotopes to find the relative atomic mass.",
     levels: [{ n: 1, id: "isotopes-l1", name: "Level 1 · Explorer" }, { n: 2, id: "isotopes-l2", name: "Level 2 · Investigator" }, { n: 3, id: "isotopes-l3", name: "Level 3 · Expert" }]
+  },
+  {
+    id: "solutions", title: "Sugar & Salt Solutions", subject: "Chemistry", icon: "🧂", color: "linear-gradient(135deg,#7e57c2,#43a047)", grades: ["all"],
+    path: "labs/solutions/index.html", description: "Dissolve salt and sugar, test which solutions conduct electricity, make saturated solutions and count ions.",
+    levels: [{ n: 1, id: "solutions-l1", name: "Level 1 · Explorer" }, { n: 2, id: "solutions-l2", name: "Level 2 · Investigator" }, { n: 3, id: "solutions-l3", name: "Level 3 · Expert" }]
   }
 ];
 
