@@ -190,6 +190,11 @@ window.S1971_LABS = [
     id: "orbits", title: "Gravity & Orbits", subject: "Physics", icon: "🪐", color: "linear-gradient(135deg,#0b1426,#ffb300)", grades: ["all"],
     path: "labs/orbits/index.html", description: "Launch planets around stars: find circular orbits, crashes and escapes, the length of a year and the gravity force.",
     levels: [{ n: 1, id: "orbits-l1", name: "Level 1 · Explorer" }, { n: 2, id: "orbits-l2", name: "Level 2 · Investigator" }, { n: 3, id: "orbits-l3", name: "Level 3 · Expert" }]
+  },
+  {
+    id: "magnets", title: "Magnets & Electromagnets", subject: "Physics", icon: "🧲", color: "linear-gradient(135deg,#c62828,#1565c0)", grades: ["all"],
+    path: "labs/magnets/index.html", description: "Build electromagnets to lift paper clips, find north and south poles with a compass, and induce voltage with a moving magnet.",
+    levels: [{ n: 1, id: "magnets-l1", name: "Level 1 · Explorer" }, { n: 2, id: "magnets-l2", name: "Level 2 · Investigator" }, { n: 3, id: "magnets-l3", name: "Level 3 · Expert" }]
   }
 ];
 
