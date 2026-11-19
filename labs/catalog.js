@@ -110,6 +110,11 @@ window.S1971_LABS = [
     id: "membrane", title: "Membrane Transport", subject: "Biology", icon: "🫧", color: "linear-gradient(135deg,#ec407a,#29b6f6)", grades: ["all"],
     path: "labs/membrane/index.html", description: "Watch particles cross the cell membrane: diffusion, osmosis in red blood and plant cells, and active transport with the Na⁺/K⁺ pump.",
     levels: [{ n: 1, id: "membrane-l1", name: "Level 1 · Explorer" }, { n: 2, id: "membrane-l2", name: "Level 2 · Investigator" }, { n: 3, id: "membrane-l3", name: "Level 3 · Expert" }]
+  },
+  {
+    id: "neuron", title: "Neuron", subject: "Biology", icon: "🧠", color: "linear-gradient(135deg,#ad1457,#ffb74d)", grades: ["all"],
+    path: "labs/neuron/index.html", description: "Stimulate a neuron: threshold and action potentials, myelin and impulse speed, toxins, drugs and synapses.",
+    levels: [{ n: 1, id: "neuron-l1", name: "Level 1 · Explorer" }, { n: 2, id: "neuron-l2", name: "Level 2 · Investigator" }, { n: 3, id: "neuron-l3", name: "Level 3 · Expert" }]
   }
 ];
 
