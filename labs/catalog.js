@@ -175,6 +175,11 @@ window.S1971_LABS = [
     id: "balance2", title: "Balancing Act", subject: "Physics", icon: "⚖️", color: "linear-gradient(135deg,#6d4c41,#1565c0)", grades: ["all"],
     path: "labs/balance2/index.html", description: "Place bricks on a seesaw and use moments (mass × distance) to balance it and find mystery masses.",
     levels: [{ n: 1, id: "balance2-l1", name: "Level 1 · Explorer" }, { n: 2, id: "balance2-l2", name: "Level 2 · Investigator" }, { n: 3, id: "balance2-l3", name: "Level 3 · Expert" }]
+  },
+  {
+    id: "waves", title: "Waves", subject: "Physics", icon: "🌊", color: "linear-gradient(135deg,#e65100,#1e88e5)", grades: ["all"],
+    path: "labs/waves/index.html", description: "Make waves on a string: change frequency, amplitude and tension, and discover v = f × λ.",
+    levels: [{ n: 1, id: "waves-l1", name: "Level 1 · Explorer" }, { n: 2, id: "waves-l2", name: "Level 2 · Investigator" }, { n: 3, id: "waves-l3", name: "Level 3 · Expert" }]
   }
 ];
 
