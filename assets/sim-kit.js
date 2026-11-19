@@ -16,7 +16,7 @@
       return `<${tag} class="sl" style="margin:0">${c.label}: <b><span id="v-${c.id}">${show}</span> ${c.unit || ""}</b>
       ${c.nudge ? `<span class="nudge"><button type="button" data-c="${c.id}" data-d="-1" ${d}>${nl[0]}</button>${inp}<button type="button" data-c="${c.id}" data-d="1" ${d}>${nl[1]}</button></span>` : inp}</${tag}>`; }
     if (c.type === "step") return `<div class="stepper"><span>${c.label}</span><div><button type="button" data-c="${c.id}" data-d="-1" ${d}>−</button><b id="v-${c.id}">${show}</b><button type="button" data-c="${c.id}" data-d="1" ${d}>+</button></div></div>`;
-    if (c.type === "choice") return `<div class="choice"><span>${c.label}</span><div class="seg">${c.options.map(o => `<button type="button" data-c="${c.id}" data-v="${esc(String(o.v))}" class="${String(o.v) === String(v) ? "sel" : ""}" ${d}>${o.label}</button>`).join("")}</div></div>`;
+    if (c.type === "choice") return `<div class="choice${c.wide ? " wide" : ""}"><span>${c.label}</span><div class="seg">${c.options.map(o => `<button type="button" data-c="${c.id}" data-v="${esc(String(o.v))}" class="${String(o.v) === String(v) ? "sel" : ""}" ${d}>${o.label}</button>`).join("")}</div></div>`;
     if (c.type === "toggle") return `<label class="switch-row tg"><span>${c.label}</span><input type="checkbox" class="sw" data-c="${c.id}" ${v ? "checked" : ""} ${d}></label>`;
     return "";
   }

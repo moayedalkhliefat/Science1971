@@ -196,3 +196,6 @@ body.theme-eco footer{color:#e8f5e9}
 .nudge input[type=range]{flex:1;min-width:0}
 .nudge button{flex:none;min-width:44px;height:36px;padding:0 8px;border-radius:10px;border:2px solid #d8d2ff;background:#fff;font-size:.95rem;font-weight:900;cursor:pointer;color:#1f2a44}
 .nudge button:disabled{opacity:.45;cursor:default}
+.controls .choice.wide{grid-column:1/-1}
+.controls .choice.wide .seg{flex-wrap:wrap}
+.controls .switch-row.tg{align-self:start}

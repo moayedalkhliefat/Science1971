@@ -75,6 +75,11 @@ window.S1971_LABS = [
     id: "balance", title: "Balancing Equations", subject: "Chemistry", icon: "⚖️", color: "linear-gradient(135deg,#7e57c2,#26a69a)", grades: ["all"],
     path: "labs/balance/index.html", description: "Add molecules to both sides of a chemical equation until every atom balances — conservation of mass.",
     levels: [{ n: 1, id: "balance-l1", name: "Level 1 · Explorer" }, { n: 2, id: "balance-l2", name: "Level 2 · Investigator" }, { n: 3, id: "balance-l3", name: "Level 3 · Expert" }]
+  },
+  {
+    id: "ph", title: "pH Scale", subject: "Chemistry", icon: "🧪", color: "linear-gradient(135deg,#e53935,#fbc02d,#43a047,#1e3a8a,#6a1b9a)", grades: ["all"],
+    path: "labs/ph/index.html", description: "Test everyday liquids with a pH meter and universal indicator, dilute acids and bases, and explore [H⁺].",
+    levels: [{ n: 1, id: "ph-l1", name: "Level 1 · Explorer" }, { n: 2, id: "ph-l2", name: "Level 2 · Investigator" }, { n: 3, id: "ph-l3", name: "Level 3 · Expert" }]
   }
 ];
 
