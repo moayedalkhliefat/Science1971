@@ -180,6 +180,11 @@ window.S1971_LABS = [
     id: "waves", title: "Waves", subject: "Physics", icon: "🌊", color: "linear-gradient(135deg,#e65100,#1e88e5)", grades: ["all"],
     path: "labs/waves/index.html", description: "Make waves on a string: change frequency, amplitude and tension, and discover v = f × λ.",
     levels: [{ n: 1, id: "waves-l1", name: "Level 1 · Explorer" }, { n: 2, id: "waves-l2", name: "Level 2 · Investigator" }, { n: 3, id: "waves-l3", name: "Level 3 · Expert" }]
+  },
+  {
+    id: "light", title: "Bending Light", subject: "Physics", icon: "🔦", color: "linear-gradient(135deg,#e53935,#29b6f6)", grades: ["all"],
+    path: "labs/light/index.html", description: "Shine a laser into water, glass and diamond: refraction, Snell's law, the critical angle and total internal reflection.",
+    levels: [{ n: 1, id: "light-l1", name: "Level 1 · Explorer" }, { n: 2, id: "light-l2", name: "Level 2 · Investigator" }, { n: 3, id: "light-l3", name: "Level 3 · Expert" }]
   }
 ];
 
