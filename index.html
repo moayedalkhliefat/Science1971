@@ -6,45 +6,77 @@
 <title>Science Lab 1971 · Virtual Science Lab</title>
 <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🧪</text></svg>">
 <link rel="stylesheet" href="assets/style.css">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap">
 <style>
-  .login-box{max-width:480px;margin:0 auto}
-  .roles{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin:6px 0 18px}
-  .role{font-family:'Baloo 2','Nunito',system-ui,sans-serif;font-weight:800;font-size:1.05rem;border:3px solid var(--line);background:#fbfaff;
-    border-radius:18px;padding:12px 6px;cursor:pointer;color:var(--ink);display:flex;flex-direction:column;align-items:center;gap:2px;transition:.15s}
-  .role .ic{font-size:2rem;line-height:1.1}
-  .role:hover{border-color:#bfb2ff}
-  .role.active{color:#fff;border-color:transparent;transform:translateY(-2px);box-shadow:0 6px 0 rgba(0,0,0,.12)}
-  .role[data-role="student"].active{background:#0f766e}
-  .role[data-role="teacher"].active{background:#1e3a8a}
-  .role[data-role="admin"].active{background:#334155}
-  #login-btn{width:100%;margin-top:8px;font-size:1.2rem;padding:12px}
+  /* ===== Login page — "Clean & professional" design ===== */
+  body.login{margin:0;min-height:100vh;background:#fff;color:#0f172a;font-family:'Inter',system-ui,sans-serif;display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1.1fr)}
+  .lg-form{position:relative;display:flex;flex-direction:column;justify-content:center;padding:110px clamp(28px,6.5vw,90px) 70px}
+  .lg-inner{width:100%;max-width:470px}
+  .lg-logo{position:absolute;top:40px;left:clamp(28px,6.5vw,90px);display:flex;align-items:center;gap:12px;font-weight:700;font-size:1.15rem;color:#0f2a5c;text-decoration:none}
+  .lg-logo .m{width:40px;height:40px;border-radius:11px;background:#1e3a8a;color:#fff;display:grid;place-items:center;font-size:1.2rem}
+  .lg-form h1{font-family:'Inter',system-ui,sans-serif;font-size:2rem;font-weight:700;margin:0 0 6px;letter-spacing:-.02em;color:#0f172a}
+  .lg-sub{color:#64748b;margin:0 0 26px;font-size:1rem}
+  .roles{display:grid;grid-template-columns:repeat(3,1fr);background:#f1f5f9;border-radius:12px;padding:5px;margin-bottom:24px;gap:4px}
+  .role{font:600 .95rem 'Inter',system-ui,sans-serif;border:0;background:transparent;color:#475569;padding:10px 0;border-radius:9px;cursor:pointer;transition:.15s}
+  .role:hover{color:#1e3a8a}
+  .role.active{background:#fff;color:#1e3a8a;box-shadow:0 1px 3px rgba(15,23,42,.14)}
+  .lg-form label{display:block;font-weight:600;font-size:.88rem;color:#334155;margin:0 0 18px}
+  .lg-form input{margin-top:7px;border:1.5px solid #e2e8f0;border-radius:10px;padding:13px 14px;font:400 1rem 'Inter',system-ui,sans-serif;background:#fff;color:#0f172a}
+  .lg-form input::placeholder{color:#94a3b8}
+  .lg-form input:focus{border-color:#1e3a8a;box-shadow:0 0 0 3px rgba(30,58,138,.12)}
+  .lg-btn{width:100%;border:0;border-radius:10px;padding:14px;font:600 1.02rem 'Inter',system-ui,sans-serif;color:#fff;background:#1e3a8a;cursor:pointer;margin-top:4px;transition:.15s}
+  .lg-btn:hover{background:#172f70}.lg-btn:disabled{opacity:.6;cursor:default}
+  .lg-help{color:#64748b;font-size:.88rem;margin:16px 0 0;text-align:center;line-height:1.45}.lg-help b{color:#1e3a8a}
+  .lg-foot{position:absolute;bottom:26px;left:clamp(28px,6.5vw,90px);color:#94a3b8;font-size:.8rem}
+  .lg-panel{position:relative;margin:18px;border-radius:26px;color:#fff;overflow:hidden;padding:56px clamp(30px,4.7vw,64px);display:flex;flex-direction:column;justify-content:center;
+    background-color:#0f2a5c;background-image:linear-gradient(rgba(255,255,255,.05) 1px,transparent 1px),linear-gradient(90deg,rgba(255,255,255,.05) 1px,transparent 1px),radial-gradient(circle at 85% 15%,#2563eb 0,transparent 45%),radial-gradient(circle at 10% 95%,#0ea5e9 0,transparent 40%);background-size:36px 36px,36px 36px,100% 100%,100% 100%}
+  .lg-panel h2{font-family:'Inter',system-ui,sans-serif;font-size:clamp(1.9rem,3.2vw,2.6rem);line-height:1.12;margin:0 0 16px;letter-spacing:-.03em;font-weight:700;color:#fff}
+  .lg-panel p{color:#cbd5e1;font-size:1.05rem;max-width:470px;margin:0 0 30px;line-height:1.55}
+  .lg-feat{display:grid;grid-template-columns:1fr 1fr;gap:14px;max-width:520px}
+  .lg-feat div{background:rgba(255,255,255,.07);border:1px solid rgba(255,255,255,.12);border-radius:14px;padding:16px}
+  .lg-feat b{display:block;font-size:1.5rem;margin-bottom:2px}.lg-feat span{color:#cbd5e1;font-size:.9rem}
+  .lg-subj{display:flex;gap:10px;margin-top:26px;flex-wrap:wrap}.lg-subj span{padding:7px 14px;border-radius:8px;font-weight:600;font-size:.88rem}
+  @media (max-width:880px){
+    body.login{grid-template-columns:1fr}
+    .lg-form{padding:100px 24px 30px;align-items:center}.lg-foot{position:static;margin-top:26px;text-align:center}
+    .lg-panel{margin:0 14px 14px;padding:34px 26px}
+  }
 </style>
 </head>
-<body>
-<div class="wrap">
-  <div class="hero">
-    <h1><span class="float">🔬</span> Science Lab 1971 <span class="float" style="animation-delay:.6s">🧪</span></h1>
-    <p>Virtual science labs for Biology, Chemistry and Physics — explore, experiment and level up.</p>
-  </div>
-
-  <div class="card login-box">
-    <h2 style="text-align:center">Who are you?</h2>
+<body class="login">
+<main class="lg-form">
+  <a class="lg-logo" href="./"><span class="m">🔬</span>Science Lab 1971</a>
+  <div class="lg-inner">
+    <h1>Welcome back</h1>
+    <p class="lg-sub">Sign in to continue to your virtual labs.</p>
     <div class="roles">
-      <button type="button" class="role active" data-role="student"><span class="ic">🎒</span>Student</button>
-      <button type="button" class="role" data-role="teacher"><span class="ic">🧑‍🏫</span>Teacher</button>
-      <button type="button" class="role" data-role="admin"><span class="ic">👑</span>Admin</button>
+      <button type="button" class="role active" data-role="student">🎒 Student</button>
+      <button type="button" class="role" data-role="teacher">🧑‍🏫 Teacher</button>
+      <button type="button" class="role" data-role="admin">👑 Admin</button>
     </div>
     <form id="login-form" autocomplete="off">
       <label><span id="l1">First name</span><input id="f1" required></label>
       <label><span id="l2">School ID</span><input id="f2" required></label>
-      <p class="muted small" id="hint"></p>
-      <button class="btn green" id="login-btn" type="submit">Enter the Lab 🚀</button>
+      <button class="lg-btn" id="login-btn" type="submit">Enter the Lab →</button>
+      <p class="lg-help" id="hint"></p>
     </form>
   </div>
+  <div class="lg-foot">Built by Mr. Moayed Alkhliefat · Science Teacher · ATS-AQB</div>
+</main>
 
-  <footer>Built by Mr. Moayed Alkhliefat · Science Teacher · ATS-AQB</footer>
-</div>
+<section class="lg-panel">
+  <h2>Virtual science labs<br>for every student.</h2>
+  <p>Explore, experiment and level up in interactive simulations for Biology, Chemistry and Physics — with adaptive tasks and certificates.</p>
+  <div class="lg-feat">
+    <div><b id="lab-count">35</b><span>interactive labs</span></div>
+    <div><b>3 levels</b><span>Explorer · Investigator · Expert</span></div>
+    <div><b id="pass">75%</b><span>to pass each level</span></div>
+    <div><b>🎓</b><span>certificates for every level</span></div>
+  </div>
+  <div class="lg-subj"><span style="background:#dcfce7;color:#166534">🧬 Biology</span><span style="background:#ede9fe;color:#5b21b6">🧪 Chemistry</span><span style="background:#dbeafe;color:#1e40af">🚀 Physics</span></div>
+</section>
 
+<script src="labs/catalog.js"></script>
 <script src="assets/config.js"></script>
 <script src="assets/app.js"></script>
 <script>
@@ -58,11 +90,11 @@
 
 const ROLES = {
   student: { l1: "First name", p1: "e.g. Ahmed", l2: "School ID", p2: "e.g. 10045", t2: "text", mode: "numeric",
-             hint: "Write your first name exactly as your teacher has it, and your School ID.", btn: "Enter the Lab 🚀", cls: "blue" },
+             hint: "Write your first name exactly as your teacher has it, and your School ID. <b>Need help?</b> Ask your teacher.", btn: "Enter the Lab →" },
   teacher: { l1: "Username", p1: "Your teacher username", l2: "Password", p2: "••••••", t2: "password", mode: "text",
-             hint: "Your username and password come from the admin.", btn: "Log in 🔐", cls: "" },
+             hint: "Your username and password come from the admin.", btn: "Log in →" },
   admin:   { l1: "Username", p1: "Admin username", l2: "Password", p2: "••••••", t2: "password", mode: "text",
-             hint: "Admin access only.", btn: "Log in 👑", cls: "pink" }
+             hint: "Admin access only.", btn: "Log in →" }
 };
 let role = "student";
 const f1 = document.getElementById("f1"), f2 = document.getElementById("f2"), btn = document.getElementById("login-btn");
@@ -74,12 +106,15 @@ function setRole(r) {
   f1.placeholder = c.p1; f2.placeholder = c.p2; f2.type = c.t2; f2.inputMode = c.mode;
   f1.autocomplete = r === "student" ? "off" : "username"; f2.autocomplete = r === "student" ? "off" : "current-password";
   f1.value = ""; f2.value = "";
-  document.getElementById("hint").textContent = c.hint;
-  btn.textContent = c.btn; btn.className = "btn " + c.cls;
+  document.getElementById("hint").innerHTML = c.hint;
+  btn.textContent = c.btn;
   f1.focus();
 }
 document.querySelectorAll(".role").forEach(b => b.onclick = () => setRole(b.dataset.role));
 setRole("student");
+// live numbers on the right panel
+try { document.getElementById("lab-count").textContent = (window.S1971_LABS || []).length || 35; } catch (e) {}
+try { document.getElementById("pass").textContent = S1971_CONFIG.PASS_MARK + "%"; } catch (e) {}
 
 document.getElementById("login-form").addEventListener("submit", async e => {
   e.preventDefault();
