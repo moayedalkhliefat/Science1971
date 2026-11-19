@@ -115,6 +115,11 @@ window.S1971_LABS = [
     id: "neuron", title: "Neuron", subject: "Biology", icon: "🧠", color: "linear-gradient(135deg,#ad1457,#ffb74d)", grades: ["all"],
     path: "labs/neuron/index.html", description: "Stimulate a neuron: threshold and action potentials, myelin and impulse speed, toxins, drugs and synapses.",
     levels: [{ n: 1, id: "neuron-l1", name: "Level 1 · Explorer" }, { n: 2, id: "neuron-l2", name: "Level 2 · Investigator" }, { n: 3, id: "neuron-l3", name: "Level 3 · Expert" }]
+  },
+  {
+    id: "gene", title: "Gene Expression", subject: "Biology", icon: "🧬", color: "linear-gradient(135deg,#7e57c2,#e91e63)", grades: ["all"],
+    path: "labs/gene/index.html", description: "Switch genes on, make mRNA and proteins, read codons with the genetic code, and explore mutations.",
+    levels: [{ n: 1, id: "gene-l1", name: "Level 1 · Explorer" }, { n: 2, id: "gene-l2", name: "Level 2 · Investigator" }, { n: 3, id: "gene-l3", name: "Level 3 · Expert" }]
   }
 ];
 
