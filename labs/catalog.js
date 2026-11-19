@@ -145,6 +145,11 @@ window.S1971_LABS = [
     id: "shapes", title: "Molecule Shapes", subject: "Chemistry", icon: "🔷", color: "linear-gradient(135deg,#5c6bc0,#ab47bc)", grades: ["all"],
     path: "labs/shapes/index.html", description: "Add bonding pairs and lone pairs to a central atom and discover molecular shapes and bond angles (VSEPR).",
     levels: [{ n: 1, id: "shapes-l1", name: "Level 1 · Explorer" }, { n: 2, id: "shapes-l2", name: "Level 2 · Investigator" }, { n: 3, id: "shapes-l3", name: "Level 3 · Expert" }]
+  },
+  {
+    id: "isotopes", title: "Isotopes & Atomic Mass", subject: "Chemistry", icon: "⚛️", color: "linear-gradient(135deg,#e53935,#7e57c2)", grades: ["all"],
+    path: "labs/isotopes/index.html", description: "Build isotopes by adding neutrons, check if they are stable, and mix isotopes to find the relative atomic mass.",
+    levels: [{ n: 1, id: "isotopes-l1", name: "Level 1 · Explorer" }, { n: 2, id: "isotopes-l2", name: "Level 2 · Investigator" }, { n: 3, id: "isotopes-l3", name: "Level 3 · Expert" }]
   }
 ];
 
