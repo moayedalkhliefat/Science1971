@@ -200,6 +200,11 @@ window.S1971_LABS = [
     id: "static", title: "Static Electricity", subject: "Physics", icon: "🎈", color: "linear-gradient(135deg,#ffca28,#1e88e5)", grades: ["all"],
     path: "labs/static/index.html", description: "Rub balloons on a sweater, watch electrons move, make balloons stick, attract and repel, and measure the electric force.",
     levels: [{ n: 1, id: "static-l1", name: "Level 1 · Explorer" }, { n: 2, id: "static-l2", name: "Level 2 · Investigator" }, { n: 3, id: "static-l3", name: "Level 3 · Expert" }]
+  },
+  {
+    id: "eforms", title: "Energy Forms & Changes", subject: "Physics", icon: "🔋", color: "linear-gradient(135deg,#fbc02d,#43a047,#1e88e5)", grades: ["all"],
+    path: "labs/eforms/index.html", description: "Build energy chains from the Sun, running water or a cyclist to lamps and heaters, and follow the energy — and the waste.",
+    levels: [{ n: 1, id: "eforms-l1", name: "Level 1 · Explorer" }, { n: 2, id: "eforms-l2", name: "Level 2 · Investigator" }, { n: 3, id: "eforms-l3", name: "Level 3 · Expert" }]
   }
 ];
 
