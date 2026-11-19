@@ -4,8 +4,8 @@
 const E = LabEngine, fmt = E.fmt, choice = E.choice, T = E.svgText;
 const P = s => Math.round(s.N * s.T / (3000 * s.V) * 1000) / 1000; // atm: 100 particles, 300 K, 10 L → 1 atm
 const rnd = seed => () => (seed = (seed * 16807) % 2147483647) / 2147483647;
-function gauge(x, y, p, show) { const a = -210 + Math.min(p, 4) / 4 * 240, rad = a * Math.PI / 180;
-  let ticks = ""; for (let i = 0; i <= 8; i++) { const t = (-210 + i * 30) * Math.PI / 180; ticks += `<line x1="${x + 52 * Math.cos(t)}" y1="${y + 52 * Math.sin(t)}" x2="${x + 62 * Math.cos(t)}" y2="${y + 62 * Math.sin(t)}" stroke="#455a64" stroke-width="${i % 2 ? 2 : 3}"/>${i % 2 ? "" : T(x + 42 * Math.cos(t), y + 42 * Math.sin(t) + 4, i / 2, { s: 11, c: "#455a64" })}`; }
+function gauge(x, y, p, show) { const a = -210 + Math.min(p, 6) / 6 * 240, rad = a * Math.PI / 180;
+  let ticks = ""; for (let i = 0; i <= 12; i++) { const t = (-210 + i * 20) * Math.PI / 180; ticks += `<line x1="${x + 52 * Math.cos(t)}" y1="${y + 52 * Math.sin(t)}" x2="${x + 62 * Math.cos(t)}" y2="${y + 62 * Math.sin(t)}" stroke="#455a64" stroke-width="${i % 2 ? 2 : 3}"/>${i % 2 ? "" : T(x + 42 * Math.cos(t), y + 42 * Math.sin(t) + 4, i / 2, { s: 11, c: "#455a64" })}`; }
   return `<circle cx="${x}" cy="${y}" r="70" fill="#fff" stroke="#37474f" stroke-width="5"/>${ticks}${show ? `<line x1="${x}" y1="${y}" x2="${x + 50 * Math.cos(rad)}" y2="${y + 50 * Math.sin(rad)}" stroke="#c62828" stroke-width="4" stroke-linecap="round"/>` : ""}<circle cx="${x}" cy="${y}" r="6" fill="#37474f"/>${T(x, y + 30, "atm", { s: 11, c: "#78909c" })}${T(x, y + 96, show ? "P = " + fmt(p) + " atm" : "P = ? atm", { s: 17, c: "#c62828" })}`; }
 function render(s) {
   const show = s.reveal || s.showVals, p = P(s), x0 = 60, y0 = 80, h = 270, w = 26 * s.V, R = rnd(13), n = Math.min(90, Math.round(s.N / 2)), sp = Math.sqrt(s.T / 300);
