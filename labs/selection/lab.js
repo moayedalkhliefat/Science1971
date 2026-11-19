@@ -22,7 +22,7 @@ function bunny(x, y, k, sc) {
   const img = k[0] === "w" ? "img/bunny-white.png" : "img/bunny-brown.png";
   return `<g transform="translate(${x},${y}) scale(${sc || 1})"><ellipse cx="0" cy="14" rx="14" ry="3" fill="#000" opacity=".12"/><image href="${img}" x="-18" y="-28" width="36" height="42.4"/>${k[1] === "l" ? `<rect x="12.9" y="-14.6" width="2.6" height="5" rx=".6" fill="#fff" stroke="#616161" stroke-width=".7"/>` : ""}</g>`;
 }
-const wolf = (x, y, f) => `<g transform="translate(${x},${y}) scale(${f},1)"><path d="M-30,0 Q-30,-14 -8,-15 L14,-15 L24,-26 L28,-16 L38,-12 L30,-4 L14,-4 L12,10 L6,10 L4,-2 L-18,-2 L-20,10 L-26,10 L-26,-2 Q-36,-6 -44,-16 Q-34,-4 -30,0 Z" fill="#546e7a" stroke="#37474f" stroke-width="1.5"/><circle cx="27" cy="-17" r="1.6" fill="#ffeb3b"/></g>`;
+const wolf = (x, y, f) => `<g transform="translate(${x},${y}) scale(${f},1)"><ellipse cx="0" cy="11" rx="20" ry="3.5" fill="#000" opacity=".13"/><image href="img/wolf.png" x="-22" y="-50" width="44" height="61.3"/></g>`;
 function scene(s, c, w, h) {
   const arc = s.env === "arctic", R = rnd(11), n = Math.max(0, Math.min(26, Math.round(tot(c) / 4) || (tot(c) > 0.5 ? 1 : 0)));
   let g = arc ? `<rect width="${w}" height="${h}" fill="#e3f2fd"/><path d="M0,${h * 0.38} L${w * 0.2},${h * 0.2} L${w * 0.38},${h * 0.36} L${w * 0.6},${h * 0.16} L${w * 0.82},${h * 0.34} L${w},${h * 0.22} L${w},${h} L0,${h} Z" fill="#cfe3f3"/><rect y="${h * 0.42}" width="${w}" height="${h * 0.58}" fill="#fbfdff"/>`
