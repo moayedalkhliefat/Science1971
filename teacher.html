@@ -64,6 +64,7 @@
       <div class="row between gap">
         <h2>👩‍🎓 Student list</h2>
         <div class="row gap">
+          <select class="inline hidden" id="f-teacher"></select>
           <select class="inline" id="f-grade"></select>
           <select class="inline" id="f-section"></select>
           <input class="inline" id="f-search" placeholder="🔎 Search name or ID">
@@ -79,6 +80,7 @@
       <div class="row between gap">
         <h2>📊 Lab results</h2>
         <div class="row gap">
+          <select class="inline hidden" id="r-teacher"></select>
           <select class="inline" id="r-grade"></select>
           <select class="inline" id="r-section"></select>
           <select class="inline" id="r-lab"></select>
@@ -153,10 +155,17 @@ async function loadStudents() {
   document.getElementById("st-count").textContent = ME.role === "admin" ? STUDENTS.length : `${STUDENTS.length}/30`;
   const classes = new Set(STUDENTS.map(s => `${s.grade || ""}-${s.section || ""}`));
   document.getElementById("st-classes").textContent = STUDENTS.length ? classes.size : 0;
-  fillSelect("f-grade", "All grades", STUDENTS.map(s => s.grade));
-  fillSelect("f-section", "All sections", STUDENTS.map(s => s.section));
+  if (ME.role === "admin") { fillSelect("f-teacher", "All teachers", STUDENTS.map(s => s.teacher_name)); document.getElementById("f-teacher").classList.remove("hidden"); }
+  fillStudentClasses();
   renderStudents();
 }
+// admin: the grade / section lists only show the chosen teacher's classes
+function fillStudentClasses() {
+  const tc = document.getElementById("f-teacher").value, list = STUDENTS.filter(x => !tc || x.teacher_name === tc);
+  fillSelect("f-grade", "All grades", list.map(s => s.grade));
+  fillSelect("f-section", "All sections", list.map(s => s.section));
+}
+document.getElementById("f-teacher").addEventListener("input", () => { fillStudentClasses(); renderStudents(); });
 function fillSelect(id, label, values) {
   const el = document.getElementById(id), cur = el.value;
   const vals = [...new Set(values.filter(v => v != null && v !== ""))].sort((a, b) => String(a).localeCompare(String(b), undefined, { numeric: true }));
@@ -165,8 +174,8 @@ function fillSelect(id, label, values) {
 }
 ["f-grade", "f-section", "f-search"].forEach(id => document.getElementById(id).addEventListener("input", renderStudents));
 function renderStudents() {
-  const g = document.getElementById("f-grade").value, s = document.getElementById("f-section").value, q = document.getElementById("f-search").value.trim().toLowerCase();
-  const list = STUDENTS.filter(x => (!g || x.grade === g) && (!s || x.section === s) && (!q || x.full_name.toLowerCase().includes(q) || x.school_id.toLowerCase().includes(q)));
+  const g = document.getElementById("f-grade").value, s = document.getElementById("f-section").value, q = document.getElementById("f-search").value.trim().toLowerCase(), tc = document.getElementById("f-teacher").value;
+  const list = STUDENTS.filter(x => (!tc || x.teacher_name === tc) && (!g || x.grade === g) && (!s || x.section === s) && (!q || x.full_name.toLowerCase().includes(q) || x.school_id.toLowerCase().includes(q)));
   const t = document.getElementById("students-table");
   if (!STUDENTS.length) { t.innerHTML = `<tr><td class="empty">No students yet — upload your Excel sheet above 👆</td></tr>`; return; }
   t.innerHTML = `<tr><th>#</th><th>Name</th><th>Logs in with</th><th>School ID</th><th>Grade</th><th>Section</th>${ME.role === "admin" ? "<th>Teacher</th>" : ""}<th></th></tr>` +
@@ -262,8 +271,8 @@ function labTitle(id) {
 async function loadResults() {
   try { RESULTS = await rpc("teacher_results", { p_token: ME.token }); } catch (e) { return toast(e.message, "bad"); }
   document.getElementById("st-results").textContent = RESULTS.length;
-  fillSelect("r-grade", "All grades", RESULTS.map(r => r.grade));
-  fillSelect("r-section", "All sections", RESULTS.map(r => r.section));
+  if (ME.role === "admin") { fillSelect("r-teacher", "All teachers", RESULTS.map(r => r.teacher_name)); document.getElementById("r-teacher").classList.remove("hidden"); }
+  fillResultClasses();
   const el = document.getElementById("r-lab"), cur = el.value;
   const labs = [...new Set(RESULTS.map(r => r.lab_id))];
   el.innerHTML = `<option value="">All labs</option>` + labs.map(id => `<option value="${esc(id)}">${esc(labTitle(id))}</option>`).join("");
@@ -271,10 +280,17 @@ async function loadResults() {
   renderResults();
 }
 ["r-grade", "r-section", "r-lab", "r-search"].forEach(id => document.getElementById(id).addEventListener("input", renderResults));
+// admin: the grade / section lists only show the chosen teacher's classes
+function fillResultClasses() {
+  const tc = document.getElementById("r-teacher").value, list = RESULTS.filter(r => !tc || r.teacher_name === tc);
+  fillSelect("r-grade", "All grades", list.map(r => r.grade));
+  fillSelect("r-section", "All sections", list.map(r => r.section));
+}
+document.getElementById("r-teacher").addEventListener("input", () => { fillResultClasses(); renderResults(); });
 document.getElementById("r-refresh").onclick = loadResults;
 function filteredResults() {
-  const g = document.getElementById("r-grade").value, s = document.getElementById("r-section").value, l = document.getElementById("r-lab").value, q = document.getElementById("r-search").value.trim().toLowerCase();
-  return RESULTS.filter(r => (!g || r.grade === g) && (!s || r.section === s) && (!l || r.lab_id === l) && (!q || r.full_name.toLowerCase().includes(q) || r.school_id.toLowerCase().includes(q)));
+  const g = document.getElementById("r-grade").value, s = document.getElementById("r-section").value, l = document.getElementById("r-lab").value, q = document.getElementById("r-search").value.trim().toLowerCase(), tc = document.getElementById("r-teacher").value;
+  return RESULTS.filter(r => (!tc || r.teacher_name === tc) && (!g || r.grade === g) && (!s || r.section === s) && (!l || r.lab_id === l) && (!q || r.full_name.toLowerCase().includes(q) || r.school_id.toLowerCase().includes(q)));
 }
 function pct(r) { return Math.round(100 * r.score / r.max_score); }
 function tTxt(r) { const t = r.details && r.details.time_s; return t ? `${String(Math.floor(t / 60)).padStart(2, "0")}:${String(t % 60).padStart(2, "0")}` : "—"; }
