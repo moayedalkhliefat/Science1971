@@ -125,6 +125,11 @@ window.S1971_LABS = [
     id: "vision", title: "Color Vision", subject: "Biology", icon: "👁️", color: "linear-gradient(135deg,#f44336,#4caf50,#2196f3)", grades: ["all"],
     path: "labs/vision/index.html", description: "Mix red, green and blue light, use filters and coloured lights on objects, and learn how the eye sees colour.",
     levels: [{ n: 1, id: "vision-l1", name: "Level 1 · Explorer" }, { n: 2, id: "vision-l2", name: "Level 2 · Investigator" }, { n: 3, id: "vision-l3", name: "Level 3 · Expert" }]
+  },
+  {
+    id: "eating", title: "Eating & Exercise", subject: "Biology", icon: "🍽️", color: "linear-gradient(135deg,#ffb74d,#4db6ac)", grades: ["all"],
+    path: "labs/eating/index.html", description: "Balance the energy you take in from food with the energy your body and activities use, and learn where food energy comes from.",
+    levels: [{ n: 1, id: "eating-l1", name: "Level 1 · Explorer" }, { n: 2, id: "eating-l2", name: "Level 2 · Investigator" }, { n: 3, id: "eating-l3", name: "Level 3 · Expert" }]
   }
 ];
 
