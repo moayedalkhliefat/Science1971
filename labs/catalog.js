@@ -185,6 +185,11 @@ window.S1971_LABS = [
     id: "light", title: "Bending Light", subject: "Physics", icon: "🔦", color: "linear-gradient(135deg,#e53935,#29b6f6)", grades: ["all"],
     path: "labs/light/index.html", description: "Shine a laser into water, glass and diamond: refraction, Snell's law, the critical angle and total internal reflection.",
     levels: [{ n: 1, id: "light-l1", name: "Level 1 · Explorer" }, { n: 2, id: "light-l2", name: "Level 2 · Investigator" }, { n: 3, id: "light-l3", name: "Level 3 · Expert" }]
+  },
+  {
+    id: "orbits", title: "Gravity & Orbits", subject: "Physics", icon: "🪐", color: "linear-gradient(135deg,#0b1426,#ffb300)", grades: ["all"],
+    path: "labs/orbits/index.html", description: "Launch planets around stars: find circular orbits, crashes and escapes, the length of a year and the gravity force.",
+    levels: [{ n: 1, id: "orbits-l1", name: "Level 1 · Explorer" }, { n: 2, id: "orbits-l2", name: "Level 2 · Investigator" }, { n: 3, id: "orbits-l3", name: "Level 3 · Expert" }]
   }
 ];
 
