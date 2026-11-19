@@ -135,6 +135,11 @@ window.S1971_LABS = [
     id: "molarity", title: "Concentration & Molarity", subject: "Chemistry", icon: "🧪", color: "linear-gradient(135deg,#1e6edc,#7e57c2)", grades: ["all"],
     path: "labs/molarity/index.html", description: "Dissolve solutes, change the volume and dilute stock solutions to reach exact concentrations in mol/L.",
     levels: [{ n: 1, id: "molarity-l1", name: "Level 1 · Explorer" }, { n: 2, id: "molarity-l2", name: "Level 2 · Investigator" }, { n: 3, id: "molarity-l3", name: "Level 3 · Expert" }]
+  },
+  {
+    id: "gas", title: "Gas Properties", subject: "Chemistry", icon: "🎈", color: "linear-gradient(135deg,#5c6bc0,#ef5350)", grades: ["all"],
+    path: "labs/gas/index.html", description: "Pump gas particles into a container, heat it and move the wall — discover how pressure, volume and temperature are linked.",
+    levels: [{ n: 1, id: "gas-l1", name: "Level 1 · Explorer" }, { n: 2, id: "gas-l2", name: "Level 2 · Investigator" }, { n: 3, id: "gas-l3", name: "Level 3 · Expert" }]
   }
 ];
 
