@@ -120,6 +120,11 @@ window.S1971_LABS = [
     id: "gene", title: "Gene Expression", subject: "Biology", icon: "🧬", color: "linear-gradient(135deg,#7e57c2,#e91e63)", grades: ["all"],
     path: "labs/gene/index.html", description: "Switch genes on, make mRNA and proteins, read codons with the genetic code, and explore mutations.",
     levels: [{ n: 1, id: "gene-l1", name: "Level 1 · Explorer" }, { n: 2, id: "gene-l2", name: "Level 2 · Investigator" }, { n: 3, id: "gene-l3", name: "Level 3 · Expert" }]
+  },
+  {
+    id: "vision", title: "Color Vision", subject: "Biology", icon: "👁️", color: "linear-gradient(135deg,#f44336,#4caf50,#2196f3)", grades: ["all"],
+    path: "labs/vision/index.html", description: "Mix red, green and blue light, use filters and coloured lights on objects, and learn how the eye sees colour.",
+    levels: [{ n: 1, id: "vision-l1", name: "Level 1 · Explorer" }, { n: 2, id: "vision-l2", name: "Level 2 · Investigator" }, { n: 3, id: "vision-l3", name: "Level 3 · Expert" }]
   }
 ];
 
