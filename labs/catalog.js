@@ -65,6 +65,11 @@ window.S1971_LABS = [
     id: "forces", title: "Forces & Motion", subject: "Physics", icon: "📦", color: "linear-gradient(135deg,#8d6e63,#0b5cab)", grades: ["all"],
     path: "labs/forces/index.html", description: "Push a crate with two forces, change its mass and the friction, and discover Newton's laws of motion.",
     levels: [{ n: 1, id: "forces-l1", name: "Level 1 · Explorer" }, { n: 2, id: "forces-l2", name: "Level 2 · Investigator" }, { n: 3, id: "forces-l3", name: "Level 3 · Expert" }]
+  },
+  {
+    id: "states", title: "States of Matter", subject: "Chemistry", icon: "🧊", color: "linear-gradient(135deg,#6d4aff,#00b8d9)", grades: ["all"],
+    path: "labs/states/index.html", description: "Heat and cool water and other substances, watch the particles move, and find melting and boiling points (°C and K).",
+    levels: [{ n: 1, id: "states-l1", name: "Level 1 · Explorer" }, { n: 2, id: "states-l2", name: "Level 2 · Investigator" }, { n: 3, id: "states-l3", name: "Level 3 · Expert" }]
   }
 ];
 

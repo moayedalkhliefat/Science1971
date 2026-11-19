@@ -11,8 +11,10 @@
   function ctlHtml(c, v, dis) {
     const d = dis ? "disabled" : "";
     const show = c.fmt ? c.fmt(v) : v;
-    if (c.type === "range") return `<label class="sl" style="margin:0">${c.label}: <b><span id="v-${c.id}">${show}</span> ${c.unit || ""}</b>
-      <input type="range" data-c="${c.id}" min="${c.min}" max="${c.max}" step="${c.step || 1}" value="${v}" ${d}></label>`;
+    if (c.type === "range") { const inp = `<input type="range" data-c="${c.id}" min="${c.min}" max="${c.max}" step="${c.step || 1}" value="${v}" ${d}>`, nl = c.nudgeLabels || ["−", "+"];
+      const tag = c.nudge ? "div" : "label";
+      return `<${tag} class="sl" style="margin:0">${c.label}: <b><span id="v-${c.id}">${show}</span> ${c.unit || ""}</b>
+      ${c.nudge ? `<span class="nudge"><button type="button" data-c="${c.id}" data-d="-1" ${d}>${nl[0]}</button>${inp}<button type="button" data-c="${c.id}" data-d="1" ${d}>${nl[1]}</button></span>` : inp}</${tag}>`; }
     if (c.type === "step") return `<div class="stepper"><span>${c.label}</span><div><button type="button" data-c="${c.id}" data-d="-1" ${d}>−</button><b id="v-${c.id}">${show}</b><button type="button" data-c="${c.id}" data-d="1" ${d}>+</button></div></div>`;
     if (c.type === "choice") return `<div class="choice"><span>${c.label}</span><div class="seg">${c.options.map(o => `<button type="button" data-c="${c.id}" data-v="${esc(String(o.v))}" class="${String(o.v) === String(v) ? "sel" : ""}" ${d}>${o.label}</button>`).join("")}</div></div>`;
     if (c.type === "toggle") return `<label class="switch-row tg"><span>${c.label}</span><input type="checkbox" class="sw" data-c="${c.id}" ${v ? "checked" : ""} ${d}></label>`;
@@ -34,7 +36,7 @@
         draw();
       });
       ctl.querySelectorAll("button[data-d]").forEach(b => b.onclick = () => {
-        const c = find(b.dataset.c); const step = c.step || 1;
+        const c = find(b.dataset.c); const step = c.nudge || c.step || 1;
         st[c.id] = Math.max(c.min != null ? c.min : 0, Math.min(c.max != null ? c.max : 99, Math.round((st[c.id] + step * (+b.dataset.d)) * 1000) / 1000));
         drawCtl(); draw();
       });

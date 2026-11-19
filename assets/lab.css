@@ -191,3 +191,8 @@ body.theme-eco .bar i{background:linear-gradient(90deg,#43a047,#c0ca33)}
 body.theme-eco .card{border-top:6px solid #43a047}
 body.theme-eco .goal{background:linear-gradient(135deg,#1b5e20,#33691e);border-left:8px solid #c0ca33}
 body.theme-eco footer{color:#e8f5e9}
+
+.nudge{display:flex;align-items:center;gap:8px;margin-top:4px}
+.nudge input[type=range]{flex:1;min-width:0}
+.nudge button{flex:none;min-width:44px;height:36px;padding:0 8px;border-radius:10px;border:2px solid #d8d2ff;background:#fff;font-size:.95rem;font-weight:900;cursor:pointer;color:#1f2a44}
+.nudge button:disabled{opacity:.45;cursor:default}
