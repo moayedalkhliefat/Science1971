@@ -170,6 +170,11 @@ window.S1971_LABS = [
     id: "springs", title: "Masses & Springs", subject: "Physics", icon: "🔩", color: "linear-gradient(135deg,#546e7a,#1e88e5)", grades: ["all"],
     path: "labs/springs/index.html", description: "Hang masses on springs, discover Hooke's law, find mystery spring constants, the elastic limit and stored energy.",
     levels: [{ n: 1, id: "springs-l1", name: "Level 1 · Explorer" }, { n: 2, id: "springs-l2", name: "Level 2 · Investigator" }, { n: 3, id: "springs-l3", name: "Level 3 · Expert" }]
+  },
+  {
+    id: "balance2", title: "Balancing Act", subject: "Physics", icon: "⚖️", color: "linear-gradient(135deg,#6d4c41,#1565c0)", grades: ["all"],
+    path: "labs/balance2/index.html", description: "Place bricks on a seesaw and use moments (mass × distance) to balance it and find mystery masses.",
+    levels: [{ n: 1, id: "balance2-l1", name: "Level 1 · Explorer" }, { n: 2, id: "balance2-l2", name: "Level 2 · Investigator" }, { n: 3, id: "balance2-l3", name: "Level 3 · Expert" }]
   }
 ];
 
