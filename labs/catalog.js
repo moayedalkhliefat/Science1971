@@ -80,6 +80,11 @@ window.S1971_LABS = [
     id: "ph", title: "pH Scale", subject: "Chemistry", icon: "🧪", color: "linear-gradient(135deg,#e53935,#fbc02d,#43a047,#1e3a8a,#6a1b9a)", grades: ["all"],
     path: "labs/ph/index.html", description: "Test everyday liquids with a pH meter and universal indicator, dilute acids and bases, and explore [H⁺].",
     levels: [{ n: 1, id: "ph-l1", name: "Level 1 · Explorer" }, { n: 2, id: "ph-l2", name: "Level 2 · Investigator" }, { n: 3, id: "ph-l3", name: "Level 3 · Expert" }]
+  },
+  {
+    id: "molecule", title: "Build a Molecule", subject: "Chemistry", icon: "⚛️", color: "linear-gradient(135deg,#424242,#e53935,#1e88e5)", grades: ["all"],
+    path: "labs/molecule/index.html", description: "Use an atom kit to build molecules — every atom must use all its bonds. Discover single, double and triple bonds.",
+    levels: [{ n: 1, id: "molecule-l1", name: "Level 1 · Explorer" }, { n: 2, id: "molecule-l2", name: "Level 2 · Investigator" }, { n: 3, id: "molecule-l3", name: "Level 3 · Expert" }]
   }
 ];
 
