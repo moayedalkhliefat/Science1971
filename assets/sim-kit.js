@@ -17,6 +17,7 @@
       ${c.nudge ? `<span class="nudge"><button type="button" data-c="${c.id}" data-d="-1" ${d}>${nl[0]}</button>${inp}<button type="button" data-c="${c.id}" data-d="1" ${d}>${nl[1]}</button></span>` : inp}</${tag}>`; }
     if (c.type === "step") return `<div class="stepper"><span>${c.label}</span><div><button type="button" data-c="${c.id}" data-d="-1" ${d}>−</button><b id="v-${c.id}">${show}</b><button type="button" data-c="${c.id}" data-d="1" ${d}>+</button></div></div>`;
     if (c.type === "choice") return `<div class="choice${c.wide ? " wide" : ""}"><span>${c.label}</span><div class="seg">${c.options.map(o => `<button type="button" data-c="${c.id}" data-v="${esc(String(o.v))}" class="${String(o.v) === String(v) ? "sel" : ""}" ${d}>${o.label}</button>`).join("")}</div></div>`;
+    if (c.type === "select") return `<label class="selc"><span>${c.label}</span><select data-c="${c.id}" ${d}>${c.options.map(o => `<option value="${esc(String(o.v))}" ${String(o.v) === String(v) ? "selected" : ""}>${esc(o.label)}</option>`).join("")}</select></label>`;
     if (c.type === "toggle") return `<label class="switch-row tg"><span>${c.label}</span><input type="checkbox" class="sw" data-c="${c.id}" ${v ? "checked" : ""} ${d}></label>`;
     return "";
   }
@@ -44,6 +45,7 @@
         const c = find(b.dataset.c), o = c.options.find(o => String(o.v) === b.dataset.v);
         st[c.id] = o.v; drawCtl(); draw();
       });
+      ctl.querySelectorAll("select[data-c]").forEach(el => el.onchange = () => { const c = find(el.dataset.c), o = c.options.find(o => String(o.v) === el.value); st[c.id] = o.v; drawCtl(); draw(); });
       ctl.querySelectorAll("input.sw[data-c]").forEach(b => b.onchange = () => { st[b.dataset.c] = b.checked; drawCtl(); draw(); });
     };
     drawCtl(); draw();

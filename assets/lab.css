@@ -199,3 +199,84 @@ body.theme-eco footer{color:#e8f5e9}
 .controls .choice.wide{grid-column:1/-1}
 .controls .choice.wide .seg{flex-wrap:wrap}
 .controls .switch-row.tg{align-self:start}
+
+/* ================= STUDENT BOX (top of the task column) ================= */
+.tg-task > .sbar.box{position:static;display:grid;grid-template-columns:minmax(0,1fr) auto;grid-template-areas:"who time" "lab trk" "task stats" "score score" "list list";
+  gap:3px 12px;padding:7px 12px;margin:0 0 8px;border-radius:12px;box-shadow:none;border:1px solid #e2e8f0;background:#fff;font-size:.86rem;line-height:1.25}
+.sbar.box small{display:inline;font-size:.66rem;margin-right:4px}
+.sbar.box .sb-who{grid-area:who;display:block;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.sbar.box .sb-lab{grid-area:lab;display:block;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.sbar.box .sb-who span,.sbar.box .sb-lab span{display:inline;margin-left:6px;font-size:.8rem}
+.sbar.box .sb-time{grid-area:time;justify-self:end;white-space:nowrap}.sbar.box .sb-time b{font-size:1.05rem}
+.sbar.box .sb-trk{grid-area:trk;justify-self:end;align-self:center;padding:2px 9px;font-size:.78rem}
+.sbar.box .sb-task{grid-area:task;display:flex;align-items:center;gap:6px;white-space:nowrap}.sbar.box .sb-task .dots{margin:0}
+.sbar.box .dot{width:10px;height:10px}
+.sb-stats{display:flex;gap:14px;align-items:center}
+.sbar.box .sb-stats{grid-area:stats;justify-self:end;gap:10px;white-space:nowrap}
+.sbar.box .sb-diff span{font-size:.95rem}
+.sbar.box .sb-score{grid-area:score;min-width:0;flex:none;display:grid;grid-template-columns:auto 1fr;grid-template-areas:"lbl need" "m m";column-gap:8px}
+.sbar.box .sb-score > small:first-child{grid-area:lbl}.sbar.box .sb-score .need{grid-area:need;justify-self:end}.sbar.box .meter{grid-area:m;height:9px;margin:3px 0 1px}
+.sbar.box .sb-list{grid-area:list;max-height:170px}
+
+/* ================= FIT THE WHOLE LAB IN ONE SCREEN (100% zoom) ================= */
+@media (min-width:900px) and (min-height:560px){
+  body.lab-fit{overflow:hidden}
+  body.lab-fit .wrap{height:100vh;display:flex;flex-direction:column;gap:8px;padding:8px clamp(8px,1.2vw,20px);box-sizing:border-box}
+  body.lab-fit .wrap > *{margin:0;flex:none}
+  body.lab-fit .topbar{padding:5px 14px;border-bottom-width:3px}
+  body.lab-fit .brand{font-size:1.25rem}.lab-fit .brand .logo{width:32px;height:32px;font-size:1.05rem;border-radius:10px}
+  body.lab-fit .banner{padding:5px 12px;font-size:.88rem}
+  body.lab-fit footer{font-size:.72rem;margin:0;padding:0;line-height:1.2}
+  body.lab-fit #stage{flex:1 1 auto;min-height:0;overflow:auto;padding:8px 12px}
+  body.lab-fit #stage:has(> .task-grid){overflow:hidden}
+  body.lab-fit .task-grid{height:100%;align-items:stretch;gap:14px}
+  body.lab-fit .tg-vis{position:static;height:100%;min-height:0;overflow:auto;gap:8px}
+  body.lab-fit .tg-vis > .scene,body.lab-fit .tg-vis > .diagram,body.lab-fit .tg-vis > .atom-box{flex:1 1 0;min-height:150px;display:flex;align-items:center;justify-content:center;overflow:hidden}
+  body.lab-fit .tg-vis > .scene > svg:only-child,body.lab-fit .tg-vis > .diagram > svg:only-child,body.lab-fit .tg-vis > .atom-box > svg{width:100%;height:100%;max-height:none;max-width:100%}
+  body.lab-fit .tg-vis > .controls,body.lab-fit .tg-vis > .instruments{flex:none}
+  body.lab-fit .tg-vis > div:has(> .atom-box){flex:1 1 0;min-height:0;display:flex;flex-direction:column;gap:6px}
+  body.lab-fit .tg-vis > div > .atom-box{flex:1 1 0;min-height:150px;display:flex;align-items:center;justify-content:center;overflow:hidden}
+  body.lab-fit .tg-vis > div > .atom-box > svg{width:100%;height:100%}
+  body.lab-fit .tg-vis > div > p{margin:0}
+  body.lab-fit .tg-task{height:100%;min-height:0;overflow:auto;box-sizing:border-box;padding:8px 12px}
+  body.lab-fit .controls{gap:8px 12px;padding:8px 10px}
+  body.lab-fit .choice .seg button{padding:4px 9px;font-size:.88rem}
+  body.lab-fit .stepper button{width:32px;height:32px}
+  body.lab-fit .tg-task h2{font-size:1.2rem;margin:2px 0}
+  body.lab-fit .tg-task .qhead{margin-bottom:2px}
+  body.lab-fit .tg-task .actions{margin-top:8px}
+  body.lab-fit .tg-task .prompt{font-size:1rem}
+  body.lab-fit .tg-task .goal{padding:8px 12px;margin-bottom:8px}
+  body.lab-fit .tg-task .hint{margin:4px 0}
+  body.lab-fit .chips{padding:6px;gap:6px;min-height:36px;margin-bottom:8px}
+  body.lab-fit .chip{padding:5px 10px;font-size:.88rem}
+  body.lab-fit .slots{gap:6px}
+  body.lab-fit .slot .left{padding:5px 10px}
+  body.lab-fit .target{min-height:34px;padding:4px 10px}
+  /* Build an Atom: compact particle cards and counters */
+  body.lab-fit .palette{gap:6px;margin-bottom:8px}
+  body.lab-fit .pal{display:flex;align-items:center;justify-content:center;flex-wrap:wrap;gap:2px 8px;padding:5px 6px;border-width:2px}
+  body.lab-fit .pal .ball{width:30px;height:30px;margin:0;font-size:1rem}
+  body.lab-fit .pal .ball.e{width:24px;height:24px}
+  body.lab-fit .pal .cnt{margin:0}
+  body.lab-fit .readout{gap:6px;margin-bottom:8px}
+  body.lab-fit .ro{padding:4px 8px}
+  body.lab-fit .ro b{font-size:1.15rem}
+  body.lab-fit .tile{width:96px;height:104px;padding:5px 7px}
+  body.lab-fit .tile *{line-height:1.1}
+  body.lab-fit .readout{grid-template-columns:repeat(auto-fit,minmax(72px,1fr))}
+  body.lab-fit .target-card{display:flex;align-items:center;gap:12px;padding:8px!important}
+  body.lab-fit .gopts{grid-template-columns:repeat(3,1fr);gap:8px}
+  body.lab-fit .opts{gap:6px}
+  body.lab-fit .opt{padding:8px 12px;font-size:.95rem}
+  body.lab-fit .step-box{padding:8px 12px;margin-bottom:8px}
+  body.lab-fit .numans{margin:4px 0}
+  body.lab-fit .numans input{padding:6px 10px;font-size:1.05rem}
+  body.lab-fit .ptable{gap:3px}
+  body.lab-fit .pt{padding:1px 0;border-radius:8px}
+  body.lab-fit .pt b{font-size:.95rem}
+  body.lab-fit .pt small{font-size:.58rem}
+}
+.selc{display:flex;flex-direction:column;gap:4px;font-weight:800}
+.selc select{font:inherit;font-weight:700;border:2px solid #d8d2ff;border-radius:10px;padding:6px 8px;background:#fff;cursor:pointer}
+.selc select:disabled{opacity:.55;cursor:not-allowed}

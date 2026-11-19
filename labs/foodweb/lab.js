@@ -68,7 +68,7 @@ function renderPyr(s) {
 const render = s => s.mode === "chain" ? renderChain(s) : s.mode === "web" ? renderWeb(s) : renderPyr(s);
 const orgOpts = (none) => (none ? [{ v: "none", label: "—" }] : []).concat(KEYS.map(k => ({ v: k, label: ORG[k].i + " " + ORG[k].n })));
 const ctlsFor = (mode, lock) => { const lk = k => lock && lock.includes(k) ? () => true : null;
-  if (mode === "chain") return [0, 1, 2, 3, 4].map(i => ({ id: "p" + i, type: "choice", label: "Position " + (i + 1) + (i === 0 ? " (start)" : ""), options: orgOpts(i > 0), wide: true, lock: lk("p" + i) }));
+  if (mode === "chain") return [0, 1, 2, 3, 4].map(i => ({ id: "p" + i, type: "select", label: "Box " + (i + 1) + (i === 0 ? " (start)" : ""), options: orgOpts(i > 0), lock: lk("p" + i) }));
   if (mode === "web") return [{ id: "rem", type: "choice", label: "Remove one species (disease, hunting…)", options: [{ v: "none", label: "Nothing" }].concat(ANIMALS.map(k => ({ v: k, label: ORG[k].i + " " + ORG[k].n }))), wide: true, lock: lk("rem") }];
   return [{ id: "E0", type: "range", label: "Energy captured by grass", min: 1000, max: 100000, step: 1000, nudge: 1000, unit: "kJ", fmt: v => fmt(v), lock: lk("E0") },
     { id: "levels", type: "step", label: "Number of levels", min: 2, max: 5, lock: lk("levels") },

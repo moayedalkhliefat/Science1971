@@ -342,7 +342,7 @@ function numBox(id, label, unit, state, val) {
   return `<div class="numans ${state || ""}"><label style="margin:0;min-width:150px">${label}</label><input id="${id}" autocomplete="off" value="${val != null ? esc(val) : ""}" ${state ? "disabled" : ""}><span class="unit">${unit || ""}</span></div>`;
 }
 function targetCard(q) {
-  if (q.kind === "goal") return `<div class="goal"><small>🎯 YOUR GOAL</small>${q.goalText}</div><p class="hint">Use the periodic table if you need it: <span style="display:inline-block;vertical-align:top;margin-top:6px">${ptable({}, false)}</span></p>`;
+  if (q.kind === "goal") return `<div class="goal"><small>🎯 YOUR GOAL</small>${q.goalText}</div><details class="hint ptab"><summary style="cursor:pointer;font-weight:800">📖 Open the periodic table (if you need it)</summary><span style="display:inline-block;vertical-align:top;margin-top:6px">${ptable({}, false)}</span></details>`;
   if (q.kind === "zA") return `<div class="target-card"><div class="sign"><small>ATOMIC NUMBER</small>${q.z}</div><div class="sign"><small>MASS NUMBER</small>${q.A}</div><span class="hint">Use the periodic table if you need it.</span></div>`;
   if (q.kind === "iso" || q.kind === "isoion") return `<div class="target-card">${nuclide(q.z, q.A, q.q)}<span class="hint">top number = mass number · bottom number = atomic number${q.q ? " · top right = charge" : ""}</span></div>`;
   return `<div class="target-card">${tile(q.z, q.A, q.q)}<span class="hint">The small number is the <b>atomic number</b>.${q.q ? " The sign shows the ion's <b>charge</b>." : ""}</span></div>`;

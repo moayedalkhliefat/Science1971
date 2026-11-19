@@ -18,6 +18,7 @@
   E.start = async function (cfg) {
     E.C = cfg; E.TOTAL = cfg.total || 12;
     E.stage = document.getElementById("stage");
+    document.body.classList.add("lab-fit");
     try { await S1971Lab.init(cfg.labId); }
     catch (e) { E.stage.innerHTML = `<div class="empty">${esc(e.message)}</div>`; return; }
     document.getElementById("lvl-pill").textContent = S1971Lab.levelInfo.name;
@@ -28,6 +29,8 @@
     if (S1971Lab.mode === "guest") ban.innerHTML = `<div class="banner guest">⚠️ You are not logged in — your score will NOT be saved. <a href="${S1971.root()}index.html">Log in here</a></div>`;
     if (cfg.calculator) addCalculator();
     new MutationObserver(() => layout()).observe(E.stage, { childList: true });
+    new MutationObserver(() => { if (!E._fitQ) E._fitQ = requestAnimationFrame(() => { E._fitQ = 0; fitTask(); }); }).observe(E.stage, { childList: true, subtree: true });
+    window.addEventListener("resize", () => { const g = E.stage.querySelector(".task-grid"); if (g) { g._fit = 0; g.style.gridTemplateColumns = ""; } fitTask(); });
     showIntro();
   };
 
@@ -210,8 +213,9 @@
   }
   function updateBar() {
     const G = E.G; if (!G) return;
-    let bar = document.getElementById("sbar");
-    if (!bar) { bar = document.createElement("div"); bar.id = "sbar"; bar.className = "sbar"; const w = document.querySelector(".wrap"); w.insertBefore(bar, w.children[1]); }
+    let bar = E._bar;
+    if (!bar) { bar = E._bar = document.createElement("div"); bar.id = "sbar"; bar.className = "sbar"; }
+    placeBar();
     const done = G.answers.length, cur = Math.min(G.qn, E.TOTAL);
     let streak = 0; for (let i = G.answers.length - 1; i >= 0 && G.answers[i].points >= 0.999; i--) streak++;
     const passPts = E.TOTAL * PASS / 100, pct = 100 * G.score / E.TOTAL;
@@ -224,25 +228,32 @@
       <div class="sb-task"><small>TASK</small><b>${cur} / ${E.TOTAL}</b><div class="dots">${dots}</div></div>
       <div class="sb-score"><small>SCORE ${fmt(G.score)} / ${E.TOTAL} · ${Math.round(pct)}%</small><div class="meter"><i style="width:${Math.min(100, pct)}%" class="${pct >= PASS ? "pass" : ""}"></i><span class="line" style="left:${PASS}%"></span></div>
         <small class="need">${G.score >= passPts ? "✅ Pass mark reached!" : `Need ${fmt(passPts)} points (${PASS}%) to pass`}</small></div>
-      <div class="sb-diff"><small>DIFFICULTY</small><b>${[1, 2, 3].map(i => `<span class="${i <= G.diff ? "on" : ""}">★</span>`).join("")}</b></div>
-      <div class="sb-streak"><small>STREAK</small><b>🔥 ${streak}</b></div>
+      <div class="sb-stats"><div class="sb-diff"><small>DIFFICULTY</small><b>${[1, 2, 3].map(i => `<span class="${i <= G.diff ? "on" : ""}">★</span>`).join("")}</b></div>
+      <div class="sb-streak"><small>STREAK</small><b>🔥 ${streak}</b></div></div>
       <div class="sb-time"><small>TIME</small><b id="sb-time">${mmss(secs)}</b></div>
       <button class="sb-trk" type="button">📋 Tracker</button>
       <div class="sb-list ${open ? "" : "hidden"}">${done ? `<table><tr><th>#</th><th>Task</th><th>Level</th><th>Points</th><th></th></tr>${G.answers.map((a, i) => `<tr><td>${i + 1}</td><td>${esc(a.task)}</td><td>${"★".repeat(a.difficulty)}</td><td>${fmt(a.points)}</td><td>${a.points >= 0.999 ? "✅" : a.points > 0 ? "🟡" : "❌"}</td></tr>`).join("")}</table>` : `<p class="hint">Your finished tasks will appear here.</p>`}</div>`;
     bar.querySelector(".sb-trk").onclick = () => bar.querySelector(".sb-list").classList.toggle("hidden");
   }
   E.updateBar = updateBar;
+  // the student box sits at the top of the task column; on screens without a task column it is a strip above the stage
+  function placeBar() {
+    const bar = E._bar; if (!bar) return;
+    const task = E.stage && E.stage.querySelector(":scope > .task-grid > .tg-task");
+    if (task) { bar.classList.add("box"); if (task.firstElementChild !== bar) task.insertBefore(bar, task.firstChild); }
+    else { bar.classList.remove("box"); const w = E.stage.parentNode; if (bar.parentNode !== w || bar.nextElementSibling !== E.stage) w.insertBefore(bar, E.stage); }
+  }
 
   // ---------- two-column layout: simulation/picture LEFT, question + task RIGHT ----------
   const VIS = ".scene,.diagram,.atom-box,.mini-atoms,.instruments,.controls";
   function layout() {
     const st = E.stage; if (!st || st._busy) return;
     const grid = st.querySelector(":scope > .task-grid");
-    if (grid) { [...st.children].forEach(c => { if (c !== grid) grid.querySelector(".tg-task").appendChild(c); }); return; }
+    if (grid) { [...st.children].forEach(c => { if (c !== grid) grid.querySelector(".tg-task").appendChild(c); }); placeBar(); return; }
     const flat = [];
     [...st.children].forEach(n => { if (n.classList.contains("split") || n.classList.contains("atom-wrap")) flat.push(...n.children); else flat.push(n); });
     const isVis = n => n.matches(VIS) || (!!n.querySelector(".atom-box,.diagram") && !n.querySelector(".palette,.tray,.chips"));
-    if (!flat.some(isVis)) return;
+    if (!flat.some(isVis)) { placeBar(); return; }
     st._busy = true;
     const g = document.createElement("div"); g.className = "task-grid";
     const L = document.createElement("div"); L.className = "tg-vis"; const R = document.createElement("div"); R.className = "tg-task";
@@ -250,8 +261,21 @@
     flat.forEach(n => (isVis(n) ? L : R).appendChild(n));
     st.innerHTML = ""; st.appendChild(g);
     st._busy = false;
+    placeBar();
   }
   E.layout = layout;
+  // fit one task on the screen: if the task column is too tall, give it more width (the picture shrinks)
+  const RATIOS = ["", "minmax(0,1fr) minmax(0,1fr)", "minmax(0,2fr) minmax(0,3fr)", "minmax(0,1fr) minmax(0,2fr)"];
+  function fitTask() {
+    if (!document.body.classList.contains("lab-fit") || !matchMedia("(min-width:900px) and (min-height:560px)").matches) return;
+    const g = E.stage && E.stage.querySelector(":scope > .task-grid"); if (!g) return;
+    const t = g.querySelector(".tg-task"); if (!t) return;
+    g._fit = g._fit || 0;
+    while (t.scrollHeight > t.clientHeight + 2 && g._fit < RATIOS.length - 1) { g._fit++; g.style.gridTemplateColumns = RATIOS[g._fit]; }
+    const fb = t.querySelector(".feedback");
+    if (fb && t.scrollHeight > t.clientHeight + 2 && !fb._seen) { fb._seen = true; t.scrollTop = t.scrollHeight; }
+  }
+  E.fitTask = fitTask;
 
   // ---------- shared renderers ----------
   // chips into slots: q.slots=[{left(html), answer}], optional q.side(html) shown at left (e.g. a diagram)
