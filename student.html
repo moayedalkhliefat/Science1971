@@ -26,12 +26,14 @@
   <div id="labs"></div>
 
   <div class="card" style="margin-top:18px">
-    <h2>🎓 My certificates</h2>
+    <div class="row between gap"><h2>🎓 My certificates</h2>
+      <div class="row gap"><select class="inline" id="c-subj"></select><select class="inline" id="c-level"><option value="">All levels</option><option value="1">Level 1</option><option value="2">Level 2</option><option value="3">Level 3</option><option value="all">🏆 Lab completed</option></select></div></div>
     <div id="certs" class="cert-list"></div>
   </div>
 
   <div class="card" style="margin-top:18px">
-    <h2>🏆 My results</h2>
+    <div class="row between gap"><h2>🏆 My results</h2>
+      <div class="row gap"><select class="inline" id="m-subj"></select><select class="inline" id="m-level"><option value="">All levels</option><option value="1">Level 1</option><option value="2">Level 2</option><option value="3">Level 3</option></select><select class="inline" id="m-pass"><option value="">Pass &amp; fail</option><option value="pass">✅ Passed</option><option value="fail">❌ Not passed</option></select></div></div>
     <div class="table-wrap"><table id="my"></table></div>
   </div>
 
@@ -96,21 +98,39 @@ const passed = r => pctOf(r) >= PASS - 1e-9;
   // ----- certificates -----
   const certs = [];
   window.S1971_LABS.forEach(l => {
-    l.levels.forEach(v => { if (isPass(v.id)) certs.push({ title: `${l.title} — ${v.name}`, icon: l.icon, url: `certificate.html?lab=${l.id}&level=${v.n}`, score: Math.floor(best[v.id]), big: false }); });
-    if (l.levels.every(v => isPass(v.id))) certs.push({ title: `${l.title} — Lab completed (all levels)`, icon: "🏆", url: `certificate.html?lab=${l.id}&level=all`, big: true });
+    l.levels.forEach((v, i) => { if (isPass(v.id)) certs.push({ title: `${l.title} — ${v.name}`, icon: l.icon, url: `certificate.html?lab=${l.id}&level=${v.n}`, score: Math.floor(best[v.id]), big: false, subject: l.subject, level: String(i + 1) }); });
+    if (l.levels.every(v => isPass(v.id))) certs.push({ title: `${l.title} — Lab completed (all levels)`, icon: "🏆", url: `certificate.html?lab=${l.id}&level=all`, big: true, subject: l.subject, level: "all" });
   });
-  document.getElementById("certs").innerHTML = certs.length ? certs.map(c => `
+  // subject lists only show subjects that have something to show
+  const subjOpts = (id, keys) => { const el = document.getElementById(id); el.innerHTML = `<option value="">All subjects</option>` + window.S1971_SUBJECTS.filter(sb => keys.includes(sb.key)).map(sb => `<option value="${sb.key}">${sb.icon} ${sb.key}</option>`).join(""); };
+  subjOpts("c-subj", certs.map(c => c.subject));
+  const drawCerts = () => {
+    const sj = document.getElementById("c-subj").value, lv = document.getElementById("c-level").value;
+    const list = certs.filter(c => (!sj || c.subject === sj) && (!lv || c.level === lv));
+    document.getElementById("certs").innerHTML = list.length ? list.map(c => `
     <a class="cert-item ${c.big ? "big" : ""}" href="${c.url}"><span class="ci">${c.icon}</span><span><b>${esc(c.title)}</b>${c.score != null ? `<br><small>Score ${c.score}%</small>` : `<br><small>Completion certificate</small>`}</span><span class="open">Open 🎓</span></a>`).join("")
-    : `<p class="muted">Pass a level (${PASS}% or more) to earn your first certificate! 🎯</p>`;
+    : certs.length ? `<p class="muted">No certificates match these filters.</p>` : `<p class="muted">Pass a level (${PASS}% or more) to earn your first certificate! 🎯</p>`;
+  };
+  ["c-subj", "c-level"].forEach(id => document.getElementById(id).addEventListener("input", drawCerts));
+  drawCerts();
 
   // ----- results -----
   const titles = {};
   window.S1971_LABS.forEach(l => l.levels.forEach(v => titles[v.id] = `${l.title} — ${v.name}`));
+  const info = {};
+  window.S1971_LABS.forEach(l => l.levels.forEach((v, i) => info[v.id] = { subject: l.subject, level: String(i + 1) }));
+  subjOpts("m-subj", mine.map(r => (info[r.lab_id] || {}).subject));
   const t = document.getElementById("my");
-  t.innerHTML = mine.length ? `<tr><th>Lab</th><th>Score</th><th>Time</th><th>Date</th></tr>` + mine.map(r => {
+  const drawMine = () => {
+    const sj = document.getElementById("m-subj").value, lv = document.getElementById("m-level").value, ps = document.getElementById("m-pass").value;
+    const list = mine.filter(r => { const i = info[r.lab_id] || { level: String((r.details && r.details.level) || "") }; return (!sj || i.subject === sj) && (!lv || i.level === lv) && (!ps || (ps === "pass") === passed(r)); });
+    t.innerHTML = !mine.length ? `<tr><td class="empty">No results yet — start your first lab! 🧪</td></tr>` : !list.length ? `<tr><td class="empty">No results match these filters.</td></tr>` : `<tr><th>Lab</th><th>Score</th><th>Time</th><th>Date</th></tr>` + list.map(r => {
     const p = pctOf(r), ts = r.time_s;
     return `<tr><td>${esc(titles[r.lab_id] || r.lab_title || r.lab_id)}</td><td><span class="score ${p >= PASS - 1e-9 ? "hi" : p >= 50 ? "mid" : "lo"}">${Math.floor(p)}%</span></td><td>${ts ? `${String(Math.floor(ts / 60)).padStart(2, "0")}:${String(ts % 60).padStart(2, "0")}` : "—"}</td><td>${fmtDate(r.completed_at)}</td></tr>`;
-  }).join("") : `<tr><td class="empty">No results yet — start your first lab! 🧪</td></tr>`;
+  }).join("");
+  };
+  ["m-subj", "m-level", "m-pass"].forEach(id => document.getElementById(id).addEventListener("input", drawMine));
+  drawMine();
 })();
 </script>
 </body>
