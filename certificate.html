@@ -61,6 +61,9 @@ const fmtDay = d => new Date(d).toLocaleDateString("en-GB", { day: "numeric", mo
   const ME = await S1971.requireRole(["student", "teacher", "admin"]);
   if (!ME) return;
   const home = S1971.homeFor(ME); document.getElementById("home").href = home; document.getElementById("back").href = home;
+  // ⬅ Back: return to the page the certificate was opened from (lab result screen or certificate list)
+  let from = null; try { const r = new URL(document.referrer); const root = new URL("./", location.href).pathname; if (r.origin === location.origin && r.pathname !== root && r.pathname !== root + "index.html" && !/certificate\.html$/.test(r.pathname)) from = r; } catch (e) {}
+  if (from && history.length > 1) document.getElementById("back").onclick = ev => { ev.preventDefault(); history.back(); };
   const lab = window.S1971_LABS.find(l => l.id === q.get("lab"));
   const lvlParam = q.get("level");
   if (!lab) { document.getElementById("msg").innerHTML = `<div class="card empty">Certificate not found.</div>`; return; }

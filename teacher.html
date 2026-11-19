@@ -132,7 +132,7 @@ let ME = null, STUDENTS = [], RESULTS = [], PENDING = [];
     document.getElementById("limit-note").textContent = "As admin you can see every teacher's students.";
   }
   document.getElementById("pass-mark").textContent = S1971_CONFIG.PASS_MARK + "%";
-  renderLabs();
+  renderLabs(); restoreBack();
   document.getElementById("school").value = ME.school || "";
   document.getElementById("save-school").onclick = async () => {
     try { const r = await rpc("staff_set_school", { p_token: ME.token, p_school: document.getElementById("school").value }); r.ok ? toast("School saved ✔", "good") : toast(r.error, "bad"); }
@@ -330,11 +330,20 @@ async function loadClasses() {
 // ---------- labs ----------
 function renderLabs() {
   document.getElementById("labs").innerHTML = window.S1971_SUBJECTS.filter(sb => window.S1971_LABS.some(l => l.subject === sb.key)).map(sb => `<h2 class="subj-head" style="--sc:${sb.color};grid-column:1/-1">${sb.icon} ${sb.key}</h2>` + window.S1971_LABS.filter(l => l.subject === sb.key).map(l => `
-    <div class="lab" style="--lab:${l.color}"><div class="band"></div>
+    <div class="lab" data-lab="${l.id}" style="--lab:${l.color}"><div class="band"></div>
       <div class="icon">${l.icon}</div><h3>${esc(l.title)}</h3>
       <p>${esc(l.description)}<br><span class="small">For grades: ${(l.grades.includes("all") ? "all" : l.grades.join(", "))}</span></p>
-      <div class="levels">${l.levels.map(v => `<a class="lvl" href="${l.path}?level=${v.n}&preview=1">${esc(v.name)} <span class="best">👁️ Preview</span></a>`).join("")}</div>
+      <div class="levels">${l.levels.map(v => `<a class="lvl" data-back="${l.id}" href="${l.path}?level=${v.n}&preview=1">${esc(v.name)} <span class="best">👁️ Preview</span></a>`).join("")}</div>
     </div>`).join("")).join("");
+  // remember where the teacher was, so ⬅ Back from the preview returns here
+  document.querySelectorAll("#labs a[data-back]").forEach(a => a.onclick = () => { try { sessionStorage.setItem("s1971.back", JSON.stringify({ tab: "labs", lab: a.dataset.back, y: scrollY })); } catch (e) {} });
+}
+addEventListener("pageshow", e => { if (e.persisted) try { sessionStorage.removeItem("s1971.back"); } catch (x) {} });
+function restoreBack() {
+  let b = null; try { b = JSON.parse(sessionStorage.getItem("s1971.back") || "null"); sessionStorage.removeItem("s1971.back"); } catch (e) {}
+  if (!b) return;
+  const t = document.querySelector(`.tab[data-tab="${b.tab}"]`); if (t) t.click();
+  requestAnimationFrame(() => { const c = document.querySelector(`#labs .lab[data-lab="${b.lab}"]`); if (b.y) scrollTo(0, b.y); else if (c) c.scrollIntoView({ block: "center" }); });
 }
 </script>
 </body>
