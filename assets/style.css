@@ -168,4 +168,7 @@ footer{color:var(--muted)}
 
 /* Class Labs: subjects side by side */
 .subj-cols{display:grid;grid-template-columns:repeat(3,1fr);gap:18px;align-items:start}
-@media (max-width:860px){.subj-cols{grid-template-columns:1fr}}
+.subj-cols[style*="--n"]{grid-template-columns:repeat(var(--n),minmax(0,1fr))}
+.subj-col .labs{grid-template-columns:1fr}
+.subj-col > .subj-head:first-child{margin-top:6px}
+@media (max-width:860px){.subj-cols,.subj-cols[style*="--n"]{grid-template-columns:1fr}}

@@ -82,9 +82,13 @@ const passed = r => pctOf(r) >= PASS - 1e-9;
   const drawLabs = () => {
     tabs.innerHTML = subjects.length > 1 ? [`<button class="tab ${cur === "all" ? "active" : ""}" data-s="all">📚 All</button>`]
       .concat(subjects.map(s => `<button class="tab ${cur === s.key ? "active" : ""}" data-s="${s.key}">${s.icon} ${s.key}</button>`)).join("") : "";
-    box.innerHTML = subjects.filter(s => cur === "all" || cur === s.key).map(s => `
+    const shown = subjects.filter(s => cur === "all" || cur === s.key);
+    const block = s => `
       <h2 class="subj-head" style="--sc:${s.color}">${s.icon} ${s.key}</h2>
-      <div class="labs">${labs.filter(l => l.subject === s.key).map(labCard).join("")}</div>`).join("");
+      <div class="labs">${labs.filter(l => l.subject === s.key).map(labCard).join("")}</div>`;
+    box.innerHTML = shown.length > 1
+      ? `<div class="subj-cols" style="--n:${shown.length}">${shown.map(s => `<div class="subj-col">${block(s)}</div>`).join("")}</div>`
+      : shown.map(block).join("");
     tabs.querySelectorAll(".tab").forEach(b => b.onclick = () => { cur = b.dataset.s; drawLabs(); });
   };
   if (labs.length) drawLabs();
