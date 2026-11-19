@@ -60,6 +60,11 @@ window.S1971_LABS = [
     id: "circuits", title: "Electric Circuits", subject: "Physics", icon: "💡", color: "linear-gradient(135deg,#f9a825,#0b5cab)", grades: ["all"],
     path: "labs/circuits/index.html", description: "Build circuits with a battery, switch and bulbs in series or parallel, read the ammeter and use Ohm's law.",
     levels: [{ n: 1, id: "circuits-l1", name: "Level 1 · Explorer" }, { n: 2, id: "circuits-l2", name: "Level 2 · Investigator" }, { n: 3, id: "circuits-l3", name: "Level 3 · Expert" }]
+  },
+  {
+    id: "forces", title: "Forces & Motion", subject: "Physics", icon: "📦", color: "linear-gradient(135deg,#8d6e63,#0b5cab)", grades: ["all"],
+    path: "labs/forces/index.html", description: "Push a crate with two forces, change its mass and the friction, and discover Newton's laws of motion.",
+    levels: [{ n: 1, id: "forces-l1", name: "Level 1 · Explorer" }, { n: 2, id: "forces-l2", name: "Level 2 · Investigator" }, { n: 3, id: "forces-l3", name: "Level 3 · Expert" }]
   }
 ];
 
