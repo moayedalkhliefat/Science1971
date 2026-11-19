@@ -105,6 +105,11 @@ window.S1971_LABS = [
     id: "photo", title: "Photosynthesis", subject: "Biology", icon: "🌱", color: "linear-gradient(135deg,#43a047,#fdd835)", grades: ["all"],
     path: "labs/photo/index.html", description: "Count oxygen bubbles from pondweed while changing light, CO₂, temperature and light colour — discover limiting factors.",
     levels: [{ n: 1, id: "photo-l1", name: "Level 1 · Explorer" }, { n: 2, id: "photo-l2", name: "Level 2 · Investigator" }, { n: 3, id: "photo-l3", name: "Level 3 · Expert" }]
+  },
+  {
+    id: "membrane", title: "Membrane Transport", subject: "Biology", icon: "🫧", color: "linear-gradient(135deg,#ec407a,#29b6f6)", grades: ["all"],
+    path: "labs/membrane/index.html", description: "Watch particles cross the cell membrane: diffusion, osmosis in red blood and plant cells, and active transport with the Na⁺/K⁺ pump.",
+    levels: [{ n: 1, id: "membrane-l1", name: "Level 1 · Explorer" }, { n: 2, id: "membrane-l2", name: "Level 2 · Investigator" }, { n: 3, id: "membrane-l3", name: "Level 3 · Expert" }]
   }
 ];
 
