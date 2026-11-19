@@ -155,6 +155,11 @@ window.S1971_LABS = [
     id: "solutions", title: "Sugar & Salt Solutions", subject: "Chemistry", icon: "🧂", color: "linear-gradient(135deg,#7e57c2,#43a047)", grades: ["all"],
     path: "labs/solutions/index.html", description: "Dissolve salt and sugar, test which solutions conduct electricity, make saturated solutions and count ions.",
     levels: [{ n: 1, id: "solutions-l1", name: "Level 1 · Explorer" }, { n: 2, id: "solutions-l2", name: "Level 2 · Investigator" }, { n: 3, id: "solutions-l3", name: "Level 3 · Expert" }]
+  },
+  {
+    id: "projectile", title: "Projectile Motion", subject: "Physics", icon: "🎯", color: "linear-gradient(135deg,#e65100,#1e88e5)", grades: ["all"],
+    path: "labs/projectile/index.html", description: "Fire a cannon: change the angle, speed and height to hit targets and discover how projectiles move.",
+    levels: [{ n: 1, id: "projectile-l1", name: "Level 1 · Explorer" }, { n: 2, id: "projectile-l2", name: "Level 2 · Investigator" }, { n: 3, id: "projectile-l3", name: "Level 3 · Expert" }]
   }
 ];
 
