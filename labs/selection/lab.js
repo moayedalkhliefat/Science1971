@@ -18,10 +18,9 @@ const end = s => { const h = history(s); return h[h.length - 1]; };
 const pc = x => Math.round(x * 1000) / 10 + "%";
 const rnd = seed => () => (seed = (seed * 16807) % 2147483647) / 2147483647;
 function bunny(x, y, k, sc) {
-  const w = k[0] === "w", col = w ? "#f7f7f7" : "#8d6e63", st = w ? "#9e9e9e" : "#5d4037";
-  return `<g transform="translate(${x},${y}) scale(${sc || 1})"><ellipse cx="0" cy="0" rx="15" ry="11" fill="${col}" stroke="${st}" stroke-width="1.5"/><circle cx="-14" cy="2" r="4" fill="${col}" stroke="${st}"/>
-    <ellipse cx="9" cy="-19" rx="3.5" ry="10" fill="${col}" stroke="${st}" stroke-width="1.5" transform="rotate(10 9 -19)"/><ellipse cx="15" cy="-18" rx="3.5" ry="10" fill="${col}" stroke="${st}" stroke-width="1.5" transform="rotate(25 15 -18)"/>
-    <circle cx="13" cy="-6" r="8.5" fill="${col}" stroke="${st}" stroke-width="1.5"/><circle cx="16" cy="-8" r="1.6" fill="#212121"/>${k[1] === "l" ? `<rect x="17" y="-2" width="3" height="7" fill="#fff" stroke="#757575" stroke-width="1"/>` : ""}</g>`;
+  // picture of a real bunny (white or brown fur); long teeth are drawn on top
+  const img = k[0] === "w" ? "img/bunny-white.png" : "img/bunny-brown.png";
+  return `<g transform="translate(${x},${y}) scale(${sc || 1})"><ellipse cx="0" cy="14" rx="14" ry="3" fill="#000" opacity=".12"/><image href="${img}" x="-18" y="-28" width="36" height="42.4"/>${k[1] === "l" ? `<rect x="12.9" y="-14.6" width="2.6" height="5" rx=".6" fill="#fff" stroke="#616161" stroke-width=".7"/>` : ""}</g>`;
 }
 const wolf = (x, y, f) => `<g transform="translate(${x},${y}) scale(${f},1)"><path d="M-30,0 Q-30,-14 -8,-15 L14,-15 L24,-26 L28,-16 L38,-12 L30,-4 L14,-4 L12,10 L6,10 L4,-2 L-18,-2 L-20,10 L-26,10 L-26,-2 Q-36,-6 -44,-16 Q-34,-4 -30,0 Z" fill="#546e7a" stroke="#37474f" stroke-width="1.5"/><circle cx="27" cy="-17" r="1.6" fill="#ffeb3b"/></g>`;
 function scene(s, c, w, h) {
