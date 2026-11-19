@@ -55,6 +55,11 @@ window.S1971_LABS = [
     id: "energy", title: "Energy Skate Park", subject: "Physics", icon: "🛹", color: "linear-gradient(135deg,#1e88e5,#43a047)", grades: ["all"],
     path: "labs/energy/index.html", description: "Send a skater down a ramp, change height, mass and friction, and watch potential, kinetic and heat energy change.",
     levels: [{ n: 1, id: "energy-l1", name: "Level 1 · Explorer" }, { n: 2, id: "energy-l2", name: "Level 2 · Investigator" }, { n: 3, id: "energy-l3", name: "Level 3 · Expert" }]
+  },
+  {
+    id: "circuits", title: "Electric Circuits", subject: "Physics", icon: "💡", color: "linear-gradient(135deg,#f9a825,#0b5cab)", grades: ["all"],
+    path: "labs/circuits/index.html", description: "Build circuits with a battery, switch and bulbs in series or parallel, read the ammeter and use Ohm's law.",
+    levels: [{ n: 1, id: "circuits-l1", name: "Level 1 · Explorer" }, { n: 2, id: "circuits-l2", name: "Level 2 · Investigator" }, { n: 3, id: "circuits-l3", name: "Level 3 · Expert" }]
   }
 ];
 
