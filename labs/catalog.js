@@ -70,6 +70,11 @@ window.S1971_LABS = [
     id: "states", title: "States of Matter", subject: "Chemistry", icon: "🧊", color: "linear-gradient(135deg,#6d4aff,#00b8d9)", grades: ["all"],
     path: "labs/states/index.html", description: "Heat and cool water and other substances, watch the particles move, and find melting and boiling points (°C and K).",
     levels: [{ n: 1, id: "states-l1", name: "Level 1 · Explorer" }, { n: 2, id: "states-l2", name: "Level 2 · Investigator" }, { n: 3, id: "states-l3", name: "Level 3 · Expert" }]
+  },
+  {
+    id: "balance", title: "Balancing Equations", subject: "Chemistry", icon: "⚖️", color: "linear-gradient(135deg,#7e57c2,#26a69a)", grades: ["all"],
+    path: "labs/balance/index.html", description: "Add molecules to both sides of a chemical equation until every atom balances — conservation of mass.",
+    levels: [{ n: 1, id: "balance-l1", name: "Level 1 · Explorer" }, { n: 2, id: "balance-l2", name: "Level 2 · Investigator" }, { n: 3, id: "balance-l3", name: "Level 3 · Expert" }]
   }
 ];
 
