@@ -587,7 +587,9 @@ function renderG2(q) {
 
 /* ---- challenge renderers ---- */
 function goalBox(html) { return `<div class="goal"><small>🎯 YOUR GOAL</small>${html}</div>`; }
-function wireSlider(id, cb) { const el = document.getElementById(id); el.oninput = () => { document.getElementById(id + "-v").textContent = el.value; cb(+el.value); }; }
+function wireSlider(id, cb) { const el = document.getElementById(id), nb = document.getElementById(id + "-n");
+  el.oninput = () => { document.getElementById(id + "-v").textContent = el.value; if (nb) { nb.value = ""; E.readNumBox(nb); } cb(+el.value); };
+  E.wireNumBox(nb, x => { document.getElementById(id + "-v").textContent = fmt(x); cb(x); }); }
 
 function renderTarget(q) {
   let d = Math.min(q.dMax, q.dStep * 4), t = 3, done = false;
@@ -600,7 +602,7 @@ function renderTarget(q) {
     wireSlider("sd", v => { d = v; redrawRoad(); }); wireSlider("st", v => { t = v; });
     function redrawRoad() { const g2 = road(lanesFor(q.obj, 0, d, t), q.dMax); E.stage.querySelector(".scene").innerHTML = g2.svg; }
     document.getElementById("run").onclick = async () => {
-      done = true; E.stage.querySelectorAll("input[type=range]").forEach(x => x.disabled = true); document.getElementById("run").disabled = true;
+      done = true; E.stage.querySelectorAll("input[type=range],input.numbox").forEach(x => x.disabled = true); document.getElementById("run").disabled = true;
       const L = lanesFor(q.obj, 0, d, t), g = road(L, q.dMax); E.stage.querySelector(".scene").innerHTML = g.svg;
       await run(L, g);
       const v = d / t, shown = q.kmh ? v * 3.6 : v, ok = E.close(v, q.v, 0.001);
@@ -622,7 +624,7 @@ function renderArrive(q) {
     if (done) return;
     wireSlider("sv", x => { v = x; });
     document.getElementById("run").onclick = async () => {
-      done = true; document.getElementById("sv").disabled = true; document.getElementById("run").disabled = true;
+      done = true; document.getElementById("sv").disabled = true; document.getElementById("sv-n").disabled = true; document.getElementById("run").disabled = true;
       const L = lanesFor(q.obj, 0, Math.min(q.max, v * q.T), q.T), g = road(L, q.max, { flags: [{ id: "fin", d: q.D }], hideFinish: true });
       E.stage.querySelector(".scene").innerHTML = g.svg;
       await run(L, g);
@@ -645,7 +647,7 @@ function renderRival(q) {
     if (done) return;
     wireSlider("rd", x => { d = x; }); wireSlider("rt", x => { t = x; });
     document.getElementById("run").onclick = async () => {
-      done = true; E.stage.querySelectorAll("input[type=range]").forEach(x => x.disabled = true); document.getElementById("run").disabled = true;
+      done = true; E.stage.querySelectorAll("input[type=range],input.numbox").forEach(x => x.disabled = true); document.getElementById("run").disabled = true;
       const L = lanesOf(), g = road(L, 100); E.stage.querySelector(".scene").innerHTML = g.svg;
       await run(L, g, { tags: true });
       const v = d / t, ok = v > q.vr + 1e-9 && v <= q.L + 1e-9;
@@ -699,7 +701,7 @@ function renderDraw(q) {
 /* ===================== EXPLORE: the speed bench ===================== */
 const BENCH = { runner: 5, cyclist: 8, car: 20 };
 function explore(lvl, done) {
-  let obj = "runner", dist = 60, busy = false;
+  let obj = "runner", dist = 60, distPos = 60, distTyped = "", busy = false;
   const runs = [], need = 3;
   const draw = () => {
     const t = dist / BENCH[obj], lanes = lanesFor(obj, 0, dist, t), geo = road(lanes, 100);
@@ -710,7 +712,7 @@ function explore(lvl, done) {
       <div class="scene">${geo.svg}</div>
       <div class="instruments">
         <div class="objs">${Object.keys(BENCH).map(k => `<button class="objbtn ${obj === k ? "sel" : ""}" data-o="${k}">${OBJ[k].e} ${OBJ[k].name}</button>`).join("")}</div>
-        <label style="margin:0;min-width:220px">Distance: <b>${dist} m</b><input type="range" id="dist" min="20" max="100" step="10" value="${dist}"></label>
+        <label class="sl" style="margin:0;min-width:260px">Distance: <b>${fmt(dist)} m</b><span class="slrow"><input type="range" id="dist" min="20" max="100" step="10" value="${distPos}">${E.numBox("dist-n", 20, 100, "m", distTyped, busy ? "disabled" : "")}</span><small class="nerr"></small></label>
         ${stopwatch()}<button class="btn orange" id="run">▶ Run</button></div>
       <div class="split wide"><div>
         <table class="res"><tr><th>Mover</th><th>Distance</th><th>Time</th><th>Speed = d ÷ t</th>${lvl >= 2 ? "<th>in km/h</th>" : ""}</tr>
@@ -722,7 +724,8 @@ function explore(lvl, done) {
         <p class="hint" style="color:#b9b4ff">💡 Same mover → same speed, whatever the distance!</p></div></div>
       <div class="actions"><span class="hint">${ok ? "Great experiments!" : "Run more experiments to continue."}</span><button class="btn green" id="go" ${ok ? "" : "disabled"}>Step 2: Start the ${E.TOTAL} tasks 🚀</button></div>`;
     E.stage.querySelectorAll(".objbtn").forEach(b => b.onclick = () => { if (!busy) { obj = b.dataset.o; draw(); } });
-    document.getElementById("dist").oninput = e => { if (!busy) { dist = +e.target.value; draw(); } };
+    document.getElementById("dist").oninput = e => { if (!busy) { dist = distPos = +e.target.value; distTyped = ""; draw(); } };
+    E.wireNumBox(document.getElementById("dist-n"), x => { if (!busy) { dist = x; distTyped = document.getElementById("dist-n").value; draw(); } });
     document.getElementById("run").onclick = async () => { if (busy) return; busy = true; document.getElementById("run").disabled = true; await run(lanes, geo); runs.push({ obj, d: dist, t }); busy = false; draw(); };
     document.getElementById("go").onclick = done;
   };

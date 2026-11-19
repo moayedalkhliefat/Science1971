@@ -8,13 +8,14 @@
   const E = window.LabEngine, esc = E.esc, fmt = E.fmt;
   const clone = o => JSON.parse(JSON.stringify(o));
 
-  function ctlHtml(c, v, dis) {
+  function ctlHtml(c, v, dis, pos, typed) {
     const d = dis ? "disabled" : "";
     const show = c.fmt ? c.fmt(v) : v;
-    if (c.type === "range") { const inp = `<input type="range" data-c="${c.id}" min="${c.min}" max="${c.max}" step="${c.step || 1}" value="${v}" ${d}>`, nl = c.nudgeLabels || ["−", "+"];
+    if (c.type === "range") { const inp = `<input type="range" data-c="${c.id}" min="${c.min}" max="${c.max}" step="${c.step || 1}" value="${pos != null ? pos : v}" ${d}>`, nl = c.nudgeLabels || ["−", "+"];
+      const nb = E.numBox("n-" + c.id, c.min, c.max, typeof c.unit === "string" ? c.unit : "", typed, d).replace('class="numbox"', `class="numbox" data-n="${c.id}"`);
       const tag = c.nudge ? "div" : "label";
       return `<${tag} class="sl" style="margin:0">${c.label}: <b><span id="v-${c.id}">${show}</span> ${c.unit || ""}</b>
-      ${c.nudge ? `<span class="nudge"><button type="button" data-c="${c.id}" data-d="-1" ${d}>${nl[0]}</button>${inp}<button type="button" data-c="${c.id}" data-d="1" ${d}>${nl[1]}</button></span>` : inp}</${tag}>`; }
+      ${c.nudge ? `<span class="nudge"><button type="button" data-c="${c.id}" data-d="-1" ${d}>${nl[0]}</button>${inp}<button type="button" data-c="${c.id}" data-d="1" ${d}>${nl[1]}</button>${nb}</span>` : `<span class="slrow">${inp}${nb}</span>`}<small class="nerr"></small></${tag}>`; }
     if (c.type === "step") return `<div class="stepper"><span>${c.label}</span><div><button type="button" data-c="${c.id}" data-d="-1" ${d}>−</button><b id="v-${c.id}">${show}</b><button type="button" data-c="${c.id}" data-d="1" ${d}>+</button></div></div>`;
     if (c.type === "choice") return `<div class="choice${c.wide ? " wide" : ""}"><span>${c.label}</span><div class="seg">${c.options.map(o => `<button type="button" data-c="${c.id}" data-v="${esc(String(o.v))}" class="${String(o.v) === String(v) ? "sel" : ""}" ${d}>${o.label}</button>`).join("")}</div></div>`;
     if (c.type === "select") return `<label class="selc"><span>${c.label}</span><select data-c="${c.id}" ${d}>${c.options.map(o => `<option value="${esc(String(o.v))}" ${String(o.v) === String(v) ? "selected" : ""}>${esc(o.label)}</option>`).join("")}</select></label>`;
@@ -24,23 +25,29 @@
 
   // mounts a live simulation into #simbox / #simctl / #simro
   function mount(st, cfg) {
-    let locked = false;
+    let locked = false; const pos = {}, typed = {}; // slider positions and typed numbers are kept apart: typing does not move the slider
     const box = document.getElementById("simbox"), ctl = document.getElementById("simctl"), ro = document.getElementById("simro");
     const find = id => cfg.controls.find(c => c.id === id);
     const draw = () => { box.innerHTML = cfg.render(st); if (ro && cfg.readout) ro.innerHTML = cfg.readout(st); if (cfg.after) cfg.after(st); };
     const drawCtl = () => {
-      ctl.innerHTML = cfg.controls.filter(c => !c.hide || !c.hide(st)).map(c => ctlHtml(c, st[c.id], locked || (c.lock && c.lock(st)))).join("");
+      ctl.innerHTML = cfg.controls.filter(c => !c.hide || !c.hide(st)).map(c => ctlHtml(c, st[c.id], locked || (c.lock && c.lock(st)), pos[c.id], typed[c.id])).join("");
       ctl.style.display = ctl.innerHTML ? "" : "none";
       ctl.querySelectorAll("input[type=range]").forEach(el => el.oninput = () => {
-        const c = find(el.dataset.c); st[c.id] = +el.value;
+        const c = find(el.dataset.c); st[c.id] = pos[c.id] = +el.value; typed[c.id] = "";
+        const nb = ctl.querySelector(`input.numbox[data-n="${c.id}"]`); if (nb) { nb.value = ""; E.readNumBox(nb); }
         const v = document.getElementById("v-" + c.id); if (v) v.textContent = c.fmt ? c.fmt(st[c.id]) : st[c.id];
         draw();
       });
       ctl.querySelectorAll("button[data-d]").forEach(b => b.onclick = () => {
         const c = find(b.dataset.c); const step = c.nudge || c.step || 1;
-        st[c.id] = Math.max(c.min != null ? c.min : 0, Math.min(c.max != null ? c.max : 99, Math.round((st[c.id] + step * (+b.dataset.d)) * 1000) / 1000));
+        st[c.id] = pos[c.id] = Math.max(c.min != null ? c.min : 0, Math.min(c.max != null ? c.max : 99, Math.round((st[c.id] + step * (+b.dataset.d)) * 1000) / 1000)); typed[c.id] = "";
         drawCtl(); draw();
       });
+      ctl.querySelectorAll("input.numbox[data-n]").forEach(el => E.wireNumBox(el, x => {
+        const c = find(el.dataset.n); st[c.id] = x; typed[c.id] = el.value;
+        const v = document.getElementById("v-" + c.id); if (v) v.textContent = c.fmt ? c.fmt(x) : x;
+        draw();
+      }));
       ctl.querySelectorAll("button[data-v]").forEach(b => b.onclick = () => {
         const c = find(b.dataset.c), o = c.options.find(o => String(o.v) === b.dataset.v);
         st[c.id] = o.v; drawCtl(); draw();

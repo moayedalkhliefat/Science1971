@@ -30,7 +30,7 @@
     if (cfg.calculator) addCalculator();
     new MutationObserver(() => layout()).observe(E.stage, { childList: true });
     new MutationObserver(() => { if (!E._fitQ) E._fitQ = requestAnimationFrame(() => { E._fitQ = 0; fitTask(); }); }).observe(E.stage, { childList: true, subtree: true });
-    window.addEventListener("resize", () => { const g = E.stage.querySelector(".task-grid"); if (g) { g._fit = 0; g.style.gridTemplateColumns = ""; } fitTask(); });
+    window.addEventListener("resize", () => { const g = E.stage.querySelector(".task-grid"); if (g) { g._z = g._cz = 1; g.querySelectorAll(".tg-vis > *, .tg-task > *").forEach(c => { c.style.zoom = ""; }); } fitTask(); });
     showIntro();
   };
 
@@ -266,14 +266,26 @@
     placeBar();
   }
   E.layout = layout;
-  // fit one task on the screen: if the task column is too tall, give it more width (the picture shrinks)
-  const RATIOS = ["", "minmax(0,2fr) minmax(0,3fr)", "minmax(0,1fr) minmax(0,2fr)"];
+  // fit one task on the screen. The two halves never change size:
+  //  - LEFT: the simulation / picture box always has the same size (pictures are centred); controls shrink if needed
+  //  - RIGHT: if the question is too long, its text and options get a bit smaller (no scrolling)
+  const MAINVIS = ":scope > .scene, :scope > .diagram, :scope > .atom-box, :scope > div:has(> .atom-box)";
+  const shrink = (box, kids, key, g) => {
+    const apply = z => kids.forEach(c => { c.style.zoom = z === 1 ? "" : z; });
+    g[key] = g[key] || 1; apply(g[key]);
+    while (box.scrollHeight > box.clientHeight + 2 && g[key] > 0.6) { g[key] = Math.round((g[key] - 0.04) * 100) / 100; apply(g[key]); }
+  };
   function fitTask() {
     if (!document.body.classList.contains("lab-fit") || !matchMedia("(min-width:900px) and (min-height:560px)").matches) return;
     const g = E.stage && E.stage.querySelector(":scope > .task-grid"); if (!g) return;
-    const t = g.querySelector(".tg-task"); if (!t) return;
-    g._fit = g._fit || 0;
-    while (t.scrollHeight > t.clientHeight + 2 && g._fit < RATIOS.length - 1) { g._fit++; g.style.gridTemplateColumns = RATIOS[g._fit]; }
+    const t = g.querySelector(".tg-task"), v = g.querySelector(".tg-vis"); if (!t) return;
+    if (v) {
+      const main = v.querySelector(MAINVIS);
+      [...v.children].forEach(c => c.classList.toggle("mainvis", c === main));
+      v.classList.toggle("pic", !v.querySelector(":scope > .controls, :scope > .instruments"));
+      shrink(v, [...v.children].filter(c => c !== main), "_cz", g);
+    }
+    shrink(t, [...t.children].filter(c => c !== E._bar), "_z", g);
     const fb = t.querySelector(".feedback");
     if (fb && t.scrollHeight > t.clientHeight + 2 && !fb._seen) { fb._seen = true; t.scrollTop = t.scrollHeight; }
   }
@@ -350,8 +362,19 @@
     zone.addEventListener("click", ev => { if (sel) { const id = sel; sel = null; onDrop(id, ev.clientX, ev.clientY); } });
   };
   E.svgPoint = (svg, cx, cy) => { const pt = svg.createSVGPoint(); pt.x = cx; pt.y = cy; return pt.matrixTransform(svg.getScreenCTM().inverse()); };
+  // number box next to a slider: the student can type any value in range (the slider itself does not move)
+  E.numBox = (id, min, max, unit, val, dis) => `<span class="nbx"><input type="number" class="numbox" id="${id}" data-min="${min}" data-max="${max}" data-unit="${unit || ""}" step="any" inputmode="decimal" placeholder="type" title="Type a number" value="${val == null ? "" : val}" ${dis || ""}></span>`;
+  // returns the typed number, or null (and shows a red message) when it is empty / not a number / out of range
+  E.readNumBox = el => {
+    const box = el.closest(".sl"), err = box && box.querySelector(".nerr"), raw = String(el.value).trim();
+    const lo = +el.dataset.min, hi = +el.dataset.max, x = E.num(raw), say = t => { if (err) err.textContent = t; };
+    if (raw === "") { say(""); return null; }
+    if (!Number.isFinite(x) || x < lo - 1e-9 || x > hi + 1e-9) { say(`Enter ${fmt(lo)}–${fmt(hi)}${el.dataset.unit ? " " + el.dataset.unit : ""}`); return null; }
+    say(""); return x;
+  };
+  E.wireNumBox = (el, cb) => { if (!el) return; el.onchange = () => { const x = E.readNumBox(el); if (x != null) cb(x); }; el.onkeydown = ev => { if (ev.key === "Enter") { ev.preventDefault(); el.blur(); } }; };
   E.slider = (id, label, min, max, step, val, unit) => `<label class="sl" style="margin:0">${label}: <b><span id="${id}-v">${val}</span> ${unit}</b>
-    <input type="range" id="${id}" min="${min}" max="${max}" step="${step}" value="${val}"></label>`;
+    <span class="slrow"><input type="range" id="${id}" min="${min}" max="${max}" step="${step}" value="${val}">${E.numBox(id + "-n", min, max, unit)}</span><small class="nerr"></small></label>`;
 
   // ---------- calculator ----------
   function addCalculator() {
