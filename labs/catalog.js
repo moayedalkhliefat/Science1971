@@ -160,6 +160,11 @@ window.S1971_LABS = [
     id: "projectile", title: "Projectile Motion", subject: "Physics", icon: "🎯", color: "linear-gradient(135deg,#e65100,#1e88e5)", grades: ["all"],
     path: "labs/projectile/index.html", description: "Fire a cannon: change the angle, speed and height to hit targets and discover how projectiles move.",
     levels: [{ n: 1, id: "projectile-l1", name: "Level 1 · Explorer" }, { n: 2, id: "projectile-l2", name: "Level 2 · Investigator" }, { n: 3, id: "projectile-l3", name: "Level 3 · Expert" }]
+  },
+  {
+    id: "pendulum", title: "Pendulum Lab", subject: "Physics", icon: "⏱️", color: "linear-gradient(135deg,#1e88e5,#8d6e63)", grades: ["all"],
+    path: "labs/pendulum/index.html", description: "Swing pendulums of different lengths, masses and angles — even on other planets — and time their period.",
+    levels: [{ n: 1, id: "pendulum-l1", name: "Level 1 · Explorer" }, { n: 2, id: "pendulum-l2", name: "Level 2 · Investigator" }, { n: 3, id: "pendulum-l3", name: "Level 3 · Expert" }]
   }
 ];
 
