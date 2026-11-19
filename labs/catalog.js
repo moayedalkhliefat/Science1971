@@ -45,6 +45,16 @@ window.S1971_LABS = [
       { n: 2, id: "atom-l2", name: "Level 2 · Investigator" },
       { n: 3, id: "atom-l3", name: "Level 3 · Expert" }
     ]
+  },
+  {
+    id: "density", title: "Density & Buoyancy", subject: "Physics", icon: "🧊", color: "linear-gradient(135deg,#0b5cab,#26c6da)", grades: ["all"],
+    path: "labs/density/index.html", description: "Change a block's mass and volume, drop it into water, oil, salt water or honey, and predict sink or float.",
+    levels: [{ n: 1, id: "density-l1", name: "Level 1 · Explorer" }, { n: 2, id: "density-l2", name: "Level 2 · Investigator" }, { n: 3, id: "density-l3", name: "Level 3 · Expert" }]
+  },
+  {
+    id: "energy", title: "Energy Skate Park", subject: "Physics", icon: "🛹", color: "linear-gradient(135deg,#1e88e5,#43a047)", grades: ["all"],
+    path: "labs/energy/index.html", description: "Send a skater down a ramp, change height, mass and friction, and watch potential, kinetic and heat energy change.",
+    levels: [{ n: 1, id: "energy-l1", name: "Level 1 · Explorer" }, { n: 2, id: "energy-l2", name: "Level 2 · Investigator" }, { n: 3, id: "energy-l3", name: "Level 3 · Expert" }]
   }
 ];
 

@@ -100,13 +100,13 @@
     G.qn++;
     G.lastType = G.q.type; G.typesSeen.add(G.q.type);
     if (G.typesSeen.size >= (E.C.typeCycle || 4)) G.typesSeen = new Set([G.q.type]);
-    const r = E.C.renderers[G.q.type];
+    const r = (E.C.renderers && E.C.renderers[G.q.type]) || (G.q.sim ? (qq => E.simTask(qq, qq.sim)) : E.std[G.q.kind]);
     r(G.q, E);
     updateBar();
   }
 
   E.header = function () {
-    const G = E.G, q = G.q, ti = (E.C.typeInfo || {})[q.type] || "🧩 Task";
+    const G = E.G, q = G.q, ti = (E.C.typeInfo || {})[q.type] || q.title || "🧩 Task";
     const badge = E.C.plan ? (q.cat === "sim" ? `<span class="catb sim">🧪 Lab challenge</span>` : `<span class="catb dia">🖼️ Diagram task</span>`) : "";
     return `<div class="qhead"><span class="qnum">Task ${G.qn}</span>${badge}<span class="diff">${DIFF_NAME[q.diff]}</span></div>
       <div class="qtype">${ti}</div>${q.prompt ? `<div class="prompt">${q.prompt}</div>` : ""}`;
