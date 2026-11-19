@@ -172,14 +172,14 @@
     if (cb && passed) {
       const url = lvl => `${root}certificate.html?lab=${lab.id}&level=${lvl}`;
       if (r.saved) {
-        cb.innerHTML = `<a class="btn green" href="${url(S1971Lab.level)}" target="_blank">🎓 Open my Level ${S1971Lab.level} certificate</a>`;
+        cb.innerHTML = `<a class="btn green" href="${url(S1971Lab.level)}">🎓 Open my Level ${S1971Lab.level} certificate</a>`;
         try {
           const mine = await S1971.rpc("student_my_results", { p_token: S1971Lab.session.token });
           const all = lab.levels.every(lv => mine.some(x => x.lab_id === lv.id && 100 * x.score / x.max_score >= PASS - 1e-9));
-          if (all) cb.innerHTML += `<a class="btn blue" href="${url("all")}" target="_blank">🏆 Open my Lab Completion certificate</a>`;
+          if (all) cb.innerHTML += `<a class="btn blue" href="${url("all")}">🏆 Open my Lab Completion certificate</a>`;
         } catch (e) {}
       } else if (S1971Lab.mode === "preview") {
-        cb.innerHTML = `<a class="btn ghost" href="${url(S1971Lab.level)}" target="_blank">👁️ Preview the certificate</a>`;
+        cb.innerHTML = `<a class="btn ghost" href="${url(S1971Lab.level)}">👁️ Preview the certificate</a>`;
       } else {
         cb.innerHTML = `<span class="hint">🎓 Log in as a student to get a certificate.</span>`;
       }

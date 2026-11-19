@@ -333,7 +333,7 @@ function renderLabs() {
     <div class="lab" style="--lab:${l.color}"><div class="band"></div>
       <div class="icon">${l.icon}</div><h3>${esc(l.title)}</h3>
       <p>${esc(l.description)}<br><span class="small">For grades: ${(l.grades.includes("all") ? "all" : l.grades.join(", "))}</span></p>
-      <div class="levels">${l.levels.map(v => `<a class="lvl" href="${l.path}?level=${v.n}&preview=1" target="_blank">${esc(v.name)} <span class="best">👁️ Preview</span></a>`).join("")}</div>
+      <div class="levels">${l.levels.map(v => `<a class="lvl" href="${l.path}?level=${v.n}&preview=1">${esc(v.name)} <span class="best">👁️ Preview</span></a>`).join("")}</div>
     </div>`).join("")).join("");
 }
 </script>

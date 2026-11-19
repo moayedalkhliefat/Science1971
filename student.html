@@ -100,7 +100,7 @@ const passed = r => pctOf(r) >= PASS - 1e-9;
     if (l.levels.every(v => isPass(v.id))) certs.push({ title: `${l.title} — Lab completed (all levels)`, icon: "🏆", url: `certificate.html?lab=${l.id}&level=all`, big: true });
   });
   document.getElementById("certs").innerHTML = certs.length ? certs.map(c => `
-    <a class="cert-item ${c.big ? "big" : ""}" href="${c.url}" target="_blank"><span class="ci">${c.icon}</span><span><b>${esc(c.title)}</b>${c.score != null ? `<br><small>Score ${c.score}%</small>` : `<br><small>Completion certificate</small>`}</span><span class="open">Open 🎓</span></a>`).join("")
+    <a class="cert-item ${c.big ? "big" : ""}" href="${c.url}"><span class="ci">${c.icon}</span><span><b>${esc(c.title)}</b>${c.score != null ? `<br><small>Score ${c.score}%</small>` : `<br><small>Completion certificate</small>`}</span><span class="open">Open 🎓</span></a>`).join("")
     : `<p class="muted">Pass a level (${PASS}% or more) to earn your first certificate! 🎯</p>`;
 
   // ----- results -----
