@@ -265,6 +265,11 @@ window.S1971_LABS = [
     id: "conserve", title: "Conservation of Mass", subject: "Chemistry", icon: "⚖️", color: "linear-gradient(135deg,#5e35b1,#d1c4e9)", grades: ["all"],
     path: "labs/conserve/index.html", description: "Do reactions on a balance in open and sealed containers: watch gases escape and oxygen join, and prove that mass is conserved.",
     levels: [{ n: 1, id: "conserve-l1", name: "Level 1 · Explorer" }, { n: 2, id: "conserve-l2", name: "Level 2 · Investigator" }, { n: 3, id: "conserve-l3", name: "Level 3 · Expert" }]
+  },
+  {
+    id: "trends", title: "Periodic Table Trends", subject: "Chemistry", icon: "📊", color: "linear-gradient(135deg,#3949ab,#9fa8da)", grades: ["all"],
+    path: "labs/trends/index.html", description: "Explore the first four periods: colour the table by type, atom size and reactivity, drop metals in water and predict ions and trends.",
+    levels: [{ n: 1, id: "trends-l1", name: "Level 1 · Explorer" }, { n: 2, id: "trends-l2", name: "Level 2 · Investigator" }, { n: 3, id: "trends-l3", name: "Level 3 · Expert" }]
   }
 ];
 
