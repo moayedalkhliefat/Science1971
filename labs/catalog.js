@@ -250,6 +250,11 @@ window.S1971_LABS = [
     id: "titration", title: "Acid–Base Titration", subject: "Chemistry", icon: "🧪", color: "linear-gradient(135deg,#ad1457,#f8bbd0)", grades: ["all"],
     path: "labs/titration/index.html", description: "Neutralise hydrochloric acid with sodium hydroxide from a burette, watch indicators and the titration curve, and find unknown concentrations.",
     levels: [{ n: 1, id: "titration-l1", name: "Level 1 · Explorer" }, { n: 2, id: "titration-l2", name: "Level 2 · Investigator" }, { n: 3, id: "titration-l3", name: "Level 3 · Expert" }]
+  },
+  {
+    id: "rates", title: "Reaction Rates", subject: "Chemistry", icon: "⏱️", color: "linear-gradient(135deg,#ef6c00,#ffcc80)", grades: ["all"],
+    path: "labs/rates/index.html", description: "React zinc with acid: change temperature, concentration, surface area and add a catalyst, then measure the hydrogen gas with collision theory.",
+    levels: [{ n: 1, id: "rates-l1", name: "Level 1 · Explorer" }, { n: 2, id: "rates-l2", name: "Level 2 · Investigator" }, { n: 3, id: "rates-l3", name: "Level 3 · Expert" }]
   }
 ];
 
