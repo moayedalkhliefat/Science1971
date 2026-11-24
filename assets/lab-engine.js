@@ -14,6 +14,8 @@
   const fmt = n => (Math.round(n * 100) / 100).toString();
 
   const E = { esc, shuffle, pick, rnd, choice, fmt, PASS, G: null, C: null, stage: null };
+  // load the game-break games (assets/minigames.js) next to this engine file
+  try { const src = document.currentScript && document.currentScript.src; if (src && !window.MiniGames) { const sc = document.createElement("script"); sc.src = new URL("minigames.js", src).href; document.head.appendChild(sc); } } catch (e) {}
 
   E.start = async function (cfg) {
     E.C = cfg; E.TOTAL = cfg.total || 12;
@@ -90,6 +92,11 @@
   function next() {
     const G = E.G;
     if (G.qn >= E.TOTAL) return finish();
+    // game break after task 4 (every level, every try). The lab timer pauses; game points never count.
+    if (G.qn === 4 && !G.mgDone && window.MiniGames && !E.noGames) {
+      G.mgDone = true; E.pausedAt = Date.now();
+      return window.MiniGames.open(E.C.labId, () => { E.t0 += Date.now() - E.pausedAt; E.pausedAt = null; next(); });
+    }
     let cat = null;
     if (E.C.plan) {
       const want = G.qn % 2 === 0 ? "sim" : "dia", other = want === "sim" ? "dia" : "sim";
@@ -203,7 +210,7 @@
   E.mmss = mmss;
   function startTimer() {
     clearInterval(E._tick);
-    E._tick = setInterval(() => { const el = document.getElementById("sb-time"); if (el && E.t0) el.textContent = mmss(Math.round(((E.tEnd || Date.now()) - E.t0) / 1000)); if (E.tEnd) clearInterval(E._tick); }, 1000);
+    E._tick = setInterval(() => { const el = document.getElementById("sb-time"); if (el && E.t0) el.textContent = mmss(Math.round(((E.tEnd || E.pausedAt || Date.now()) - E.t0) / 1000)); if (E.tEnd) clearInterval(E._tick); }, 1000);
   }
   function who() {
     const s = S1971Lab.session;
@@ -221,7 +228,7 @@
     const passPts = E.TOTAL * PASS / 100, pct = 100 * G.score / E.TOTAL;
     const dots = Array.from({ length: E.TOTAL }, (_, i) => { const a = G.answers[i]; const c = a ? (a.points >= 0.999 ? "ok" : a.points > 0 ? "mid" : "no") : (i === cur - 1 && !E.tEnd ? "cur" : ""); return `<i class="dot ${c}" title="Task ${i + 1}"></i>`; }).join("");
     const open = bar.querySelector(".sb-list:not(.hidden)") != null;
-    const secs = E.t0 ? Math.round(((E.tEnd || Date.now()) - E.t0) / 1000) : 0;
+    const secs = E.t0 ? Math.round(((E.tEnd || E.pausedAt || Date.now()) - E.t0) / 1000) : 0;
     bar.innerHTML = `
       <div class="sb-who">👤 ${who()}</div>
       <div class="sb-lab">${E.C.emoji || "🧪"} <b>${esc(S1971Lab.lab.title)}</b><span>${esc(S1971Lab.levelInfo.name)}</span></div>
