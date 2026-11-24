@@ -255,6 +255,11 @@ window.S1971_LABS = [
     id: "rates", title: "Reaction Rates", subject: "Chemistry", icon: "⏱️", color: "linear-gradient(135deg,#ef6c00,#ffcc80)", grades: ["all"],
     path: "labs/rates/index.html", description: "React zinc with acid: change temperature, concentration, surface area and add a catalyst, then measure the hydrogen gas with collision theory.",
     levels: [{ n: 1, id: "rates-l1", name: "Level 1 · Explorer" }, { n: 2, id: "rates-l2", name: "Level 2 · Investigator" }, { n: 3, id: "rates-l3", name: "Level 3 · Expert" }]
+  },
+  {
+    id: "changes", title: "Physical vs Chemical Change", subject: "Chemistry", icon: "🔥", color: "linear-gradient(135deg,#e65100,#ffccbc)", grades: ["all"],
+    path: "labs/changes/index.html", description: "Do ten mini experiments, spot the signs of a chemical reaction (gas, colour, heat, precipitate, light) and test which changes can be reversed.",
+    levels: [{ n: 1, id: "changes-l1", name: "Level 1 · Explorer" }, { n: 2, id: "changes-l2", name: "Level 2 · Investigator" }, { n: 3, id: "changes-l3", name: "Level 3 · Expert" }]
   }
 ];
 
