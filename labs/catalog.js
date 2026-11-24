@@ -260,6 +260,11 @@ window.S1971_LABS = [
     id: "changes", title: "Physical vs Chemical Change", subject: "Chemistry", icon: "🔥", color: "linear-gradient(135deg,#e65100,#ffccbc)", grades: ["all"],
     path: "labs/changes/index.html", description: "Do ten mini experiments, spot the signs of a chemical reaction (gas, colour, heat, precipitate, light) and test which changes can be reversed.",
     levels: [{ n: 1, id: "changes-l1", name: "Level 1 · Explorer" }, { n: 2, id: "changes-l2", name: "Level 2 · Investigator" }, { n: 3, id: "changes-l3", name: "Level 3 · Expert" }]
+  },
+  {
+    id: "conserve", title: "Conservation of Mass", subject: "Chemistry", icon: "⚖️", color: "linear-gradient(135deg,#5e35b1,#d1c4e9)", grades: ["all"],
+    path: "labs/conserve/index.html", description: "Do reactions on a balance in open and sealed containers: watch gases escape and oxygen join, and prove that mass is conserved.",
+    levels: [{ n: 1, id: "conserve-l1", name: "Level 1 · Explorer" }, { n: 2, id: "conserve-l2", name: "Level 2 · Investigator" }, { n: 3, id: "conserve-l3", name: "Level 3 · Expert" }]
   }
 ];
 
