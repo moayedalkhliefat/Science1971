@@ -285,6 +285,11 @@ window.S1971_LABS = [
     id: "separate", title: "Separating Mixtures", subject: "Chemistry", icon: "🧲", color: "linear-gradient(135deg,#00796b,#80cbc4)", grades: ["all"],
     path: "labs/separate/index.html", description: "Choose filtering, evaporation, distillation, magnets, separating funnels or chromatography — and plan 3-step methods — to get pure substances.",
     levels: [{ n: 1, id: "separate-l1", name: "Level 1 · Explorer" }, { n: 2, id: "separate-l2", name: "Level 2 · Investigator" }, { n: 3, id: "separate-l3", name: "Level 3 · Expert" }]
+  },
+  {
+    id: "sound", title: "Sound & Hearing", subject: "Physics", icon: "🔊", color: "linear-gradient(135deg,#6a1b9a,#ce93d8)", grades: ["all"],
+    path: "labs/sound/index.html", description: "Change pitch and loudness on an oscilloscope, compare the speed of sound in air, water and steel, and measure distances with echoes.",
+    levels: [{ n: 1, id: "sound-l1", name: "Level 1 · Explorer" }, { n: 2, id: "sound-l2", name: "Level 2 · Investigator" }, { n: 3, id: "sound-l3", name: "Level 3 · Expert" }]
   }
 ];
 
