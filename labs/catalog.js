@@ -275,6 +275,11 @@ window.S1971_LABS = [
     id: "bonding", title: "Ionic & Covalent Bonding", subject: "Chemistry", icon: "🔗", color: "linear-gradient(135deg,#00838f,#80deea)", grades: ["all"],
     path: "labs/bonding/index.html", description: "Transfer or share outer electrons to build ionic compounds and covalent molecules, with dot-and-cross diagrams and full outer shells.",
     levels: [{ n: 1, id: "bonding-l1", name: "Level 1 · Explorer" }, { n: 2, id: "bonding-l2", name: "Level 2 · Investigator" }, { n: 3, id: "bonding-l3", name: "Level 3 · Expert" }]
+  },
+  {
+    id: "thermo", title: "Exothermic & Endothermic", subject: "Chemistry", icon: "🌡️", color: "linear-gradient(135deg,#d84315,#64b5f6)", grades: ["all"],
+    path: "labs/thermo/index.html", description: "Measure temperature changes in a calorimeter, make hot packs and cold packs, draw energy level diagrams and calculate Q = mcΔT.",
+    levels: [{ n: 1, id: "thermo-l1", name: "Level 1 · Explorer" }, { n: 2, id: "thermo-l2", name: "Level 2 · Investigator" }, { n: 3, id: "thermo-l3", name: "Level 3 · Expert" }]
   }
 ];
 
