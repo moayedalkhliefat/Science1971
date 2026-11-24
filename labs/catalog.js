@@ -320,6 +320,11 @@ window.S1971_LABS = [
     id: "momentum", title: "Momentum & Collisions", subject: "Physics", icon: "🎱", color: "linear-gradient(135deg,#e53935,#1e88e5)", grades: ["all"],
     path: "labs/momentum/index.html", description: "Momentum, sticky and bouncy crashes, and conservation of momentum",
     levels: [{ n: 1, id: "momentum-l1", name: "Level 1 · Explorer" }, { n: 2, id: "momentum-l2", name: "Level 2 · Investigator" }, { n: 3, id: "momentum-l3", name: "Level 3 · Expert" }]
+  },
+  {
+    id: "induction", title: "Electromagnetic Induction", subject: "Physics", icon: "🧲", color: "linear-gradient(135deg,#fbc02d,#e53935)", grades: ["all"],
+    path: "labs/induction/index.html", description: "Magnets, coils, induced current and transformers",
+    levels: [{ n: 1, id: "induction-l1", name: "Level 1 · Explorer" }, { n: 2, id: "induction-l2", name: "Level 2 · Investigator" }, { n: 3, id: "induction-l3", name: "Level 3 · Expert" }]
   }
 ];
 
