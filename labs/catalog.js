@@ -270,6 +270,11 @@ window.S1971_LABS = [
     id: "trends", title: "Periodic Table Trends", subject: "Chemistry", icon: "📊", color: "linear-gradient(135deg,#3949ab,#9fa8da)", grades: ["all"],
     path: "labs/trends/index.html", description: "Explore the first four periods: colour the table by type, atom size and reactivity, drop metals in water and predict ions and trends.",
     levels: [{ n: 1, id: "trends-l1", name: "Level 1 · Explorer" }, { n: 2, id: "trends-l2", name: "Level 2 · Investigator" }, { n: 3, id: "trends-l3", name: "Level 3 · Expert" }]
+  },
+  {
+    id: "bonding", title: "Ionic & Covalent Bonding", subject: "Chemistry", icon: "🔗", color: "linear-gradient(135deg,#00838f,#80deea)", grades: ["all"],
+    path: "labs/bonding/index.html", description: "Transfer or share outer electrons to build ionic compounds and covalent molecules, with dot-and-cross diagrams and full outer shells.",
+    levels: [{ n: 1, id: "bonding-l1", name: "Level 1 · Explorer" }, { n: 2, id: "bonding-l2", name: "Level 2 · Investigator" }, { n: 3, id: "bonding-l3", name: "Level 3 · Expert" }]
   }
 ];
 
