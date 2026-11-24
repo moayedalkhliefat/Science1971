@@ -230,6 +230,11 @@ window.S1971_LABS = [
     id: "respiration", title: "Cell Respiration (Yeast)", subject: "Biology", icon: "🍞", color: "linear-gradient(135deg,#f9a825,#fff176)", grades: ["all"],
     path: "labs/respiration/index.html", description: "Feed yeast different sugars at different temperatures, collect the carbon dioxide in a balloon and test it with limewater.",
     levels: [{ n: 1, id: "respiration-l1", name: "Level 1 · Explorer" }, { n: 2, id: "respiration-l2", name: "Level 2 · Investigator" }, { n: 3, id: "respiration-l3", name: "Level 3 · Expert" }]
+  },
+  {
+    id: "disease", title: "Disease Spread & Vaccines", subject: "Biology", icon: "🦠", color: "linear-gradient(135deg,#1e88e5,#ef5350)", grades: ["all"],
+    path: "labs/disease/index.html", description: "Watch an infection spread through a town of 100 people; use vaccination, hand washing and fewer contacts to bring R below 1.",
+    levels: [{ n: 1, id: "disease-l1", name: "Level 1 · Explorer" }, { n: 2, id: "disease-l2", name: "Level 2 · Investigator" }, { n: 3, id: "disease-l3", name: "Level 3 · Expert" }]
   }
 ];
 
