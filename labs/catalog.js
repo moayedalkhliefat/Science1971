@@ -240,6 +240,11 @@ window.S1971_LABS = [
     id: "dnafp", title: "DNA Fingerprinting", subject: "Biology", icon: "🧬", color: "linear-gradient(135deg,#3949ab,#90caf9)", grades: ["all"],
     path: "labs/dnafp/index.html", description: "Run crime-scene and suspect DNA on a gel, control voltage and time, read the ladder and cut DNA with restriction enzymes.",
     levels: [{ n: 1, id: "dnafp-l1", name: "Level 1 · Explorer" }, { n: 2, id: "dnafp-l2", name: "Level 2 · Investigator" }, { n: 3, id: "dnafp-l3", name: "Level 3 · Expert" }]
+  },
+  {
+    id: "transpire", title: "Plant Transpiration", subject: "Biology", icon: "🌿", color: "linear-gradient(135deg,#558b2f,#c5e1a5)", grades: ["all"],
+    path: "labs/transpire/index.html", description: "Use a potometer to measure water loss from a leafy shoot; change light, wind, temperature and humidity, and find where the stomata are.",
+    levels: [{ n: 1, id: "transpire-l1", name: "Level 1 · Explorer" }, { n: 2, id: "transpire-l2", name: "Level 2 · Investigator" }, { n: 3, id: "transpire-l3", name: "Level 3 · Expert" }]
   }
 ];
 
