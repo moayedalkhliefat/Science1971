@@ -305,6 +305,11 @@ window.S1971_LABS = [
     id: "pulleys", title: "Pulleys & Gears", subject: "Physics", icon: "⚙️", color: "linear-gradient(135deg,#546e7a,#b0bec5)", grades: ["all"],
     path: "labs/pulleys/index.html", description: "Lift heavy loads with pulley systems, trade force for distance, and build gear trains that change speed, turning force and direction.",
     levels: [{ n: 1, id: "pulleys-l1", name: "Level 1 · Explorer" }, { n: 2, id: "pulleys-l2", name: "Level 2 · Investigator" }, { n: 3, id: "pulleys-l3", name: "Level 3 · Expert" }]
+  },
+  {
+    id: "pressure", title: "Pressure & Hydraulics", subject: "Physics", icon: "🌊", color: "linear-gradient(135deg,#0277bd,#80deea)", grades: ["all"],
+    path: "labs/pressure/index.html", description: "Pressure on solids, in liquids and in hydraulic machines",
+    levels: [{ n: 1, id: "pressure-l1", name: "Level 1 · Explorer" }, { n: 2, id: "pressure-l2", name: "Level 2 · Investigator" }, { n: 3, id: "pressure-l3", name: "Level 3 · Expert" }]
   }
 ];
 
