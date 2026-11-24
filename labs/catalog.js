@@ -310,6 +310,11 @@ window.S1971_LABS = [
     id: "pressure", title: "Pressure & Hydraulics", subject: "Physics", icon: "🌊", color: "linear-gradient(135deg,#0277bd,#80deea)", grades: ["all"],
     path: "labs/pressure/index.html", description: "Pressure on solids, in liquids and in hydraulic machines",
     levels: [{ n: 1, id: "pressure-l1", name: "Level 1 · Explorer" }, { n: 2, id: "pressure-l2", name: "Level 2 · Investigator" }, { n: 3, id: "pressure-l3", name: "Level 3 · Expert" }]
+  },
+  {
+    id: "lenses", title: "Lenses & Mirrors", subject: "Physics", icon: "🔍", color: "linear-gradient(135deg,#f9a825,#4fc3f7)", grades: ["all"],
+    path: "labs/lenses/index.html", description: "Reflection in mirrors and images made by convex lenses",
+    levels: [{ n: 1, id: "lenses-l1", name: "Level 1 · Explorer" }, { n: 2, id: "lenses-l2", name: "Level 2 · Investigator" }, { n: 3, id: "lenses-l3", name: "Level 3 · Expert" }]
   }
 ];
 
