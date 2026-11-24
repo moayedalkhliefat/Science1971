@@ -235,6 +235,11 @@ window.S1971_LABS = [
     id: "disease", title: "Disease Spread & Vaccines", subject: "Biology", icon: "🦠", color: "linear-gradient(135deg,#1e88e5,#ef5350)", grades: ["all"],
     path: "labs/disease/index.html", description: "Watch an infection spread through a town of 100 people; use vaccination, hand washing and fewer contacts to bring R below 1.",
     levels: [{ n: 1, id: "disease-l1", name: "Level 1 · Explorer" }, { n: 2, id: "disease-l2", name: "Level 2 · Investigator" }, { n: 3, id: "disease-l3", name: "Level 3 · Expert" }]
+  },
+  {
+    id: "dnafp", title: "DNA Fingerprinting", subject: "Biology", icon: "🧬", color: "linear-gradient(135deg,#3949ab,#90caf9)", grades: ["all"],
+    path: "labs/dnafp/index.html", description: "Run crime-scene and suspect DNA on a gel, control voltage and time, read the ladder and cut DNA with restriction enzymes.",
+    levels: [{ n: 1, id: "dnafp-l1", name: "Level 1 · Explorer" }, { n: 2, id: "dnafp-l2", name: "Level 2 · Investigator" }, { n: 3, id: "dnafp-l3", name: "Level 3 · Expert" }]
   }
 ];
 
