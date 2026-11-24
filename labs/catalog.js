@@ -295,6 +295,11 @@ window.S1971_LABS = [
     id: "heat", title: "Heat Transfer", subject: "Physics", icon: "☕", color: "linear-gradient(135deg,#e64a19,#ffab91)", grades: ["all"],
     path: "labs/heat/index.html", description: "Keep tea hot with cups, lids and wraps, read cooling curves, and heat water with an electric heater using energy = mass × 4.2 × ΔT.",
     levels: [{ n: 1, id: "heat-l1", name: "Level 1 · Explorer" }, { n: 2, id: "heat-l2", name: "Level 2 · Investigator" }, { n: 3, id: "heat-l3", name: "Level 3 · Expert" }]
+  },
+  {
+    id: "ramps", title: "Ramps & Friction", subject: "Physics", icon: "🛝", color: "linear-gradient(135deg,#795548,#d7ccc8)", grades: ["all"],
+    path: "labs/ramps/index.html", description: "Tilt a ramp of ice, wood or rubber, find when boxes start to slide, push them up with the right force and calculate accelerations.",
+    levels: [{ n: 1, id: "ramps-l1", name: "Level 1 · Explorer" }, { n: 2, id: "ramps-l2", name: "Level 2 · Investigator" }, { n: 3, id: "ramps-l3", name: "Level 3 · Expert" }]
   }
 ];
 
