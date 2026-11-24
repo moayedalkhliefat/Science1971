@@ -280,6 +280,11 @@ window.S1971_LABS = [
     id: "thermo", title: "Exothermic & Endothermic", subject: "Chemistry", icon: "🌡️", color: "linear-gradient(135deg,#d84315,#64b5f6)", grades: ["all"],
     path: "labs/thermo/index.html", description: "Measure temperature changes in a calorimeter, make hot packs and cold packs, draw energy level diagrams and calculate Q = mcΔT.",
     levels: [{ n: 1, id: "thermo-l1", name: "Level 1 · Explorer" }, { n: 2, id: "thermo-l2", name: "Level 2 · Investigator" }, { n: 3, id: "thermo-l3", name: "Level 3 · Expert" }]
+  },
+  {
+    id: "separate", title: "Separating Mixtures", subject: "Chemistry", icon: "🧲", color: "linear-gradient(135deg,#00796b,#80cbc4)", grades: ["all"],
+    path: "labs/separate/index.html", description: "Choose filtering, evaporation, distillation, magnets, separating funnels or chromatography — and plan 3-step methods — to get pure substances.",
+    levels: [{ n: 1, id: "separate-l1", name: "Level 1 · Explorer" }, { n: 2, id: "separate-l2", name: "Level 2 · Investigator" }, { n: 3, id: "separate-l3", name: "Level 3 · Expert" }]
   }
 ];
 
