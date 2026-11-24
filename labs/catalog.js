@@ -225,6 +225,11 @@ window.S1971_LABS = [
     id: "heart", title: "Heart & Circulation", subject: "Biology", icon: "❤️", color: "linear-gradient(135deg,#c62828,#ef9a9a)", grades: ["all"],
     path: "labs/heart/index.html", description: "Follow blood through the double circulation, then set heart rate and stroke volume to deliver enough oxygen for rest, walking and running.",
     levels: [{ n: 1, id: "heart-l1", name: "Level 1 · Explorer" }, { n: 2, id: "heart-l2", name: "Level 2 · Investigator" }, { n: 3, id: "heart-l3", name: "Level 3 · Expert" }]
+  },
+  {
+    id: "respiration", title: "Cell Respiration (Yeast)", subject: "Biology", icon: "🍞", color: "linear-gradient(135deg,#f9a825,#fff176)", grades: ["all"],
+    path: "labs/respiration/index.html", description: "Feed yeast different sugars at different temperatures, collect the carbon dioxide in a balloon and test it with limewater.",
+    levels: [{ n: 1, id: "respiration-l1", name: "Level 1 · Explorer" }, { n: 2, id: "respiration-l2", name: "Level 2 · Investigator" }, { n: 3, id: "respiration-l3", name: "Level 3 · Expert" }]
   }
 ];
 
