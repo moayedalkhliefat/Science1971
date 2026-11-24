@@ -245,6 +245,11 @@ window.S1971_LABS = [
     id: "transpire", title: "Plant Transpiration", subject: "Biology", icon: "🌿", color: "linear-gradient(135deg,#558b2f,#c5e1a5)", grades: ["all"],
     path: "labs/transpire/index.html", description: "Use a potometer to measure water loss from a leafy shoot; change light, wind, temperature and humidity, and find where the stomata are.",
     levels: [{ n: 1, id: "transpire-l1", name: "Level 1 · Explorer" }, { n: 2, id: "transpire-l2", name: "Level 2 · Investigator" }, { n: 3, id: "transpire-l3", name: "Level 3 · Expert" }]
+  },
+  {
+    id: "titration", title: "Acid–Base Titration", subject: "Chemistry", icon: "🧪", color: "linear-gradient(135deg,#ad1457,#f8bbd0)", grades: ["all"],
+    path: "labs/titration/index.html", description: "Neutralise hydrochloric acid with sodium hydroxide from a burette, watch indicators and the titration curve, and find unknown concentrations.",
+    levels: [{ n: 1, id: "titration-l1", name: "Level 1 · Explorer" }, { n: 2, id: "titration-l2", name: "Level 2 · Investigator" }, { n: 3, id: "titration-l3", name: "Level 3 · Expert" }]
   }
 ];
 
