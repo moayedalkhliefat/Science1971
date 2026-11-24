@@ -215,6 +215,11 @@ window.S1971_LABS = [
     id: "mitosis", title: "Cell Division (Mitosis)", subject: "Biology", icon: "🧫", color: "linear-gradient(135deg,#7b1fa2,#ce93d8)", grades: ["all"],
     path: "labs/mitosis/index.html", description: "Stop a dividing cell at each stage of mitosis, count chromosomes and chromatids, and grow cell cultures by doubling.",
     levels: [{ n: 1, id: "mitosis-l1", name: "Level 1 · Explorer" }, { n: 2, id: "mitosis-l2", name: "Level 2 · Investigator" }, { n: 3, id: "mitosis-l3", name: "Level 3 · Expert" }]
+  },
+  {
+    id: "enzymes", title: "Enzymes", subject: "Biology", icon: "⚗️", color: "linear-gradient(135deg,#00897b,#80cbc4)", grades: ["all"],
+    path: "labs/enzymes/index.html", description: "Test amylase, pepsin and lipase: change temperature, pH and substrate, watch the active site and find each enzyme's optimum.",
+    levels: [{ n: 1, id: "enzymes-l1", name: "Level 1 · Explorer" }, { n: 2, id: "enzymes-l2", name: "Level 2 · Investigator" }, { n: 3, id: "enzymes-l3", name: "Level 3 · Expert" }]
   }
 ];
 
