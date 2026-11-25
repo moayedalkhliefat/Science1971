@@ -6,6 +6,13 @@
 <title>Teacher Dashboard · Science Lab 1971</title>
 <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🧪</text></svg>">
 <link rel="stylesheet" href="assets/style.css">
+<style>
+.ch-pick .tab{font-size:.9rem}
+.ch-box{position:relative;background:#fff;border:2px solid var(--line);border-radius:16px;padding:8px;min-height:200px}
+.ch-box svg{display:block;width:100%;height:auto}
+.ch-box .hit{cursor:pointer}
+.ch-tip{position:absolute;pointer-events:none;background:#1d1b4b;color:#fff;font-size:.85rem;padding:8px 12px;border-radius:10px;white-space:nowrap;box-shadow:0 6px 18px rgba(0,0,0,.2);z-index:5;line-height:1.4}
+</style>
 </head>
 <body>
 <div class="wrap">
@@ -22,6 +29,7 @@
   <div class="tabs">
     <button class="tab active" data-tab="students">👩‍🎓 My Students</button>
     <button class="tab" data-tab="results">📊 Results</button>
+    <button class="tab" data-tab="charts">📈 Charts</button>
     <button class="tab" data-tab="classes">🏫 Class Labs</button>
     <button class="tab" data-tab="labs">🔬 Preview Labs</button>
   </div>
@@ -97,6 +105,31 @@
     </div>
   </section>
 
+  <!-- CHARTS -->
+  <section id="tab-charts" class="hidden">
+    <div class="card">
+      <div class="row between gap">
+        <h2>📈 Charts</h2>
+        <div class="row gap">
+          <select class="inline hidden" id="c-teacher"></select>
+          <select class="inline" id="c-grade"></select>
+          <select class="inline" id="c-section"></select>
+          <select class="inline" id="c-subj"><option value="">All subjects</option></select>
+          <select class="inline" id="c-lab"></select>
+          <select class="inline" id="c-level"><option value="">All levels</option><option value="1">Level 1</option><option value="2">Level 2</option><option value="3">Level 3</option></select>
+          <select class="inline" id="c-pass"><option value="">Pass &amp; fail</option><option value="pass">✅ Passed</option><option value="fail">❌ Not passed</option></select>
+        </div>
+      </div>
+      <div class="tabs ch-pick" id="ch-pick" style="margin:14px 0 6px"></div>
+      <div class="row between gap" style="margin:8px 0">
+        <div class="row gap"><select class="inline hidden" id="c-student"></select><span class="muted small" id="ch-note"></span></div>
+        <div class="row gap"><button class="btn sm blue" id="ch-png">⬇️ Download image</button><button class="btn sm ghost" id="ch-print">🖨️ Print</button></div>
+      </div>
+      <div id="ch-box" class="ch-box"></div>
+      <p class="muted small" style="margin-top:6px">When a student tries a lab more than once, the average of all their tries is used. Click a bar or point to see the students.</p>
+    </div>
+  </section>
+
   <!-- CLASS LABS -->
   <section id="tab-classes" class="hidden">
     <div class="card" style="margin-bottom:18px">
@@ -151,7 +184,7 @@ let ME = null, STUDENTS = [], RESULTS = [], PENDING = [];
 // ---------- tabs ----------
 document.querySelectorAll(".tab[data-tab]").forEach(b => b.onclick = () => {
   document.querySelectorAll(".tab[data-tab]").forEach(x => x.classList.toggle("active", x === b));
-  ["students", "results", "classes", "labs"].forEach(t => document.getElementById("tab-" + t).classList.toggle("hidden", t !== b.dataset.tab));
+  ["students", "results", "charts", "classes", "labs"].forEach(t => document.getElementById("tab-" + t).classList.toggle("hidden", t !== b.dataset.tab));
 });
 
 // ---------- students ----------
@@ -283,6 +316,7 @@ async function loadResults() {
   if (subjects.some(sb => sb.key === sjCur)) sj.value = sjCur;
   fillResultLabs();
   renderResults();
+  fillChartFilters();
 }
 // subject + level of a result (from the lab catalogue; falls back to the saved level)
 function labInfo(r) {
@@ -335,6 +369,170 @@ document.getElementById("r-export").onclick = () => {
     filteredResults().map(r => [r.full_name, r.school_id, r.grade, r.section, labTitle(r.lab_id), +r.score, +r.max_score, pct(r) + "%", tTxt(r), fmtDate(r.completed_at)]));
   S1971.downloadCSV("Science_Lab_1971_results.csv", rows);
 };
+
+// ---------- charts ----------
+const CH_BLUE = "#257de0", CH_GOOD = "#0aac23", CH_BAD = "#dc3c3d", CH_INK = "#1d1b4b", CH_SUB = "#6b6a8f", CH_GRID = "#e7e7e7", CH_AXIS = "#c2c2c2";
+const CHARTS = [
+  { k: "avg", t: "📊 Class average per lab" }, { k: "prog", t: "📈 Student progress" }, { k: "pf", t: "✅ Passed vs not passed" },
+  { k: "cls", t: "🏫 Sections & grades" }, { k: "week", t: "🗓️ Week by week" }, { k: "time", t: "⏱ Time per lab" }];
+let CH_CUR = "avg", CH_LAST = null;
+const cv = id => document.getElementById(id).value;
+function fillChartFilters() {
+  if (ME.role === "admin") { fillSelect("c-teacher", "All teachers", RESULTS.map(r => r.teacher_name)); document.getElementById("c-teacher").classList.remove("hidden"); }
+  fillChartClasses();
+  const sj = document.getElementById("c-subj"), cur = sj.value, subjects = window.S1971_SUBJECTS.filter(sb => RESULTS.some(r => labInfo(r).subject === sb.key));
+  sj.innerHTML = `<option value="">All subjects</option>` + subjects.map(sb => `<option value="${sb.key}">${sb.icon} ${sb.key}</option>`).join("");
+  if (subjects.some(sb => sb.key === cur)) sj.value = cur;
+  fillChartLabs(); renderCharts();
+}
+function fillChartClasses() {
+  const tc = cv("c-teacher"), list = RESULTS.filter(r => !tc || r.teacher_name === tc);
+  fillSelect("c-grade", "All grades", list.map(r => r.grade));
+  fillSelect("c-section", "All sections", list.map(r => r.section));
+}
+function fillChartLabs() {
+  const el = document.getElementById("c-lab"), cur = el.value, sj = cv("c-subj"), lv = +cv("c-level");
+  const labs = [...new Set(RESULTS.filter(r => { const i = labInfo(r); return (!sj || i.subject === sj) && (!lv || i.level === lv); }).map(r => r.lab_id))].sort((a, b) => labOrder(a) - labOrder(b));
+  el.innerHTML = `<option value="">All labs</option>` + labs.map(id => `<option value="${esc(id)}">${esc(labTitle(id))}</option>`).join("");
+  if (labs.includes(cur)) el.value = cur;
+}
+document.getElementById("c-teacher").addEventListener("input", () => { fillChartClasses(); renderCharts(); });
+["c-subj", "c-level"].forEach(id => document.getElementById(id).addEventListener("input", () => { fillChartLabs(); renderCharts(); }));
+["c-grade", "c-section", "c-lab", "c-pass", "c-student"].forEach(id => document.getElementById(id).addEventListener("input", renderCharts));
+function chartResults() {
+  const tc = cv("c-teacher"), g = cv("c-grade"), s = cv("c-section"), l = cv("c-lab"), sj = cv("c-subj"), lv = +cv("c-level"), ps = cv("c-pass");
+  return RESULTS.filter(r => { const i = labInfo(r), ok = pct(r) >= S1971_CONFIG.PASS_MARK;
+    return (!tc || r.teacher_name === tc) && (!g || r.grade === g) && (!s || r.section === s) && (!l || r.lab_id === l) && (!sj || i.subject === sj) && (!lv || i.level === lv) && (!ps || (ps === "pass") === ok); });
+}
+function labOrder(id) { let n = 0; for (const l of window.S1971_LABS) for (const lv of l.levels) { if (lv.id === id) return n; n++; } return 9999; }
+function labShort(id) { for (const l of window.S1971_LABS) { const i = l.levels.findIndex(lv => lv.id === id); if (i >= 0) return `${l.title} · L${i + 1}`; } return id; }
+const stuKey = r => r.school_id || r.full_name;
+const mean = a => a.length ? a.reduce((x, y) => x + y, 0) / a.length : 0;
+const mmss = t => `${String(Math.floor(t / 60)).padStart(2, "0")}:${String(Math.round(t % 60)).padStart(2, "0")}`;
+// one row per student per lab: the average of all their tries
+function studentLab(list) {
+  const m = new Map();
+  list.forEach(r => { const k = r.lab_id + "|" + stuKey(r); if (!m.has(k)) m.set(k, { lab: r.lab_id, name: r.full_name, id: r.school_id, grade: r.grade, section: r.section, tries: [] }); m.get(k).tries.push(pct(r)); });
+  return [...m.values()].map(x => Object.assign(x, { avg: mean(x.tries) }));
+}
+function groupBy(arr, f) { const m = new Map(); arr.forEach(x => { const k = f(x); if (!m.has(k)) m.set(k, []); m.get(k).push(x); }); return m; }
+const svgT = (x, y, txt, o = {}) => `<text x="${x}" y="${y}" font-family="Nunito,system-ui,sans-serif" font-size="${o.s || 13}" font-weight="${o.w || 600}" fill="${o.c || CH_INK}" text-anchor="${o.a || "start"}">${esc(String(txt))}</text>`;
+// horizontal bars: rows [{label, value, text, tip, detail, segs?:[{v,c}]}]
+function hbars(title, rows, o) {
+  const W = 1000, L = 300, R = 70, top = 70, rh = 34, H = top + rows.length * rh + 46, max = o.max, sx = v => L + (W - L - R) * v / max;
+  let g = svgT(20, 30, title, { s: 18, w: 800 }) + (o.legend || "");
+  for (let i = 0; i <= 4; i++) { const v = max * i / 4, x = sx(v); g += `<line x1="${x}" y1="${top - 6}" x2="${x}" y2="${H - 40}" stroke="${CH_GRID}"/>` + svgT(x, H - 20, o.tick(v), { s: 12, c: CH_SUB, a: "middle" }); }
+  rows.forEach((r, i) => {
+    const y = top + i * rh, lab = r.label.length > 40 ? r.label.slice(0, 39) + "…" : r.label;
+    g += svgT(L - 10, y + rh / 2 + 4, lab, { s: 13, a: "end" });
+    let x0 = L; const segs = r.segs || [{ v: r.value, c: CH_BLUE }];
+    segs.forEach((sg, k) => { if (sg.v <= 0) return; const w = Math.max(2, sx(sg.v) - L - (k < segs.length - 1 ? 2 : 0)); g += `<rect x="${x0}" y="${y + 7}" width="${w}" height="${rh - 14}" rx="4" fill="${sg.c}"/>`; x0 += w + 2; });
+    g += svgT(Math.max(x0, L) + 8, y + rh / 2 + 5, r.text, { s: 13, w: 800 });
+    g += `<rect class="hit" data-i="${i}" x="0" y="${y}" width="${W}" height="${rh}" fill="transparent"/>`;
+  });
+  if (o.pass != null) { const x = sx(o.pass); g += `<line x1="${x}" y1="${top - 10}" x2="${x}" y2="${H - 40}" stroke="${CH_INK}" stroke-width="2" stroke-dasharray="6 5"/>` + svgT(x + 6, top - 14, `pass mark ${o.pass}%`, { s: 12, c: CH_INK, w: 800 }); }
+  g += `<line x1="${L}" y1="${top - 6}" x2="${L}" y2="${H - 40}" stroke="${CH_AXIS}" stroke-width="1.5"/>`;
+  return { svg: `<svg viewBox="0 0 ${W} ${H}" xmlns="http://www.w3.org/2000/svg"><rect width="${W}" height="${H}" fill="#fff"/>${g}</svg>`, items: rows };
+}
+// line: pts [{x (number), y (0-100), tip, detail}], xTicks [{x, label}]
+function linePlot(title, pts, xTicks, o) {
+  const W = 1000, H = 440, L = 70, R = 40, top = 70, B = 60, xs = pts.map(p => p.x), x0 = Math.min(...xs), x1 = Math.max(...xs), span = x1 - x0 || 1;
+  const sx = x => pts.length === 1 ? (L + W - R) / 2 : L + 20 + (W - L - R - 40) * (x - x0) / span, sy = y => top + (H - top - B) * (1 - y / 100);
+  let g = svgT(20, 30, title, { s: 18, w: 800 });
+  for (let v = 0; v <= 100; v += 25) g += `<line x1="${L}" y1="${sy(v)}" x2="${W - R}" y2="${sy(v)}" stroke="${CH_GRID}"/>` + svgT(L - 10, sy(v) + 4, v + "%", { s: 12, c: CH_SUB, a: "end" });
+  g += `<line x1="${L}" y1="${sy(0)}" x2="${W - R}" y2="${sy(0)}" stroke="${CH_AXIS}" stroke-width="1.5"/>`;
+  const step = Math.max(1, Math.ceil(xTicks.length / 8));
+  xTicks.forEach((t, i) => { if (i % step === 0 || i === xTicks.length - 1) g += svgT(sx(t.x), H - B + 22, t.label, { s: 12, c: CH_SUB, a: "middle" }); });
+  const yp = sy(S1971_CONFIG.PASS_MARK);
+  g += `<line x1="${L}" y1="${yp}" x2="${W - R}" y2="${yp}" stroke="${CH_INK}" stroke-width="2" stroke-dasharray="6 5"/>` + svgT(W - R, yp - 8, `pass mark ${S1971_CONFIG.PASS_MARK}%`, { s: 12, w: 800, a: "end" });
+  if (pts.length > 1) g += `<polyline points="${pts.map(p => sx(p.x) + "," + sy(p.y)).join(" ")}" fill="none" stroke="${CH_BLUE}" stroke-width="2.5" stroke-linejoin="round"/>`;
+  pts.forEach((p, i) => { g += `<circle cx="${sx(p.x)}" cy="${sy(p.y)}" r="6" fill="${CH_BLUE}" stroke="#fff" stroke-width="2"/>`;
+    if (o && o.labelEvery && (pts.length <= 12 || i === pts.length - 1)) g += svgT(sx(p.x), sy(p.y) - 12, Math.round(p.y) + "%", { s: 12, w: 800, a: "middle" });
+    g += `<circle class="hit" data-i="${i}" cx="${sx(p.x)}" cy="${sy(p.y)}" r="16" fill="transparent"/>`; });
+  return { svg: `<svg viewBox="0 0 ${W} ${H}" xmlns="http://www.w3.org/2000/svg"><rect width="${W}" height="${H}" fill="#fff"/>${g}</svg>`, items: pts };
+}
+function detailModal(title, sub, head, rows) {
+  const m = S1971.modal(`<h3>${esc(title)}</h3><p class="muted">${esc(sub)}</p><div class="table-wrap" style="max-height:55vh"><table><tr>${head.map(h => `<th>${esc(h)}</th>`).join("")}</tr>${rows.map(r => `<tr>${r.map(c => `<td>${c}</td>`).join("")}</tr>`).join("")}</table></div><div class="row end" style="margin-top:12px"><button class="btn" id="close-ch">Close</button></div>`);
+  m.querySelector(".modal").style.width = "min(760px,100%)";
+  m.querySelector("#close-ch").onclick = () => m.remove();
+}
+const pctCell = p => `<span class="score ${p >= S1971_CONFIG.PASS_MARK ? "hi" : p >= 50 ? "mid" : "lo"}">${Math.round(p)}%</span>`;
+const stuRows = xs => xs.sort((a, b) => b.avg - a.avg).map(x => [`<b>${esc(x.name)}</b>`, esc(x.id), esc(x.grade + " · " + x.section), x.tries.length, pctCell(x.avg)]);
+const STU_HEAD = ["Student", "School ID", "Class", "Tries", "Average"];
+function weekStart(d) { const t = new Date(d); t.setHours(0, 0, 0, 0); t.setDate(t.getDate() - ((t.getDay() + 6) % 7)); return t; }
+const dShort = d => d.toLocaleDateString("en-GB", { day: "numeric", month: "short" });
+function buildChart(list) {
+  const PM = S1971_CONFIG.PASS_MARK, sl = studentLab(list);
+  if (CH_CUR === "avg" || CH_CUR === "pf") {
+    const rows = [...groupBy(sl, x => x.lab).entries()].sort((a, b) => labOrder(a[0]) - labOrder(b[0])).map(([lab, xs]) => {
+      const pass = xs.filter(x => x.avg >= PM).length, av = mean(xs.map(x => x.avg));
+      return CH_CUR === "avg" ? { label: labShort(lab), value: av, text: Math.round(av) + "%", tip: `<b>${esc(labTitle(lab))}</b><br>Class average: ${Math.round(av)}%<br>${xs.length} students`, detail: () => detailModal(labTitle(lab), `Class average ${Math.round(av)}% · ${xs.length} students`, STU_HEAD, stuRows(xs)) }
+        : { label: labShort(lab), value: xs.length, segs: [{ v: pass, c: CH_GOOD }, { v: xs.length - pass, c: CH_BAD }], text: `✅ ${pass}  ❌ ${xs.length - pass}`, tip: `<b>${esc(labTitle(lab))}</b><br>✅ Passed: ${pass}<br>❌ Not passed: ${xs.length - pass}`, detail: () => detailModal(labTitle(lab), `✅ ${pass} passed · ❌ ${xs.length - pass} not passed`, STU_HEAD.concat("Result"), stuRows(xs).map((r, i, a) => r.concat(xs[i].avg >= PM ? "✅ Passed" : "❌ Not passed"))) };
+    });
+    if (CH_CUR === "avg") return hbars("Class average score per lab", rows, { max: 100, tick: v => v + "%", pass: PM });
+    const mx = Math.max(4, Math.ceil(Math.max(...rows.map(r => r.value)) / 4) * 4);
+    const legend = `<rect x="560" y="18" width="14" height="14" rx="3" fill="${CH_GOOD}"/>${svgT(580, 30, "✅ Passed", { s: 13 })}<rect x="680" y="18" width="14" height="14" rx="3" fill="${CH_BAD}"/>${svgT(700, 30, "❌ Not passed", { s: 13 })}`;
+    return hbars("Students who passed vs not passed (average of tries)", rows, { max: mx, tick: v => v, legend });
+  }
+  if (CH_CUR === "cls") {
+    const rows = [...groupBy(sl, x => (x.grade || "?") + "|" + (x.section || "?")).entries()].sort((a, b) => (gradeNum(a[0].split("|")[0]) - gradeNum(b[0].split("|")[0])) || a[0].localeCompare(b[0])).map(([k, xs]) => {
+      const [gr, se] = k.split("|"), av = mean(xs.map(x => x.avg)), n = new Set(xs.map(x => x.id)).size;
+      return { label: `Grade ${gr} · Section ${se}`, value: av, text: Math.round(av) + "%", tip: `<b>Grade ${esc(gr)} · Section ${esc(se)}</b><br>Average: ${Math.round(av)}%<br>${n} students`, detail: () => detailModal(`Grade ${gr} · Section ${se}`, `Average ${Math.round(av)}% · ${n} students`, ["Student", "School ID", "Lab", "Tries", "Average"], xs.sort((a, b) => b.avg - a.avg).map(x => [`<b>${esc(x.name)}</b>`, esc(x.id), esc(labTitle(x.lab)), x.tries.length, pctCell(x.avg)])) };
+    });
+    return hbars("Average score by grade and section", rows, { max: 100, tick: v => v + "%", pass: PM });
+  }
+  if (CH_CUR === "time") {
+    const rows = [...groupBy(list.filter(r => r.details && r.details.time_s), r => r.lab_id).entries()].sort((a, b) => labOrder(a[0]) - labOrder(b[0])).map(([lab, rs]) => {
+      const av = mean(rs.map(r => r.details.time_s)), per = studentLab(rs).map(x => Object.assign(x, { t: mean(rs.filter(r => stuKey(r) === (x.id || x.name)).map(r => r.details.time_s)) }));
+      return { label: labShort(lab), value: av / 60, text: mmss(av), tip: `<b>${esc(labTitle(lab))}</b><br>Average time: ${mmss(av)}<br>${rs.length} tries`, detail: () => detailModal(labTitle(lab), `Average time ${mmss(av)} · ${rs.length} tries`, ["Student", "School ID", "Class", "Tries", "Average time"], per.sort((a, b) => b.t - a.t).map(x => [`<b>${esc(x.name)}</b>`, esc(x.id), esc(x.grade + " · " + x.section), x.tries.length, mmss(x.t)])) };
+    });
+    const mx = Math.max(4, Math.ceil(Math.max(0, ...rows.map(r => r.value)) / 4) * 4);
+    return hbars("Average time spent per lab (minutes)", rows, { max: mx, tick: v => mmss(v * 60) });
+  }
+  if (CH_CUR === "week") {
+    const wk = [...groupBy(list, r => weekStart(r.completed_at).getTime()).entries()].sort((a, b) => a[0] - b[0]);
+    const pts = wk.map(([t, rs]) => { const av = mean(rs.map(pct)), d = new Date(+t); return { x: +t, y: av, tip: `<b>Week of ${dShort(d)}</b><br>Average: ${Math.round(av)}%<br>${rs.length} tries`, detail: () => detailModal(`Week of ${dShort(d)}`, `Average ${Math.round(av)}% · ${rs.length} tries`, ["Student", "Class", "Lab", "Score", "Finished"], rs.sort((a, b) => new Date(a.completed_at) - new Date(b.completed_at)).map(r => [`<b>${esc(r.full_name)}</b>`, esc(r.grade + " · " + r.section), esc(labTitle(r.lab_id)), pctCell(pct(r)), fmtDate(r.completed_at)])) }; });
+    return linePlot("Class average week by week", pts, pts.map(p => ({ x: p.x, label: "w/c " + dShort(new Date(p.x)) })), { labelEvery: true });
+  }
+  // student progress
+  const sel = document.getElementById("c-student"), studs = [...groupBy(list, stuKey).entries()].map(([k, rs]) => ({ k, name: rs[0].full_name, cls: rs[0].grade + "-" + rs[0].section })).sort((a, b) => a.name.localeCompare(b.name));
+  const cur = sel.value; sel.innerHTML = studs.map(s => `<option value="${esc(s.k)}">${esc(s.name)} (${esc(s.cls)})</option>`).join(""); if (studs.some(s => s.k === cur)) sel.value = cur;
+  if (!studs.length) return null;
+  const rs = list.filter(r => stuKey(r) === sel.value).sort((a, b) => new Date(a.completed_at) - new Date(b.completed_at)), name = rs[0].full_name;
+  const pts = rs.map((r, i) => ({ x: new Date(r.completed_at).getTime(), y: pct(r), tip: `<b>${esc(labTitle(r.lab_id))}</b><br>Try ${i + 1}: ${pct(r)}% · ⏱ ${tTxt(r)}<br>${fmtDate(r.completed_at)}`, detail: () => showDetails(r) }));
+  return linePlot(`Progress — ${name}`, pts, pts.map(p => ({ x: p.x, label: dShort(new Date(p.x)) })), { labelEvery: true });
+}
+function renderCharts() {
+  const pick = document.getElementById("ch-pick");
+  pick.innerHTML = CHARTS.map(c => `<button type="button" class="tab ${c.k === CH_CUR ? "active" : ""}" data-ch="${c.k}">${c.t}</button>`).join("");
+  pick.querySelectorAll("button").forEach(b => b.onclick = () => { CH_CUR = b.dataset.ch; renderCharts(); });
+  document.getElementById("c-student").classList.toggle("hidden", CH_CUR !== "prog");
+  document.getElementById("ch-note").textContent = CH_CUR === "prog" ? "← pick a student" : "";
+  const box = document.getElementById("ch-box"), list = chartResults();
+  const ch = list.length ? buildChart(list) : null; CH_LAST = ch;
+  if (!ch || !ch.items.length) { box.innerHTML = `<div class="empty" style="padding:40px;text-align:center">${RESULTS.length ? "No results match these filters." : "No results yet. Charts appear when students finish a lab."}</div>`; return; }
+  box.innerHTML = ch.svg + `<div class="ch-tip hidden"></div>`;
+  const tip = box.querySelector(".ch-tip");
+  box.querySelectorAll(".hit").forEach(h => {
+    const it = ch.items[+h.dataset.i];
+    h.addEventListener("mousemove", e => { const b = box.getBoundingClientRect(); tip.innerHTML = it.tip + `<br><span style="opacity:.7">click for details</span>`; tip.classList.remove("hidden"); const x = e.clientX - b.left + 14, w = tip.offsetWidth; tip.style.left = Math.min(x, b.width - w - 8) + "px"; tip.style.top = (e.clientY - b.top + 14) + "px"; });
+    h.addEventListener("mouseleave", () => tip.classList.add("hidden"));
+    h.addEventListener("click", () => { tip.classList.add("hidden"); it.detail(); });
+  });
+}
+function chartPng(cb) {
+  const svg = document.querySelector("#ch-box svg"); if (!svg) return toast("No chart to save.", "bad");
+  const vb = svg.viewBox.baseVal, img = new Image(), url = URL.createObjectURL(new Blob([new XMLSerializer().serializeToString(svg)], { type: "image/svg+xml" }));
+  img.onload = () => { const c = document.createElement("canvas"); c.width = vb.width * 2; c.height = vb.height * 2; const x = c.getContext("2d"); x.fillStyle = "#fff"; x.fillRect(0, 0, c.width, c.height); x.drawImage(img, 0, 0, c.width, c.height); URL.revokeObjectURL(url); cb(c.toDataURL("image/png")); };
+  img.src = url;
+}
+const chName = () => (CHARTS.find(c => c.k === CH_CUR).t.replace(/[^\w &]+/g, "").trim().replace(/\s+/g, "_") || "chart");
+document.getElementById("ch-png").onclick = () => chartPng(d => { const a = document.createElement("a"); a.href = d; a.download = `Science_Lab_1971_${chName()}.png`; document.body.appendChild(a); a.click(); a.remove(); });
+document.getElementById("ch-print").onclick = () => chartPng(d => {
+  const f = document.createElement("iframe"); f.style.cssText = "position:fixed;width:0;height:0;border:0;right:0;bottom:0"; document.body.appendChild(f);
+  const doc = f.contentDocument; doc.open(); doc.write(`<html><head><title>Science Lab 1971</title><style>@page{size:landscape;margin:12mm}body{margin:0;text-align:center}img{max-width:100%;max-height:95vh}</style></head><body><img src="${d}"></body></html>`); doc.close();
+  f.contentWindow.onload = null; setTimeout(() => { f.contentWindow.focus(); f.contentWindow.print(); setTimeout(() => f.remove(), 1500); }, 300);
+});
 
 // ---------- class labs ----------
 async function loadClasses() {
