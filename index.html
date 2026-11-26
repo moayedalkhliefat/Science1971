@@ -21,6 +21,7 @@
   .role:hover{color:#1e3a8a}
   .role.active{background:#fff;color:#1e3a8a;box-shadow:0 1px 3px rgba(15,23,42,.14)}
   .lg-form label{display:block;font-weight:600;font-size:.88rem;color:#334155;margin:0 0 18px}
+  .lg-form .sp input{margin-top:0;padding-right:34px}
   .lg-form input{margin-top:7px;border:1.5px solid #e2e8f0;border-radius:10px;padding:13px 14px;font:400 1rem 'Inter',system-ui,sans-serif;background:#fff;color:#0f172a}
   .lg-form input::placeholder{color:#94a3b8}
   .lg-form input:focus{border-color:#1e3a8a;box-shadow:0 0 0 3px rgba(30,58,138,.12)}
@@ -55,6 +56,7 @@
       <button type="button" class="role" data-role="admin">👑 Admin</button>
     </div>
     <form id="login-form" autocomplete="off">
+      <label id="school-row"><span>School</span><div id="school-pick" style="margin-top:7px"></div></label>
       <label><span id="l1">First name</span><input id="f1" required></label>
       <label><span id="l2">School ID</span><input id="f2" required></label>
       <button class="lg-btn" id="login-btn" type="submit">Enter the Lab →</button>
@@ -90,13 +92,15 @@
 
 const ROLES = {
   student: { l1: "First name", p1: "e.g. Ahmed", l2: "School ID", p2: "e.g. 10045", t2: "text", mode: "numeric",
-             hint: "Write your first name exactly as your teacher has it, and your School ID. <b>Need help?</b> Ask your teacher.", btn: "Enter the Lab →" },
+             hint: "Choose your school, then write your first name exactly as your teacher has it, and your School ID. <b>Need help?</b> Ask your teacher.", btn: "Enter the Lab →" },
   teacher: { l1: "Username", p1: "Your teacher username", l2: "Password", p2: "••••••", t2: "password", mode: "text",
-             hint: "Your username and password come from the admin.", btn: "Log in →" },
+             hint: "Choose your school, then your username and password from the admin.", btn: "Log in →" },
   admin:   { l1: "Username", p1: "Admin username", l2: "Password", p2: "••••••", t2: "password", mode: "text",
              hint: "Admin access only.", btn: "Log in →" }
 };
 let role = "student";
+let lastSchool = ""; try { lastSchool = localStorage.getItem("s1971.school") || ""; } catch (e) {}
+const school = S1971.schoolPicker(document.getElementById("school-pick"), { value: lastSchool, placeholder: "Search or choose your school" });
 const f1 = document.getElementById("f1"), f2 = document.getElementById("f2"), btn = document.getElementById("login-btn");
 
 function setRole(r) {
@@ -106,9 +110,10 @@ function setRole(r) {
   f1.placeholder = c.p1; f2.placeholder = c.p2; f2.type = c.t2; f2.inputMode = c.mode;
   f1.autocomplete = r === "student" ? "off" : "username"; f2.autocomplete = r === "student" ? "off" : "current-password";
   f1.value = ""; f2.value = "";
+  document.getElementById("school-row").classList.toggle("hidden", r === "admin");
   document.getElementById("hint").innerHTML = c.hint;
   btn.textContent = c.btn;
-  f1.focus();
+  (r !== "admin" && !school.get() ? school.input : f1).focus();
 }
 document.querySelectorAll(".role").forEach(b => b.onclick = () => setRole(b.dataset.role));
 setRole("student");
@@ -118,13 +123,16 @@ try { document.getElementById("pass").textContent = S1971_CONFIG.PASS_MARK + "%"
 
 document.getElementById("login-form").addEventListener("submit", async e => {
   e.preventDefault();
+  const sc = role === "admin" ? null : school.get();
+  if (role !== "admin" && !sc) { S1971.toast("Choose your school from the list first.", "bad"); school.input.focus(); return; }
   btn.disabled = true;
   try {
     const r = role === "student"
-      ? await S1971.rpc("student_login", { p_first_name: f1.value, p_school_id: f2.value })
-      : await S1971.rpc("staff_login", { p_username: f1.value, p_password: f2.value });
+      ? await S1971.rpc("student_login", { p_first_name: f1.value, p_school_id: f2.value, p_school: sc })
+      : await S1971.rpc("staff_login", { p_username: f1.value, p_password: f2.value, p_school: sc });
     if (!r.ok) { S1971.toast(r.error, "bad"); return; }
     if (role === "admin" && r.role !== "admin") { S1971.toast("This is a teacher account — opening the teacher dashboard.", "good"); }
+    if (sc) { try { localStorage.setItem("s1971.school", sc); } catch (e) {} }
     S1971.setSession(r); location.href = S1971.homeFor(r);
   } catch (err) { S1971.toast(err.message, "bad"); } finally { btn.disabled = false; }
 });

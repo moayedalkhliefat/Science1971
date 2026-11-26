@@ -137,5 +137,46 @@
     setTimeout(() => URL.revokeObjectURL(a.href), 1000);
   }
 
-  window.S1971 = { rpc, getSession, setSession, clearSession, requireRole, logout, homeFor, root, esc, toast, fmtDate, gradeNum, modal, changePasswordDialog, downloadCSV };
+
+  // Searchable school dropdown: schoolPicker(host, {value, placeholder, onChange}) → {get(), set(v), load()}
+  let SCHOOLS = null;
+  async function loadSchools(force) { if (!SCHOOLS || force) { try { SCHOOLS = await rpc("list_schools", {}); } catch (e) { SCHOOLS = SCHOOLS || []; } } return SCHOOLS; }
+  function spStyle() {
+    if (document.getElementById("sp-style")) return;
+    const st = document.createElement("style"); st.id = "sp-style";
+    st.textContent = `.sp{position:relative}.sp input{width:100%}.sp .sp-ic{position:absolute;right:12px;top:50%;transform:translateY(-50%);pointer-events:none;color:#94a3b8;font-size:.8rem}
+.sp-list{position:absolute;left:0;right:0;top:calc(100% + 4px);background:#fff;border:1.5px solid #e2e8f0;border-radius:10px;box-shadow:0 12px 30px rgba(15,23,42,.14);max-height:230px;overflow:auto;z-index:60;padding:4px;display:none}
+.sp.open .sp-list{display:block}.sp-opt{padding:9px 12px;border-radius:7px;cursor:pointer;font-size:.95rem;color:#0f172a}.sp-opt.act,.sp-opt:hover{background:#eef2ff;color:#1e3a8a}
+.sp-opt mark{background:#fde68a;color:inherit;border-radius:3px}.sp-none{padding:10px 12px;color:#94a3b8;font-size:.9rem}.sp.bad input{border-color:#ef4444!important}`;
+    document.head.appendChild(st);
+  }
+  function schoolPicker(host, o) {
+    o = o || {}; spStyle();
+    host.classList.add("sp");
+    host.innerHTML = `<input type="text" autocomplete="off" spellcheck="false" placeholder="${esc(o.placeholder || "Search or choose your school")}"><span class="sp-ic">▼</span><div class="sp-list" role="listbox"></div>`;
+    const inp = host.querySelector("input"), list = host.querySelector(".sp-list");
+    let chosen = o.value || "", act = -1, shown = [];
+    inp.value = chosen;
+    const exact = v => (SCHOOLS || []).find(n => n.toLowerCase() === String(v || "").trim().toLowerCase()) || "";
+    function draw() {
+      const q = inp.value.trim().toLowerCase(), all = SCHOOLS || [];
+      shown = q && q !== chosen.toLowerCase() ? all.filter(n => n.toLowerCase().includes(q)) : all.slice();
+      list.innerHTML = shown.length ? shown.map((n, i) => { const k = q && q !== chosen.toLowerCase() ? n.toLowerCase().indexOf(q) : -1; const lab = k >= 0 ? esc(n.slice(0, k)) + "<mark>" + esc(n.slice(k, k + q.length)) + "</mark>" + esc(n.slice(k + q.length)) : esc(n); return `<div class="sp-opt${i === act ? " act" : ""}" data-i="${i}">${lab}</div>`; }).join("")
+        : `<div class="sp-none">${all.length ? "No school matches “" + esc(inp.value) + "”" : "No schools yet — ask the admin."}</div>`;
+    }
+    function pick(n) { chosen = n; inp.value = n; host.classList.remove("open", "bad"); act = -1; if (o.onChange) o.onChange(n); }
+    inp.addEventListener("focus", async () => { await loadSchools(); act = -1; draw(); host.classList.add("open"); inp.select(); });
+    inp.addEventListener("input", () => { act = 0; draw(); host.classList.add("open"); host.classList.remove("bad"); });
+    inp.addEventListener("keydown", e => {
+      if (e.key === "ArrowDown" || e.key === "ArrowUp") { e.preventDefault(); if (!host.classList.contains("open")) { draw(); host.classList.add("open"); } act = Math.max(0, Math.min(shown.length - 1, act + (e.key === "ArrowDown" ? 1 : -1))); draw(); const el = list.querySelector(".act"); if (el) el.scrollIntoView({ block: "nearest" }); }
+      else if (e.key === "Enter" && host.classList.contains("open")) { if (shown[act] || shown.length === 1) { e.preventDefault(); pick(shown[act] || shown[0]); } }
+      else if (e.key === "Escape") host.classList.remove("open");
+    });
+    list.addEventListener("mousedown", e => { const el = e.target.closest(".sp-opt"); if (el) { e.preventDefault(); pick(shown[+el.dataset.i]); } });
+    inp.addEventListener("blur", () => { setTimeout(() => { host.classList.remove("open"); const m = exact(inp.value); if (m) { if (m !== chosen) pick(m); else inp.value = m; } else if (inp.value.trim()) { host.classList.add("bad"); chosen = ""; } else chosen = ""; }, 120); });
+    loadSchools();
+    return { get: () => exact(inp.value) || "", set: v => { chosen = v || ""; inp.value = chosen; host.classList.remove("bad"); }, input: inp, reload: () => loadSchools(true) };
+  }
+
+  window.S1971 = { rpc, getSession, setSession, clearSession, requireRole, logout, homeFor, root, esc, toast, fmtDate, gradeNum, modal, changePasswordDialog, downloadCSV, schoolPicker, loadSchools };
 })();
