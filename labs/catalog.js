@@ -405,6 +405,11 @@ window.S1971_LABS = [
     id: "vectors", title: "Vector Addition", subject: "Physics", icon: "🎯", color: "linear-gradient(135deg,#3949ab,#e53935)", grades: ["all"],
     path: "labs/vectors/index.html", description: "Adding vectors tip-to-tail, components, size and direction",
     levels: [{ n: 1, id: "vectors-l1", name: "Level 1 · Explorer" }, { n: 2, id: "vectors-l2", name: "Level 2 · Investigator" }, { n: 3, id: "vectors-l3", name: "Level 3 · Expert" }]
+  },
+  {
+    id: "greenhouse", title: "Greenhouse Effect", subject: "Physics", icon: "🌍", color: "linear-gradient(135deg,#2e7d32,#0d1b3e)", grades: ["all"],
+    path: "labs/greenhouse/index.html", description: "Greenhouse gases, albedo and Earth's energy balance",
+    levels: [{ n: 1, id: "greenhouse-l1", name: "Level 1 · Explorer" }, { n: 2, id: "greenhouse-l2", name: "Level 2 · Investigator" }, { n: 3, id: "greenhouse-l3", name: "Level 3 · Expert" }]
   }
 ];
 
