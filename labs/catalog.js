@@ -390,6 +390,11 @@ window.S1971_LABS = [
     id: "capacitor", title: "Capacitor Lab", subject: "Physics", icon: "🔋", color: "linear-gradient(135deg,#f9a825,#546e7a)", grades: ["all"],
     path: "labs/capacitor/index.html", description: "Parallel-plate capacitors: capacitance, charge, field and energy",
     levels: [{ n: 1, id: "capacitor-l1", name: "Level 1 · Explorer" }, { n: 2, id: "capacitor-l2", name: "Level 2 · Investigator" }, { n: 3, id: "capacitor-l3", name: "Level 3 · Expert" }]
+  },
+  {
+    id: "coulomb", title: "Coulomb's Law", subject: "Physics", icon: "⚡", color: "linear-gradient(135deg,#e53935,#1e88e5)", grades: ["all"],
+    path: "labs/coulomb/index.html", description: "Electric force between charges and the inverse-square law",
+    levels: [{ n: 1, id: "coulomb-l1", name: "Level 1 · Explorer" }, { n: 2, id: "coulomb-l2", name: "Level 2 · Investigator" }, { n: 3, id: "coulomb-l3", name: "Level 3 · Expert" }]
   }
 ];
 
