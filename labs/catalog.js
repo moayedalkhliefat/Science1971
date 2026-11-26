@@ -365,6 +365,11 @@ window.S1971_LABS = [
     id: "acidbase", title: "Acid–Base Solutions", subject: "Chemistry", icon: "🧪", color: "linear-gradient(135deg,#d81b60,#1e88e5)", grades: ["all"],
     path: "labs/acidbase/index.html", description: "Strong vs weak acids and bases: pH, ionisation and conductivity",
     levels: [{ n: 1, id: "acidbase-l1", name: "Level 1 · Explorer" }, { n: 2, id: "acidbase-l2", name: "Level 2 · Investigator" }, { n: 3, id: "acidbase-l3", name: "Level 3 · Expert" }]
+  },
+  {
+    id: "equil", title: "Reversible Reactions & Equilibrium", subject: "Chemistry", icon: "⚖️", color: "linear-gradient(135deg,#00838f,#fb8c00)", grades: ["all"],
+    path: "labs/equil/index.html", description: "Dynamic equilibrium, Kc, catalysts and Le Chatelier's principle",
+    levels: [{ n: 1, id: "equil-l1", name: "Level 1 · Explorer" }, { n: 2, id: "equil-l2", name: "Level 2 · Investigator" }, { n: 3, id: "equil-l3", name: "Level 3 · Expert" }]
   }
 ];
 
