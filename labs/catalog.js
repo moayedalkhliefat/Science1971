@@ -395,6 +395,11 @@ window.S1971_LABS = [
     id: "coulomb", title: "Coulomb's Law", subject: "Physics", icon: "⚡", color: "linear-gradient(135deg,#e53935,#1e88e5)", grades: ["all"],
     path: "labs/coulomb/index.html", description: "Electric force between charges and the inverse-square law",
     levels: [{ n: 1, id: "coulomb-l1", name: "Level 1 · Explorer" }, { n: 2, id: "coulomb-l2", name: "Level 2 · Investigator" }, { n: 3, id: "coulomb-l3", name: "Level 3 · Expert" }]
+  },
+  {
+    id: "movingman", title: "Moving Man (Motion Graphs)", subject: "Physics", icon: "🚶", color: "linear-gradient(135deg,#43a047,#1e88e5)", grades: ["all"],
+    path: "labs/movingman/index.html", description: "Position–time and velocity–time graphs: slope, area and acceleration",
+    levels: [{ n: 1, id: "movingman-l1", name: "Level 1 · Explorer" }, { n: 2, id: "movingman-l2", name: "Level 2 · Investigator" }, { n: 3, id: "movingman-l3", name: "Level 3 · Expert" }]
   }
 ];
 
