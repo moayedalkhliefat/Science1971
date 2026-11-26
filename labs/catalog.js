@@ -400,6 +400,11 @@ window.S1971_LABS = [
     id: "movingman", title: "Moving Man (Motion Graphs)", subject: "Physics", icon: "🚶", color: "linear-gradient(135deg,#43a047,#1e88e5)", grades: ["all"],
     path: "labs/movingman/index.html", description: "Position–time and velocity–time graphs: slope, area and acceleration",
     levels: [{ n: 1, id: "movingman-l1", name: "Level 1 · Explorer" }, { n: 2, id: "movingman-l2", name: "Level 2 · Investigator" }, { n: 3, id: "movingman-l3", name: "Level 3 · Expert" }]
+  },
+  {
+    id: "vectors", title: "Vector Addition", subject: "Physics", icon: "🎯", color: "linear-gradient(135deg,#3949ab,#e53935)", grades: ["all"],
+    path: "labs/vectors/index.html", description: "Adding vectors tip-to-tail, components, size and direction",
+    levels: [{ n: 1, id: "vectors-l1", name: "Level 1 · Explorer" }, { n: 2, id: "vectors-l2", name: "Level 2 · Investigator" }, { n: 3, id: "vectors-l3", name: "Level 3 · Expert" }]
   }
 ];
 
