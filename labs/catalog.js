@@ -360,6 +360,11 @@ window.S1971_LABS = [
     id: "beers", title: "Beer's Law Lab", subject: "Chemistry", icon: "🔦", color: "linear-gradient(135deg,#c2185b,#7b1fa2)", grades: ["all"],
     path: "labs/beers/index.html", description: "Colour, absorbance, transmittance and concentration (A = εbc)",
     levels: [{ n: 1, id: "beers-l1", name: "Level 1 · Explorer" }, { n: 2, id: "beers-l2", name: "Level 2 · Investigator" }, { n: 3, id: "beers-l3", name: "Level 3 · Expert" }]
+  },
+  {
+    id: "acidbase", title: "Acid–Base Solutions", subject: "Chemistry", icon: "🧪", color: "linear-gradient(135deg,#d81b60,#1e88e5)", grades: ["all"],
+    path: "labs/acidbase/index.html", description: "Strong vs weak acids and bases: pH, ionisation and conductivity",
+    levels: [{ n: 1, id: "acidbase-l1", name: "Level 1 · Explorer" }, { n: 2, id: "acidbase-l2", name: "Level 2 · Investigator" }, { n: 3, id: "acidbase-l3", name: "Level 3 · Expert" }]
   }
 ];
 
