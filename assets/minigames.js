@@ -68,7 +68,28 @@
     pressure: T(["💧", "🫧", "🌊"], ["🪨"], "bubbles", "#0277bd", "🐠"),
     lenses: T(["🔍", "👓", "🌈"], ["⚫"], "light rays", "#f9a825", "🔍"),
     momentum: T(["🎱", "🛒", "⭐"], ["🧱"], "carts", "#e53935", "🛒"),
-    induction: T(["⚡", "🧲", "💡"], ["⛔"], "current", "#fbc02d", "🧲")
+    induction: T(["⚡", "🧲", "💡"], ["⛔"], "current", "#fbc02d", "🧲"),
+    lacop: T(["🧬", "🍬", "🦠"], ["⛔"], "lactose", "#6a1b9a", "🦠"),
+    motors: T(["🧬", "⚙️", "🔋"], ["🧱"], "ATP", "#00897b", "🚶"),
+    dnastretch: T(["🧬", "🔗", "📏"], ["✂️"], "base pairs", "#3949ab", "🧲"),
+    leftovers: T(["🥪", "🍞", "🧀"], ["🗑️"], "sandwiches", "#ef6c00", "👩‍🍳"),
+    polarity: T(["💧", "➕", "➖"], ["🛢️"], "dipoles", "#1e88e5", "⚡"),
+    interact: T(["⚛️", "🔗", "✨"], ["💥"], "atoms", "#5e35b1", "⚛️"),
+    beers: T(["🧪", "💡", "🌈"], ["🌑"], "photons", "#c2185b", "🔦"),
+    acidbase: T(["🧪", "💧", "🔋"], ["☠️"], "ions", "#d81b60", "🧪"),
+    equil: T(["⚖️", "🔄", "🧪"], ["⛔"], "molecules", "#00838f", "⚖️"),
+    hatom: T(["⚛️", "🌈", "✨"], ["🌑"], "photons", "#283593", "⚛️"),
+    diffusion: T(["🔵", "🔴", "💨"], ["🧱"], "particles", "#00acc1", "💨"),
+    interfere: T(["🌊", "〰️", "💡"], ["🌑"], "waves", "#0288d1", "🌊"),
+    capacitor: T(["🔋", "⚡", "➕"], ["⛔"], "charge", "#f9a825", "🔋"),
+    coulomb: T(["➕", "➖", "⚡"], ["🧱"], "charges", "#e53935", "⚡"),
+    movingman: T(["👟", "📈", "⏱️"], ["🧱"], "steps", "#43a047", "🚶"),
+    vectors: T(["➡️", "↗️", "🎯"], ["🌀"], "arrows", "#3949ab", "🎯"),
+    greenhouse: T(["☀️", "🌍", "🌳"], ["🏭"], "sunlight", "#2e7d32", "🌍"),
+    blackbody: T(["⭐", "🔥", "💡"], ["🧊"], "light", "#e65100", "⭐"),
+    photoelec: T(["💡", "⚡", "✨"], ["🧱"], "photons", "#7b1fa2", "⚡"),
+    nucleus: T(["⚛️", "☢️", "✨"], ["🧱"], "protons", "#558b2f", "☢️"),
+    rutherford: T(["⚛️", "🎯", "✨"], ["🧱"], "alpha particles", "#ffb300", "🎯")
   };
   const DEF = T(["⭐", "✨", "🔬"], ["🧱"], "stars", "#1e3a8a", "🚀");
 

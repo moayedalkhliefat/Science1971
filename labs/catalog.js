@@ -325,6 +325,11 @@ window.S1971_LABS = [
     id: "induction", title: "Electromagnetic Induction", subject: "Physics", icon: "🧲", color: "linear-gradient(135deg,#fbc02d,#e53935)", grades: ["all"],
     path: "labs/induction/index.html", description: "Magnets, coils, induced current and transformers",
     levels: [{ n: 1, id: "induction-l1", name: "Level 1 · Explorer" }, { n: 2, id: "induction-l2", name: "Level 2 · Investigator" }, { n: 3, id: "induction-l3", name: "Level 3 · Expert" }]
+  },
+  {
+    id: "lacop", title: "Gene Machine: Lac Operon", subject: "Biology", icon: "🧬", color: "linear-gradient(135deg,#6a1b9a,#26a69a)", grades: ["all"],
+    path: "labs/lacop/index.html", description: "How bacteria switch genes on and off: repressor, CAP and mutations",
+    levels: [{ n: 1, id: "lacop-l1", name: "Level 1 · Explorer" }, { n: 2, id: "lacop-l2", name: "Level 2 · Investigator" }, { n: 3, id: "lacop-l3", name: "Level 3 · Expert" }]
   }
 ];
 
