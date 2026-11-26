@@ -330,6 +330,11 @@ window.S1971_LABS = [
     id: "lacop", title: "Gene Machine: Lac Operon", subject: "Biology", icon: "🧬", color: "linear-gradient(135deg,#6a1b9a,#26a69a)", grades: ["all"],
     path: "labs/lacop/index.html", description: "How bacteria switch genes on and off: repressor, CAP and mutations",
     levels: [{ n: 1, id: "lacop-l1", name: "Level 1 · Explorer" }, { n: 2, id: "lacop-l2", name: "Level 2 · Investigator" }, { n: 3, id: "lacop-l3", name: "Level 3 · Expert" }]
+  },
+  {
+    id: "motors", title: "Molecular Motors", subject: "Biology", icon: "🚶", color: "linear-gradient(135deg,#00897b,#1e88e5)", grades: ["all"],
+    path: "labs/motors/index.html", description: "Kinesin, dynein and myosin: tracks, ATP and load force",
+    levels: [{ n: 1, id: "motors-l1", name: "Level 1 · Explorer" }, { n: 2, id: "motors-l2", name: "Level 2 · Investigator" }, { n: 3, id: "motors-l3", name: "Level 3 · Expert" }]
   }
 ];
 
