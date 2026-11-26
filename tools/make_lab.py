@@ -21,7 +21,6 @@ html = f'''<!DOCTYPE html>
   </div>
   <div id="banner"></div>
   <div class="card" id="stage"><div class="empty">Loading the lab… {emoji}</div></div>
-  <footer>Built by Mr. Moayed Alkhliefat · Science Teacher · ATS-AQB</footer>
 </div>
 <script src="../../assets/config.js"></script>
 <script src="../../assets/app.js"></script>
