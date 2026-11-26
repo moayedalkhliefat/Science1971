@@ -425,6 +425,11 @@ window.S1971_LABS = [
     id: "nucleus", title: "Build a Nucleus & Radioactive Decay", subject: "Physics", icon: "☢️", color: "linear-gradient(135deg,#558b2f,#ffca28)", grades: ["all"],
     path: "labs/nucleus/index.html", description: "Protons, neutrons, isotopes, alpha/beta/gamma decay and half-life",
     levels: [{ n: 1, id: "nucleus-l1", name: "Level 1 · Explorer" }, { n: 2, id: "nucleus-l2", name: "Level 2 · Investigator" }, { n: 3, id: "nucleus-l3", name: "Level 3 · Expert" }]
+  },
+  {
+    id: "rutherford", title: "Rutherford Scattering", subject: "Physics", icon: "🎯", color: "linear-gradient(135deg,#ffb300,#0d1b3e)", grades: ["all"],
+    path: "labs/rutherford/index.html", description: "Alpha particles, gold foil and the discovery of the nucleus",
+    levels: [{ n: 1, id: "rutherford-l1", name: "Level 1 · Explorer" }, { n: 2, id: "rutherford-l2", name: "Level 2 · Investigator" }, { n: 3, id: "rutherford-l3", name: "Level 3 · Expert" }]
   }
 ];
 
