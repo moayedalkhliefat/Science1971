@@ -375,6 +375,11 @@ window.S1971_LABS = [
     id: "hatom", title: "Models of the Hydrogen Atom", subject: "Chemistry", icon: "⚛️", color: "linear-gradient(135deg,#283593,#ab47bc)", grades: ["all"],
     path: "labs/hatom/index.html", description: "Bohr energy levels, photons and the hydrogen line spectrum",
     levels: [{ n: 1, id: "hatom-l1", name: "Level 1 · Explorer" }, { n: 2, id: "hatom-l2", name: "Level 2 · Investigator" }, { n: 3, id: "hatom-l3", name: "Level 3 · Expert" }]
+  },
+  {
+    id: "diffusion", title: "Diffusion", subject: "Chemistry", icon: "💨", color: "linear-gradient(135deg,#00acc1,#ef5350)", grades: ["all"],
+    path: "labs/diffusion/index.html", description: "How gases spread: particle speed, temperature and Graham's law",
+    levels: [{ n: 1, id: "diffusion-l1", name: "Level 1 · Explorer" }, { n: 2, id: "diffusion-l2", name: "Level 2 · Investigator" }, { n: 3, id: "diffusion-l3", name: "Level 3 · Expert" }]
   }
 ];
 
