@@ -345,6 +345,11 @@ window.S1971_LABS = [
     id: "leftovers", title: "Reactants, Products & Leftovers", subject: "Chemistry", icon: "🥪", color: "linear-gradient(135deg,#ef6c00,#ffd54f)", grades: ["all"],
     path: "labs/leftovers/index.html", description: "Limiting and excess reactants, from sandwiches to burning methane",
     levels: [{ n: 1, id: "leftovers-l1", name: "Level 1 · Explorer" }, { n: 2, id: "leftovers-l2", name: "Level 2 · Investigator" }, { n: 3, id: "leftovers-l3", name: "Level 3 · Expert" }]
+  },
+  {
+    id: "polarity", title: "Molecule Polarity", subject: "Chemistry", icon: "⚡", color: "linear-gradient(135deg,#1e88e5,#e53935)", grades: ["all"],
+    path: "labs/polarity/index.html", description: "Electronegativity, bond dipoles, electric fields and molecular shape",
+    levels: [{ n: 1, id: "polarity-l1", name: "Level 1 · Explorer" }, { n: 2, id: "polarity-l2", name: "Level 2 · Investigator" }, { n: 3, id: "polarity-l3", name: "Level 3 · Expert" }]
   }
 ];
 
