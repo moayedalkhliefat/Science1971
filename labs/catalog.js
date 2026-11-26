@@ -370,6 +370,11 @@ window.S1971_LABS = [
     id: "equil", title: "Reversible Reactions & Equilibrium", subject: "Chemistry", icon: "⚖️", color: "linear-gradient(135deg,#00838f,#fb8c00)", grades: ["all"],
     path: "labs/equil/index.html", description: "Dynamic equilibrium, Kc, catalysts and Le Chatelier's principle",
     levels: [{ n: 1, id: "equil-l1", name: "Level 1 · Explorer" }, { n: 2, id: "equil-l2", name: "Level 2 · Investigator" }, { n: 3, id: "equil-l3", name: "Level 3 · Expert" }]
+  },
+  {
+    id: "hatom", title: "Models of the Hydrogen Atom", subject: "Chemistry", icon: "⚛️", color: "linear-gradient(135deg,#283593,#ab47bc)", grades: ["all"],
+    path: "labs/hatom/index.html", description: "Bohr energy levels, photons and the hydrogen line spectrum",
+    levels: [{ n: 1, id: "hatom-l1", name: "Level 1 · Explorer" }, { n: 2, id: "hatom-l2", name: "Level 2 · Investigator" }, { n: 3, id: "hatom-l3", name: "Level 3 · Expert" }]
   }
 ];
 
