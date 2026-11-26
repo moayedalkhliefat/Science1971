@@ -385,6 +385,11 @@ window.S1971_LABS = [
     id: "interfere", title: "Wave Interference", subject: "Physics", icon: "🌊", color: "linear-gradient(135deg,#0288d1,#7e57c2)", grades: ["all"],
     path: "labs/interfere/index.html", description: "Two-source interference, fringes and Young's double slit",
     levels: [{ n: 1, id: "interfere-l1", name: "Level 1 · Explorer" }, { n: 2, id: "interfere-l2", name: "Level 2 · Investigator" }, { n: 3, id: "interfere-l3", name: "Level 3 · Expert" }]
+  },
+  {
+    id: "capacitor", title: "Capacitor Lab", subject: "Physics", icon: "🔋", color: "linear-gradient(135deg,#f9a825,#546e7a)", grades: ["all"],
+    path: "labs/capacitor/index.html", description: "Parallel-plate capacitors: capacitance, charge, field and energy",
+    levels: [{ n: 1, id: "capacitor-l1", name: "Level 1 · Explorer" }, { n: 2, id: "capacitor-l2", name: "Level 2 · Investigator" }, { n: 3, id: "capacitor-l3", name: "Level 3 · Expert" }]
   }
 ];
 
