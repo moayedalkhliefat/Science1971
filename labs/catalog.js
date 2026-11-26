@@ -415,6 +415,11 @@ window.S1971_LABS = [
     id: "blackbody", title: "Blackbody Spectrum", subject: "Physics", icon: "⭐", color: "linear-gradient(135deg,#e65100,#1e88e5)", grades: ["all"],
     path: "labs/blackbody/index.html", description: "Hot objects, star colours, Wien's law and Stefan's law",
     levels: [{ n: 1, id: "blackbody-l1", name: "Level 1 · Explorer" }, { n: 2, id: "blackbody-l2", name: "Level 2 · Investigator" }, { n: 3, id: "blackbody-l3", name: "Level 3 · Expert" }]
+  },
+  {
+    id: "photoelec", title: "Photoelectric Effect", subject: "Physics", icon: "💡", color: "linear-gradient(135deg,#7b1fa2,#ffca28)", grades: ["all"],
+    path: "labs/photoelec/index.html", description: "Photons, work function, kinetic energy and stopping voltage",
+    levels: [{ n: 1, id: "photoelec-l1", name: "Level 1 · Explorer" }, { n: 2, id: "photoelec-l2", name: "Level 2 · Investigator" }, { n: 3, id: "photoelec-l3", name: "Level 3 · Expert" }]
   }
 ];
 
