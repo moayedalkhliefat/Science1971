@@ -22,7 +22,7 @@
     <p class="muted">Pick a lab. Each level has <b>7 tasks</b>. Score <b id="pm"></b> or more to pass, unlock the next level and get a 🎓 certificate.</p>
   </div>
 
-  <div class="subj-tabs" id="subj-tabs"></div>
+  <div class="subj-tabs"><span class="subj-btns" id="subj-tabs"></span><input type="search" class="inline lab-search hidden" id="lab-q" placeholder="🔎 Search labs…" autocomplete="off"></div>
   <div id="labs"></div>
 
   <div class="card" style="margin-top:18px">
@@ -83,16 +83,20 @@ const passed = r => pctOf(r) >= PASS - 1e-9;
   const drawLabs = () => {
     tabs.innerHTML = subjects.length > 1 ? [`<button class="tab ${cur === "all" ? "active" : ""}" data-s="all">📚 All</button>`]
       .concat(subjects.map(s => `<button class="tab ${cur === s.key ? "active" : ""}" data-s="${s.key}">${s.icon} ${s.key}</button>`)).join("") : "";
-    const shown = subjects.filter(s => cur === "all" || cur === s.key);
+    // search box: keep labs whose name or description has every word typed (inside the chosen subject)
+    const q = document.getElementById("lab-q").value.trim(), words = q.toLowerCase().split(/\s+/).filter(Boolean);
+    const fit = l => words.every(w => (l.title + " " + l.description).toLowerCase().includes(w));
+    const shown = subjects.filter(s => (cur === "all" || cur === s.key) && labs.some(l => l.subject === s.key && fit(l)));
     const block = s => `
       <h2 class="subj-head" style="--sc:${s.color}">${s.icon} ${s.key}</h2>
-      <div class="labs">${labs.filter(l => l.subject === s.key).map(labCard).join("")}</div>`;
-    box.innerHTML = shown.length > 1
+      <div class="labs">${labs.filter(l => l.subject === s.key && fit(l)).map(labCard).join("")}</div>`;
+    if (!shown.length) box.innerHTML = `<div class="card empty">No labs match “${esc(q)}”${cur !== "all" ? " in " + esc(cur) : ""}. Try another word or choose 📚 All.</div>`;
+    else box.innerHTML = shown.length > 1
       ? `<div class="subj-cols" style="--n:${shown.length}">${shown.map(s => `<div class="subj-col">${block(s)}</div>`).join("")}</div>`
       : shown.map(block).join("");
     tabs.querySelectorAll(".tab").forEach(b => b.onclick = () => { cur = b.dataset.s; drawLabs(); });
   };
-  if (labs.length) drawLabs();
+  if (labs.length) { const qi = document.getElementById("lab-q"); qi.classList.remove("hidden"); qi.addEventListener("input", drawLabs); drawLabs(); }
 
   // ----- certificates -----
   const certs = [];

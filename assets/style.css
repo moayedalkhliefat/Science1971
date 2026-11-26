@@ -157,7 +157,9 @@ footer{color:var(--muted)}
 .lvl .best{background:#fff;color:var(--navy);border:1px solid var(--line)}
 .labs{grid-template-columns:repeat(auto-fill,minmax(320px,1fr))}
 /* subject groups + certificates list */
-.subj-tabs{display:flex;gap:8px;flex-wrap:wrap;margin:0 0 6px}
+.subj-tabs{display:flex;gap:8px;flex-wrap:wrap;margin:0 0 6px;align-items:center}
+.subj-btns{display:flex;gap:8px;flex-wrap:wrap}
+.subj-tabs .lab-search{margin:0 0 0 auto;width:min(100%,280px)}
 .subj-head{display:flex;align-items:center;gap:8px;margin:18px 0 10px;padding-left:12px;border-left:6px solid var(--sc,#1e3a8a);color:var(--ink)}
 .cert-list{display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:10px}
 .cert-item{display:flex;align-items:center;gap:12px;border:1px solid var(--line);border-radius:14px;padding:12px 14px;background:#fff;text-decoration:none;color:var(--ink)}
