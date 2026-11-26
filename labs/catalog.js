@@ -380,6 +380,11 @@ window.S1971_LABS = [
     id: "diffusion", title: "Diffusion", subject: "Chemistry", icon: "💨", color: "linear-gradient(135deg,#00acc1,#ef5350)", grades: ["all"],
     path: "labs/diffusion/index.html", description: "How gases spread: particle speed, temperature and Graham's law",
     levels: [{ n: 1, id: "diffusion-l1", name: "Level 1 · Explorer" }, { n: 2, id: "diffusion-l2", name: "Level 2 · Investigator" }, { n: 3, id: "diffusion-l3", name: "Level 3 · Expert" }]
+  },
+  {
+    id: "interfere", title: "Wave Interference", subject: "Physics", icon: "🌊", color: "linear-gradient(135deg,#0288d1,#7e57c2)", grades: ["all"],
+    path: "labs/interfere/index.html", description: "Two-source interference, fringes and Young's double slit",
+    levels: [{ n: 1, id: "interfere-l1", name: "Level 1 · Explorer" }, { n: 2, id: "interfere-l2", name: "Level 2 · Investigator" }, { n: 3, id: "interfere-l3", name: "Level 3 · Expert" }]
   }
 ];
 
