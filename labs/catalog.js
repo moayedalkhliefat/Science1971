@@ -420,6 +420,11 @@ window.S1971_LABS = [
     id: "photoelec", title: "Photoelectric Effect", subject: "Physics", icon: "💡", color: "linear-gradient(135deg,#7b1fa2,#ffca28)", grades: ["all"],
     path: "labs/photoelec/index.html", description: "Photons, work function, kinetic energy and stopping voltage",
     levels: [{ n: 1, id: "photoelec-l1", name: "Level 1 · Explorer" }, { n: 2, id: "photoelec-l2", name: "Level 2 · Investigator" }, { n: 3, id: "photoelec-l3", name: "Level 3 · Expert" }]
+  },
+  {
+    id: "nucleus", title: "Build a Nucleus & Radioactive Decay", subject: "Physics", icon: "☢️", color: "linear-gradient(135deg,#558b2f,#ffca28)", grades: ["all"],
+    path: "labs/nucleus/index.html", description: "Protons, neutrons, isotopes, alpha/beta/gamma decay and half-life",
+    levels: [{ n: 1, id: "nucleus-l1", name: "Level 1 · Explorer" }, { n: 2, id: "nucleus-l2", name: "Level 2 · Investigator" }, { n: 3, id: "nucleus-l3", name: "Level 3 · Expert" }]
   }
 ];
 
