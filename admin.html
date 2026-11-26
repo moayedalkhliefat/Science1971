@@ -6,43 +6,68 @@
 <title>Admin · Science Lab 1971</title>
 <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🧪</text></svg>">
 <link rel="stylesheet" href="assets/style.css">
+<link rel="stylesheet" href="assets/dash.css">
 </head>
-<body>
-<div class="wrap">
-  <div class="topbar">
-    <a class="brand" href="admin.html"><span class="logo">🧪</span><b>Science Lab 1971</b></a>
-    <div class="row gap">
-      <span class="who" id="who"></span><span class="pill admin">admin</span>
-      <a class="btn sm blue" href="teacher.html">📊 Students &amp; Results</a>
-      <button class="btn sm ghost" onclick="S1971.changePasswordDialog()">🔑 Password</button>
-      <button class="btn sm orange" onclick="S1971.logout()">Log out</button>
-    </div>
-  </div>
-
-  <div class="stats">
-    <div class="stat b"><b id="s-teachers">0</b>teachers</div>
-    <div class="stat a"><b id="s-students">0</b>students in total</div>
-  </div>
-
-  <div class="grid" style="grid-template-columns:repeat(auto-fit,minmax(min(100%,360px),1fr));grid-template-columns:minmax(300px,380px) minmax(0,1fr)" id="admin-grid">
-    <div class="card">
-      <h2>➕ Add a teacher</h2>
-      <p class="muted small">The teacher logs in with this username and password, then uploads their students (max 30).</p>
-      <form id="add-form" autocomplete="off">
-        <label>Teacher's full name<input id="t-name" placeholder="e.g. Ms. Sara Ali" required></label>
-        <label>Username (no spaces)<input id="t-user" placeholder="e.g. Sara" required></label>
-        <label>Password (6+ characters)<input id="t-pass" required></label>
-        <label>School name (optional — the teacher can change it later)<input id="t-school" placeholder="e.g. Institute of Applied Technology — ATS Al Ain"></label>
-        <button class="btn green" type="submit" style="width:100%">Create teacher account</button>
-      </form>
+<body class="dash">
+<div class="dash-shell">
+<nav class="rail">
+  <a class="lg" href="admin.html" title="Science Lab 1971">🧪</a>
+  <button class="ri active" data-atab="teachers">🧑‍🏫<small>Teachers</small></button>
+  <button class="ri" data-atab="schools">🏫<small>Schools</small></button>
+  <a class="ri" href="teacher.html">📊<small>Students &amp; Results</small></a>
+  <div class="spacer"></div>
+  <button class="ri" onclick="S1971.changePasswordDialog()">🔑<small>Password</small></button>
+  <button class="ri" onclick="S1971.logout()">🚪<small>Log out</small></button>
+</nav>
+<div class="dash-main">
+  <header class="dash-head">
+    <h1 id="page-title">Teachers</h1>
+    <span class="hpill">👑 <span id="who"></span> · Admin</span>
+  </header>
+  <div class="dash-body">
+    <div class="minis three">
+      <div class="mini"><div><span class="l">Teachers</span><b id="s-teachers">0</b></div><span>🧑‍🏫</span></div>
+      <div class="mini"><div><span class="l">Schools</span><b id="s-schools">0</b></div><span>🏫</span></div>
+      <div class="mini"><div><span class="l">Students in total</span><b id="s-students">0</b></div><span>🧑‍🎓</span></div>
     </div>
 
-    <div class="card">
-      <h2>🧑‍🏫 Teachers</h2>
-      <div class="table-wrap" style="max-height:480px"><table id="t-table"></table></div>
-    </div>
-  </div>
+    <!-- TEACHERS -->
+    <section id="atab-teachers" class="admin-grid">
+      <div class="card">
+        <h2>➕ Add a teacher</h2>
+        <p class="muted small">The teacher signs in with this school, username and password, then uploads their students (max 30).</p>
+        <form id="add-form" autocomplete="off">
+          <label>Teacher's full name<input id="t-name" placeholder="e.g. Ms. Sara Ali" required></label>
+          <label>Username (no spaces)<input id="t-user" placeholder="e.g. Sara" required></label>
+          <label>Password (6+ characters)<input id="t-pass" required></label>
+          <label><span>School</span><div id="t-school" style="margin-top:7px"></div></label>
+          <p class="muted small" style="margin:-4px 0 12px">School missing? Add it in <a href="#" id="go-schools">🏫 Schools</a> first.</p>
+          <button class="btn green" type="submit" style="width:100%">Create teacher account</button>
+        </form>
+      </div>
+      <div class="panel">
+        <div class="panel-h"><b>🧑‍🏫 Teachers</b></div>
+        <div class="table-wrap" style="max-height:560px"><table id="t-table"></table></div>
+      </div>
+    </section>
 
+    <!-- SCHOOLS -->
+    <section id="atab-schools" class="admin-grid hidden">
+      <div class="card">
+        <h2>➕ Add a school</h2>
+        <p class="muted small">Teachers and students choose their school from this list when they sign in.</p>
+        <form id="school-form" autocomplete="off">
+          <label>School name<input id="sc-name" placeholder="e.g. ATS Al Ain" required></label>
+          <button class="btn green" type="submit" style="width:100%">Add school</button>
+        </form>
+      </div>
+      <div class="panel">
+        <div class="panel-h"><b>🏫 Schools</b><span class="muted small">A school can be removed only when no teacher uses it.</span></div>
+        <div class="table-wrap" style="max-height:560px"><table id="sc-table"></table></div>
+      </div>
+    </section>
+  </div>
+</div>
 </div>
 
 <script src="assets/config.js"></script>
@@ -55,8 +80,65 @@ let ME = null;
   ME = await S1971.requireRole(["admin"]);
   if (!ME) return;
   document.getElementById("who").textContent = ME.name;
-  load();
+  PICK = S1971.schoolPicker(document.getElementById("t-school"), { placeholder: "Choose the school…" });
+  load(); loadSchoolsTable();
 })();
+let PICK = null;
+
+// ---------- rail tabs ----------
+function showTab(t) {
+  document.querySelectorAll(".rail [data-atab]").forEach(x => x.classList.toggle("active", x.dataset.atab === t));
+  ["teachers", "schools"].forEach(k => document.getElementById("atab-" + k).classList.toggle("hidden", k !== t));
+  document.getElementById("page-title").textContent = t === "schools" ? "Schools" : "Teachers";
+}
+document.querySelectorAll(".rail [data-atab]").forEach(b => b.onclick = () => showTab(b.dataset.atab));
+document.getElementById("go-schools").onclick = e => { e.preventDefault(); showTab("schools"); };
+
+// ---------- schools ----------
+async function loadSchoolsTable() {
+  try {
+    const list = await rpc("admin_list_schools", { p_token: ME.token });
+    document.getElementById("s-schools").textContent = list.length;
+    const t = document.getElementById("sc-table");
+    if (!list.length) { t.innerHTML = `<tr><td class="empty">No schools yet — add the first one 👈</td></tr>`; }
+    else t.innerHTML = `<tr><th>School</th><th>Teachers</th><th>Students</th><th>Actions</th></tr>` + list.map(x => `
+      <tr><td><b>${esc(x.name)}</b></td><td>${x.teachers}</td><td>${x.students}</td>
+      <td><div class="row gap" style="flex-wrap:nowrap"><button class="btn sm ghost" title="Rename" data-ren="${x.id}" data-name="${esc(x.name)}">✏️ Rename</button>
+        <button class="btn sm red" title="Remove" data-rm="${x.id}" data-name="${esc(x.name)}" ${x.teachers ? "disabled" : ""}>🗑️</button></div></td></tr>`).join("");
+    t.querySelectorAll("[data-ren]").forEach(b => b.onclick = async () => {
+      const n = prompt(`New name for "${b.dataset.name}":\n(Teachers in this school move to the new name. Everyone signs in with the new name.)`, b.dataset.name);
+      if (!n || n.trim() === b.dataset.name) return;
+      try { const r = await rpc("admin_rename_school", { p_token: ME.token, p_id: +b.dataset.ren, p_name: n }); if (!r.ok) return toast(r.error, "bad"); toast("School renamed ✔", "good"); refreshAll(); }
+      catch (e) { toast(e.message, "bad"); }
+    });
+    t.querySelectorAll("[data-rm]").forEach(b => b.onclick = async () => {
+      if (!confirm(`Remove "${b.dataset.name}" from the list?`)) return;
+      try { const r = await rpc("admin_delete_school", { p_token: ME.token, p_id: +b.dataset.rm }); if (!r.ok) return toast(r.error, "bad"); toast("School removed", "good"); refreshAll(); }
+      catch (e) { toast(e.message, "bad"); }
+    });
+  } catch (e) { toast(e.message, "bad"); }
+}
+function refreshAll() { loadSchoolsTable(); load(); if (PICK) PICK.reload(); }
+document.getElementById("school-form").addEventListener("submit", async e => {
+  e.preventDefault();
+  const btn = e.target.querySelector("button"); btn.disabled = true;
+  try { const r = await rpc("admin_add_school", { p_token: ME.token, p_name: document.getElementById("sc-name").value });
+    if (!r.ok) return toast(r.error, "bad"); toast("School added ✔", "good"); e.target.reset(); refreshAll(); }
+  catch (err) { toast(err.message, "bad"); } finally { btn.disabled = false; }
+});
+
+// change a teacher's school
+function changeTeacherSchool(id, name, cur) {
+  const m = S1971.modal(`<h3>🏫 School for ${esc(name)}</h3><p class="muted small">The teacher and their students will sign in with this school.</p><div id="ts-host" style="margin:10px 0 16px"></div><div class="row gap end"><button class="btn ghost" id="ts-cancel">Cancel</button><button class="btn" id="ts-save">Save</button></div>`);
+  const pick = S1971.schoolPicker(m.querySelector("#ts-host"), { value: cur || "" });
+  m.querySelector("#ts-cancel").onclick = () => m.remove();
+  m.querySelector("#ts-save").onclick = async () => {
+    const v = pick.get(); if (!v) return toast("Choose a school from the list.", "bad");
+    try { const r = await rpc("admin_set_teacher_school", { p_token: ME.token, p_teacher_id: id, p_school: v }); if (!r.ok) return toast(r.error, "bad");
+      m.remove(); toast("School changed ✔", "good"); refreshAll(); }
+    catch (e) { toast(e.message, "bad"); }
+  };
+}
 
 async function load() {
   try {
@@ -69,9 +151,10 @@ async function load() {
     const t = document.getElementById("t-table");
     if (!teachers.length) { t.innerHTML = `<tr><td class="empty">No teachers yet — add the first one 👈</td></tr>`; return; }
     t.innerHTML = `<tr><th>Name</th><th>Username</th><th>School</th><th>Students</th><th>Added</th><th>Actions</th></tr>` + teachers.map(x => `
-      <tr><td><b>${esc(x.display_name)}</b></td><td>${esc(x.username)}</td><td>${esc(x.school || "—")}</td><td>${x.student_count}/30</td><td>${fmtDate(x.created_at)}</td>
+      <tr><td><b>${esc(x.display_name)}</b></td><td>${esc(x.username)}</td><td><button class="hpill" title="Change school" data-sch="${esc(x.id)}" data-name="${esc(x.display_name)}" data-cur="${esc(x.school || "")}">🏫 ${esc(x.school || "Choose…")} ✏️</button></td><td>${x.student_count}/30</td><td>${fmtDate(x.created_at)}</td>
       <td><div class="row gap" style="flex-wrap:nowrap"><button class="btn sm ghost" title="Reset password" data-reset="${esc(x.id)}" data-name="${esc(x.display_name)}">🔑</button>
           <button class="btn sm red" title="Delete teacher" data-del="${esc(x.id)}" data-name="${esc(x.display_name)}" data-n="${x.student_count}">🗑️</button></div></td></tr>`).join("");
+    t.querySelectorAll("[data-sch]").forEach(b => b.onclick = () => changeTeacherSchool(b.dataset.sch, b.dataset.name, b.dataset.cur));
     t.querySelectorAll("[data-reset]").forEach(b => b.onclick = async () => {
       const p = prompt(`New password for ${b.dataset.name} (6+ characters):`);
       if (!p) return;
@@ -88,15 +171,17 @@ async function load() {
 
 document.getElementById("add-form").addEventListener("submit", async e => {
   e.preventDefault();
-  const btn = e.target.querySelector("button"); btn.disabled = true;
+  const school = PICK.get();
+  if (!school) return toast("Choose the teacher's school from the list.", "bad");
+  const btn = e.target.querySelector('button[type="submit"]'); btn.disabled = true;
   try {
     const r = await rpc("admin_create_teacher", {
       p_token: ME.token, p_username: document.getElementById("t-user").value,
-      p_display_name: document.getElementById("t-name").value, p_password: document.getElementById("t-pass").value, p_school: document.getElementById("t-school").value
+      p_display_name: document.getElementById("t-name").value, p_password: document.getElementById("t-pass").value, p_school: school
     });
     if (!r.ok) return toast(r.error, "bad");
     toast("Teacher account created ✔", "good");
-    e.target.reset(); load();
+    e.target.reset(); PICK.set(""); refreshAll();
   } catch (err) { toast(err.message, "bad"); } finally { btn.disabled = false; }
 });
 </script>

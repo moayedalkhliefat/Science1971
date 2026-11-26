@@ -6,6 +6,7 @@
 <title>Teacher Dashboard · Science Lab 1971</title>
 <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🧪</text></svg>">
 <link rel="stylesheet" href="assets/style.css">
+<link rel="stylesheet" href="assets/dash.css">
 <style>
 .ch-pick .tab{font-size:.9rem}
 .ch-box{position:relative;background:#fff;border:2px solid var(--line);border-radius:16px;padding:8px;min-height:200px}
@@ -14,71 +15,67 @@
 .ch-tip{position:absolute;pointer-events:none;background:#1d1b4b;color:#fff;font-size:.85rem;padding:8px 12px;border-radius:10px;white-space:nowrap;box-shadow:0 6px 18px rgba(0,0,0,.2);z-index:5;line-height:1.4}
 </style>
 </head>
-<body>
-<div class="wrap">
-  <div class="topbar">
-    <a class="brand" href="teacher.html"><span class="logo">🧪</span><b>Science Lab 1971</b></a>
-    <div class="row gap">
-      <span class="who" id="who"></span><span class="pill" id="role-pill"></span>
-      <a class="btn sm pink hidden" id="admin-link" href="admin.html">👑 Admin panel</a>
-      <button class="btn sm ghost" onclick="S1971.changePasswordDialog()">🔑 Password</button>
-      <button class="btn sm orange" onclick="S1971.logout()">Log out</button>
-    </div>
-  </div>
-
-  <div class="tabs">
-    <button class="tab active" data-tab="students">👩‍🎓 My Students</button>
-    <button class="tab" data-tab="results">📊 Results</button>
-    <button class="tab" data-tab="charts">📈 Charts</button>
-    <button class="tab" data-tab="classes">🏫 Class Labs</button>
-    <button class="tab" data-tab="labs">🔬 Preview Labs</button>
-  </div>
+<body class="dash">
+<div class="dash-shell">
+<nav class="rail">
+  <a class="lg" href="teacher.html" title="Science Lab 1971">🧪</a>
+  <button class="tab ri active" data-tab="students">🧑‍🎓<small>Students</small></button>
+  <button class="tab ri" data-tab="results">📊<small>Results</small></button>
+  <button class="tab ri" data-tab="charts">📈<small>Charts</small></button>
+  <button class="tab ri" data-tab="classes">🏫<small>Class labs</small></button>
+  <button class="tab ri" data-tab="labs">🔬<small>Preview</small></button>
+  <div class="spacer"></div>
+  <a class="ri hidden" id="admin-link" href="admin.html">👑<small>Admin</small></a>
+  <button class="ri" onclick="S1971.changePasswordDialog()">🔑<small>Password</small></button>
+  <button class="ri" onclick="S1971.logout()">🚪<small>Log out</small></button>
+</nav>
+<div class="dash-main">
+  <header class="dash-head">
+    <h1 id="page-title">My Students</h1>
+    <button class="hpill hidden" id="school-pill" title="Change my school">🏫 <span id="school-name">—</span> ✏️</button>
+    <span class="hpill">👤 <span id="who"></span> · <span class="role-name" id="role-pill"></span></span>
+    <span class="row gap" id="head-actions" style="margin-left:auto"><button class="hbtn" id="h-tpl">⬇️ Template</button><button class="hbtn dark" id="h-add">➕ Add students</button></span>
+  </header>
+  <div class="dash-body">
 
   <!-- STUDENTS -->
   <section id="tab-students">
-    <div class="card" style="margin-bottom:18px">
-      <div class="row between gap">
-        <div><h2 style="margin:0">🏫 My school</h2><p class="muted small" style="margin:4px 0 0">Shown on your students' certificates.</p></div>
-        <div class="row gap" style="flex:1;max-width:620px"><input id="school" placeholder="e.g. Institute of Applied Technology — ATS Al Ain" style="flex:1;margin:0"><button class="btn" id="save-school">Save</button></div>
-      </div>
-    </div>
-    <div class="stats">
-      <div class="stat a"><b id="st-count">0</b><span id="st-count-label">students (max 30)</span></div>
-      <div class="stat c"><b id="st-classes">0</b>classes</div>
-      <div class="stat d"><b id="st-results">0</b>lab attempts</div>
-    </div>
-
-    <div class="card" style="margin-bottom:18px">
-      <div class="row between gap">
-        <h2>📥 Add students from Excel</h2>
-        <button class="btn sm ghost" id="tpl-btn">⬇️ Download Excel template</button>
-      </div>
-      <p class="muted">Your sheet needs 4 columns: <b>Name</b>, <b>School ID</b>, <b>Grade</b>, <b>Section</b>. Students log in with their <b>first name</b> + <b>School ID</b>. <span id="limit-note">Maximum 30 students per teacher.</span></p>
-      <div class="drop" id="drop">
-        <div style="font-size:2.4rem">📄</div>
-        <b>Click to choose an Excel file</b> or drag it here<br><span class="muted small">.xlsx, .xls or .csv</span>
-        <input type="file" id="file" accept=".xlsx,.xls,.csv" class="hidden">
-      </div>
-      <div id="preview" class="hidden" style="margin-top:14px">
-        <div class="row between gap"><b id="preview-title"></b>
-          <div class="row gap"><button class="btn sm ghost" id="cancel-upload">Cancel</button><button class="btn green" id="do-upload">✅ Upload students</button></div>
+    <div class="st-grid">
+      <div>
+        <div class="minis">
+          <div class="mini"><div><span class="l" id="st-count-label">Students</span><b id="st-count">0</b></div><span>🧑‍🎓</span></div>
+          <div class="mini"><div><span class="l">Classes</span><b id="st-classes">0</b></div><span>🏫</span></div>
+          <div class="mini"><div><span class="l">Lab attempts</span><b id="st-results">0</b></div><span>🧪</span></div>
+          <div class="mini"><div><span class="l">Average score</span><b id="st-avg">—</b></div><span>🎯</span></div>
         </div>
-        <div class="table-wrap" style="max-height:300px;margin-top:10px"><table id="preview-table"></table></div>
-      </div>
-      <div id="upload-result"></div>
-    </div>
-
-    <div class="card">
-      <div class="row between gap">
-        <h2>👩‍🎓 Student list</h2>
-        <div class="row gap">
-          <select class="inline hidden" id="f-teacher"></select>
-          <select class="inline" id="f-grade"></select>
-          <select class="inline" id="f-section"></select>
-          <input class="inline" id="f-search" placeholder="🔎 Search name or ID">
+        <div class="panel">
+          <div class="panel-h"><b>Student list</b>
+            <select class="inline hidden" id="f-teacher"></select>
+            <select class="inline" id="f-grade"></select>
+            <select class="inline" id="f-section"></select>
+            <input class="inline" id="f-search" placeholder="🔎 Search name or ID">
+          </div>
+          <div class="table-wrap" style="max-height:560px"><table id="students-table"></table></div>
         </div>
       </div>
-      <div class="table-wrap" style="margin-top:12px;max-height:520px"><table id="students-table"></table></div>
+      <aside class="card drawer" id="add-panel">
+        <h2>➕ Add students</h2>
+        <div class="step"><i>1</i><div><b>Download the template</b><br>Name, School ID, Grade, Section<br><button class="btn sm ghost" id="tpl-btn" style="margin-top:6px">⬇️ Excel template</button></div></div>
+        <div class="step"><i>2</i><div><b>Fill it in Excel</b><br><span id="limit-note">Up to 30 students per teacher.</span></div></div>
+        <div class="step"><i>3</i><div><b>Drop it here</b></div></div>
+        <div class="drop" id="drop">
+          <div style="font-size:2rem">📄</div>
+          <b>Click or drag</b><br><span class="muted small">.xlsx, .xls or .csv</span>
+          <input type="file" id="file" accept=".xlsx,.xls,.csv" class="hidden">
+        </div>
+        <div id="preview" class="hidden" style="margin-top:14px">
+          <b id="preview-title"></b>
+          <div class="table-wrap" style="max-height:240px;margin-top:8px"><table id="preview-table"></table></div>
+          <div class="row gap end" style="margin-top:10px"><button class="btn sm ghost" id="cancel-upload">Cancel</button><button class="btn sm green" id="do-upload">✅ Upload students</button></div>
+        </div>
+        <div id="upload-result"></div>
+        <p class="muted small" style="margin:12px 0 0">Students sign in with their <b>school</b> + <b>first name</b> + <b>School ID</b>.</p>
+      </aside>
     </div>
   </section>
 
@@ -150,6 +147,8 @@
     <div class="labs" id="labs"></div>
   </section>
 
+  </div>
+</div>
 </div>
 
 <script src="assets/config.js"></script>
@@ -167,16 +166,15 @@ let ME = null, STUDENTS = [], RESULTS = [], PENDING = [];
   pill.textContent = ME.role; pill.classList.add(ME.role);
   if (ME.role === "admin") {
     document.getElementById("admin-link").classList.remove("hidden");
-    document.getElementById("st-count-label").textContent = "students (all teachers)";
+    document.getElementById("st-count-label").textContent = "Students (all teachers)";
     document.getElementById("limit-note").textContent = "As admin you can see every teacher's students.";
   }
   document.getElementById("pass-mark").textContent = S1971_CONFIG.PASS_MARK + "%";
   renderLabs(); restoreBack();
-  document.getElementById("school").value = ME.school || "";
-  document.getElementById("save-school").onclick = async () => {
-    try { const r = await rpc("staff_set_school", { p_token: ME.token, p_school: document.getElementById("school").value }); r.ok ? toast("School saved ✔", "good") : toast(r.error, "bad"); }
-    catch (e) { toast(e.message, "bad"); }
-  };
+  showSchool();
+  document.getElementById("school-pill").onclick = chooseSchool;
+  document.getElementById("h-tpl").onclick = () => document.getElementById("tpl-btn").click();
+  document.getElementById("h-add").onclick = () => document.getElementById("file").click();
   await Promise.all([loadStudents(), loadResults(), loadClasses()]);
 })();
 
@@ -184,7 +182,31 @@ let ME = null, STUDENTS = [], RESULTS = [], PENDING = [];
 document.querySelectorAll(".tab[data-tab]").forEach(b => b.onclick = () => {
   document.querySelectorAll(".tab[data-tab]").forEach(x => x.classList.toggle("active", x === b));
   ["students", "results", "charts", "classes", "labs"].forEach(t => document.getElementById("tab-" + t).classList.toggle("hidden", t !== b.dataset.tab));
+  document.getElementById("page-title").textContent = { students: "My Students", results: "Results", charts: "Charts", classes: "Class Labs", labs: "Preview Labs" }[b.dataset.tab];
+  document.getElementById("head-actions").classList.toggle("hidden", b.dataset.tab !== "students");
 });
+
+// ---------- my school (chosen from the admin's list) ----------
+function showSchool() {
+  const p = document.getElementById("school-pill");
+  if (ME.role === "admin") return p.classList.add("hidden");
+  p.classList.remove("hidden"); p.classList.toggle("warn", !ME.school);
+  document.getElementById("school-name").textContent = ME.school || "Choose your school";
+}
+function chooseSchool() {
+  const m = S1971.modal(`<h3>🏫 My school</h3><p class="muted small">Shown on your students' certificates. Students and you sign in with this school.</p><div id="sp-host" style="margin:10px 0 16px"></div><div class="row gap end"><button class="btn ghost" id="sp-cancel">Cancel</button><button class="btn" id="sp-save">Save</button></div>`);
+  const pick = S1971.schoolPicker(m.querySelector("#sp-host"), { value: ME.school || "" });
+  setTimeout(() => pick.input.focus(), 50);
+  m.querySelector("#sp-cancel").onclick = () => m.remove();
+  m.querySelector("#sp-save").onclick = async () => {
+    const v = pick.get(); if (!v) return toast("Choose a school from the list.", "bad");
+    try { const r = await rpc("staff_set_school", { p_token: ME.token, p_school: v }); if (!r.ok) return toast(r.error, "bad");
+      ME.school = r.school || v; const ss = S1971.getSession(); if (ss) { ss.school = ME.school; S1971.setSession(ss); }
+      try { localStorage.setItem("s1971.school", ME.school); } catch (e) {}
+      showSchool(); m.remove(); toast("School saved ✔ — sign in with this school from now on.", "good"); }
+    catch (e) { toast(e.message, "bad"); }
+  };
+}
 
 // ---------- students ----------
 async function loadStudents() {
@@ -210,13 +232,16 @@ function fillSelect(id, label, values) {
   if (vals.includes(cur)) el.value = cur;
 }
 ["f-grade", "f-section", "f-search"].forEach(id => document.getElementById(id).addEventListener("input", renderStudents));
+const AVC = ["#ff4d9d", "#16c172", "#6c5ce7", "#ff9f1c", "#2f80ff", "#00b4d8", "#e53935", "#8e24aa"];
+const initials = n => String(n || "?").trim().split(/\s+/).slice(0, 2).map(w => w[0] || "").join("").toUpperCase();
+const avCol = n => { let h = 0; for (const c of String(n || "")) h = (h * 31 + c.charCodeAt(0)) >>> 0; return AVC[h % AVC.length]; };
 function renderStudents() {
   const g = document.getElementById("f-grade").value, s = document.getElementById("f-section").value, q = document.getElementById("f-search").value.trim().toLowerCase(), tc = document.getElementById("f-teacher").value;
   const list = STUDENTS.filter(x => (!tc || x.teacher_name === tc) && (!g || x.grade === g) && (!s || x.section === s) && (!q || x.full_name.toLowerCase().includes(q) || x.school_id.toLowerCase().includes(q)));
   const t = document.getElementById("students-table");
-  if (!STUDENTS.length) { t.innerHTML = `<tr><td class="empty">No students yet — upload your Excel sheet above 👆</td></tr>`; return; }
+  if (!STUDENTS.length) { t.innerHTML = `<tr><td class="empty">No students yet — add them with the Excel panel on the right 👉</td></tr>`; return; }
   t.innerHTML = `<tr><th>#</th><th>Name</th><th>Logs in with</th><th>School ID</th><th>Grade</th><th>Section</th>${ME.role === "admin" ? "<th>Teacher</th>" : ""}<th></th></tr>` +
-    list.map((x, i) => `<tr><td>${i + 1}</td><td><b>${esc(x.full_name)}</b></td><td>${esc(x.first_name)}</td><td>${esc(x.school_id)}</td><td>${esc(x.grade)}</td><td>${esc(x.section)}</td>${ME.role === "admin" ? `<td>${esc(x.teacher_name)}</td>` : ""}
+    list.map((x, i) => `<tr><td>${i + 1}</td><td><span class="who-cell"><span class="av-i" style="background:${avCol(x.full_name)}">${esc(initials(x.full_name))}</span><b>${esc(x.full_name)}</b></span></td><td>${esc(x.first_name)}</td><td>${esc(x.school_id)}</td><td>${esc(x.grade)}</td><td>${esc(x.section)}</td>${ME.role === "admin" ? `<td>${esc(x.teacher_name)}</td>` : ""}
       <td><button class="btn sm red" data-del="${esc(x.id)}" data-name="${esc(x.full_name)}">🗑️</button></td></tr>`).join("");
   t.querySelectorAll("[data-del]").forEach(b => b.onclick = async () => {
     if (!confirm(`Remove ${b.dataset.name}? Their lab results will also be deleted.`)) return;
@@ -308,6 +333,7 @@ function labTitle(id) {
 async function loadResults() {
   try { RESULTS = await rpc("teacher_results", { p_token: ME.token }); } catch (e) { return toast(e.message, "bad"); }
   document.getElementById("st-results").textContent = RESULTS.length;
+  document.getElementById("st-avg").textContent = RESULTS.length ? Math.round(RESULTS.reduce((t, r) => t + pct(r), 0) / RESULTS.length) + "%" : "—";
   if (ME.role === "admin") { fillSelect("r-teacher", "All teachers", RESULTS.map(r => r.teacher_name)); document.getElementById("r-teacher").classList.remove("hidden"); }
   fillResultClasses();
   const sj = document.getElementById("r-subj"), sjCur = sj.value, subjects = window.S1971_SUBJECTS.filter(sb => RESULTS.some(r => labInfo(r).subject === sb.key));
